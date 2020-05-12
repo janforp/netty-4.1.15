@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package io.netty.util;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,9 +30,12 @@ public class DefaultAttributeMap implements AttributeMap {
     private static final AtomicReferenceFieldUpdater<DefaultAttributeMap, AtomicReferenceArray> updater =
             AtomicReferenceFieldUpdater.newUpdater(DefaultAttributeMap.class, AtomicReferenceArray.class, "attributes");
 
+    //AtomicReferenceArray 中的数组的大小
     private static final int BUCKET_SIZE = 4;
-    private static final int MASK = BUCKET_SIZE  - 1;
 
+    private static final int MASK = BUCKET_SIZE - 1;
+
+    //该属性由 AtomicReferenceFieldUpdater 去更新z
     // Initialize lazily to reduce memory consumption; updated by AtomicReferenceFieldUpdater above.
     @SuppressWarnings("UnusedDeclaration")
     private volatile AtomicReferenceArray<DefaultAttribute<?>> attributes;
@@ -47,6 +51,7 @@ public class DefaultAttributeMap implements AttributeMap {
             // Not using ConcurrentHashMap due to high memory consumption.
             attributes = new AtomicReferenceArray<DefaultAttribute<?>>(BUCKET_SIZE);
 
+            //如果 attributes 不为null
             if (!updater.compareAndSet(this, null, attributes)) {
                 attributes = this.attributes;
             }
@@ -71,7 +76,7 @@ public class DefaultAttributeMap implements AttributeMap {
 
         synchronized (head) {
             DefaultAttribute<?> curr = head;
-            for (;;) {
+            for (; ; ) {
                 DefaultAttribute<?> next = curr.next;
                 if (next == null) {
                     DefaultAttribute<T> attr = new DefaultAttribute<T>(head, key);
@@ -124,6 +129,12 @@ public class DefaultAttributeMap implements AttributeMap {
         return key.id() & MASK;
     }
 
+    /**
+     * 私有的静态内部类
+     * 通过继承 AtomicReference ，用 AtomicReference 中的部门方法去实现 接口 Attribute 中的方法，有点巧妙
+     *
+     * @param <T>
+     */
     @SuppressWarnings("serial")
     private static final class DefaultAttribute<T> extends AtomicReference<T> implements Attribute<T> {
 
@@ -131,10 +142,17 @@ public class DefaultAttributeMap implements AttributeMap {
 
         // The head of the linked-list this attribute belongs to
         private final DefaultAttribute<?> head;
+
+        /**
+         * 该属性对应的key
+         */
         private final AttributeKey<T> key;
 
         // Double-linked list to prev and next node to allow fast removal
+
+        //为了实现快速删除，内部维护一个双向链表
         private DefaultAttribute<?> prev;
+
         private DefaultAttribute<?> next;
 
         // Will be set to true one the attribute is removed via getAndRemove() or remove()

@@ -15,6 +15,8 @@
  */
 package io.netty.util;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * An attribute which allows to store a value reference. It may be updated atomically and so is thread-safe.
  *
@@ -29,16 +31,23 @@ public interface Attribute<T> {
 
     /**
      * Returns the current value, which may be {@code null}
+     *
+     * 该方法是简介通过 java.util.concurrent.atomic.AtomicReference 实现的
+     * @see AtomicReference#get()
      */
     T get();
 
     /**
      * Sets the value
+     *
+     * @see AtomicReference#get()
      */
     void set(T value);
 
     /**
      *  Atomically sets to the given value and returns the old value which may be {@code null} if non was set before.
+     *
+     *  @see AtomicReference#get()
      */
     T getAndSet(T value);
 
