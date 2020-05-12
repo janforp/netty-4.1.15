@@ -1,23 +1,13 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.util.concurrent;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.RunnableFuture;
 
+/**
+ * 内部封装了一个 任务： task
+ *
+ * @param <V>
+ */
 class PromiseTask<V> extends DefaultPromise<V> implements RunnableFuture<V> {
 
     static <T> Callable<T> toCallable(Runnable runnable, T result) {
@@ -25,7 +15,9 @@ class PromiseTask<V> extends DefaultPromise<V> implements RunnableFuture<V> {
     }
 
     private static final class RunnableAdapter<T> implements Callable<T> {
+
         final Runnable task;
+
         final T result;
 
         RunnableAdapter(Runnable task, T result) {
@@ -69,7 +61,9 @@ class PromiseTask<V> extends DefaultPromise<V> implements RunnableFuture<V> {
     @Override
     public void run() {
         try {
+            //当任务已经开始执行的时候，则不可能在取消了
             if (setUncancellableInternal()) {
+                //真正执行的是 Runnable runnable
                 V result = task.call();
                 setSuccessInternal(result);
             }
@@ -131,7 +125,7 @@ class PromiseTask<V> extends DefaultPromise<V> implements RunnableFuture<V> {
         buf.setCharAt(buf.length() - 1, ',');
 
         return buf.append(" task: ")
-                  .append(task)
-                  .append(')');
+                .append(task)
+                .append(')');
     }
 }

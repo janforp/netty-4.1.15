@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 import io.netty.bootstrap.Bootstrap;
@@ -21,7 +6,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * The result of an asynchronous {@link Channel} I/O operation.
@@ -161,14 +145,21 @@ import java.util.concurrent.TimeUnit;
  *     // Connection established successfully
  * }
  * </pre>
+ *
+ * 1.完成的情况有3种：成功/失败/取消
+ * 2.等待超时跟io超时无关
+ * 3.使用监听器(addListener)而不是同步等待(await),这样会造成死锁
  */
 public interface ChannelFuture extends Future<Void> {
 
     /**
-     * Returns a channel where the I/O operation associated with this
-     * future takes place.
+     * Returns a channel where the I/O operation associated with this future takes place.
+     *
+     * ChannelFuture 中封装了 该 ChannelFuture 对应的 Channel
      */
     Channel channel();
+
+    //下面的方法是直接继承自 io.netty.util.concurrent.Future，这样做的目的是为了使用 ChannelFuture 就可以使用 Future 的方法而不需要向上转型
 
     @Override
     ChannelFuture addListener(GenericFutureListener<? extends Future<? super Void>> listener);
@@ -197,6 +188,8 @@ public interface ChannelFuture extends Future<Void> {
     /**
      * Returns {@code true} if this {@link ChannelFuture} is a void future and so not allow to call any of the
      * following methods:
+     *
+     * 如果该 ChannelFuture 是 Void 类型的，则无法调用下面的方法，这是一个规范，约束实现
      * <ul>
      *     <li>{@link #addListener(GenericFutureListener)}</li>
      *     <li>{@link #addListeners(GenericFutureListener[])}</li>

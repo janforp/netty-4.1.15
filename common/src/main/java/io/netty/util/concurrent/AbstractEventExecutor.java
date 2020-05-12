@@ -1,18 +1,3 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.util.concurrent;
 
 import io.netty.util.internal.logging.InternalLogger;
@@ -29,21 +14,37 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract base class for {@link EventExecutor} implementations.
+ *
+ * 一个 EventExecutor 也是一个 EventExecutorGroup
  */
 public abstract class AbstractEventExecutor extends AbstractExecutorService implements EventExecutor {
+
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractEventExecutor.class);
 
+    /**
+     * 优雅关闭的时候的默认参数
+     */
     static final long DEFAULT_SHUTDOWN_QUIET_PERIOD = 2;
+
+    /**
+     * 优雅关闭的时候的默认参数
+     */
     static final long DEFAULT_SHUTDOWN_TIMEOUT = 15;
 
+    /**
+     * 该线程池所在的线程池组
+     */
     private final EventExecutorGroup parent;
+
     private final Collection<EventExecutor> selfCollection = Collections.<EventExecutor>singleton(this);
 
     protected AbstractEventExecutor() {
+        //子类调用
         this(null);
     }
 
     protected AbstractEventExecutor(EventExecutorGroup parent) {
+        //子类调用
         this.parent = parent;
     }
 
@@ -59,16 +60,19 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
 
     @Override
     public boolean inEventLoop() {
+        //内部这个方法由具体的实现子类实现
         return inEventLoop(Thread.currentThread());
     }
 
     @Override
     public Iterator<EventExecutor> iterator() {
+        //返回一个元素的迭代器
         return selfCollection.iterator();
     }
 
     @Override
     public Future<?> shutdownGracefully() {
+        //内部这个方法由具体的实现子类实现
         return shutdownGracefully(DEFAULT_SHUTDOWN_QUIET_PERIOD, DEFAULT_SHUTDOWN_TIMEOUT, TimeUnit.SECONDS);
     }
 
@@ -91,6 +95,7 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
 
     @Override
     public <V> Promise<V> newPromise() {
+        //返回一个默认的 Promise 实现
         return new DefaultPromise<V>(this);
     }
 
@@ -111,21 +116,25 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
 
     @Override
     public Future<?> submit(Runnable task) {
+        //直接调用 JUC 方法
         return (Future<?>) super.submit(task);
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
+        //直接调用 JUC 方法
         return (Future<T>) super.submit(task, result);
     }
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
+        //直接调用 JUC 方法
         return (Future<T>) super.submit(task);
     }
 
     @Override
     protected final <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
+        //模版方法模式，直接替换了 JUC 中的该方法
         return new PromiseTask<T>(this, runnable, value);
     }
 
@@ -136,7 +145,7 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay,
-                                       TimeUnit unit) {
+            TimeUnit unit) {
         throw new UnsupportedOperationException();
     }
 

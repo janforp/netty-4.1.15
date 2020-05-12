@@ -1,19 +1,3 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.util.concurrent;
 
 import java.util.Queue;
@@ -24,7 +8,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings("ComparableImplementedButEqualsNotOverridden")
 final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFuture<V> {
+
     private static final AtomicLong nextTaskId = new AtomicLong();
+
     private static final long START_TIME = System.nanoTime();
 
     static long nanoTime() {
@@ -36,8 +22,17 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
     }
 
     private final long id = nextTaskId.getAndIncrement();
+
     private long deadlineNanos;
+
     /* 0 - no repeat, >0 - repeat at fixed rate, <0 - repeat with fixed delay */
+    //0：不重复
+
+    /**
+     * 0：不重复
+     * >0：固定频率重复
+     * <0：每次执行之后延迟一段时间在执行
+     */
     private final long periodNanos;
 
     ScheduledFutureTask(
@@ -115,6 +110,7 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
     public void run() {
         assert executor().inEventLoop();
         try {
+            //0 - no repeat, >0 - repeat at fixed rate, <0 - repeat with fixed delay
             if (periodNanos == 0) {
                 if (setUncancellableInternal()) {
                     V result = task.call();
@@ -165,11 +161,11 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
         buf.setCharAt(buf.length() - 1, ',');
 
         return buf.append(" id: ")
-                  .append(id)
-                  .append(", deadline: ")
-                  .append(deadlineNanos)
-                  .append(", period: ")
-                  .append(periodNanos)
-                  .append(')');
+                .append(id)
+                .append(", deadline: ")
+                .append(deadlineNanos)
+                .append(", period: ")
+                .append(periodNanos)
+                .append(')');
     }
 }

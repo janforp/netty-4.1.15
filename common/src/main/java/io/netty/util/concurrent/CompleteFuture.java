@@ -1,25 +1,14 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.util.concurrent;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * A skeletal {@link Future} implementation which represents a {@link Future} which has been completed already.
+ * 一个表示已经完成了的 Future 骨架，模版方法模式？
+ *
+ * 因为完成有多种情况，如：成功，失败都算完成
+ *
+ * 不管有没有模版设计模式，反正状态模式是肯定有的，同样的行为方法，在不同的状态下表现出不同的形式
  */
 public abstract class CompleteFuture<V> extends AbstractFuture<V> {
 
@@ -46,6 +35,7 @@ public abstract class CompleteFuture<V> extends AbstractFuture<V> {
         if (listener == null) {
             throw new NullPointerException("listener");
         }
+        //已经完成了的 Future，添加监听器的时候就马上通知
         DefaultPromise.notifyListener(executor(), this, listener);
         return this;
     }
@@ -55,10 +45,11 @@ public abstract class CompleteFuture<V> extends AbstractFuture<V> {
         if (listeners == null) {
             throw new NullPointerException("listeners");
         }
-        for (GenericFutureListener<? extends Future<? super V>> l: listeners) {
+        for (GenericFutureListener<? extends Future<? super V>> l : listeners) {
             if (l == null) {
                 break;
             }
+            //已经完成了的 Future，添加监听器的时候就马上通知
             DefaultPromise.notifyListener(executor(), this, l);
         }
         return this;
@@ -67,12 +58,14 @@ public abstract class CompleteFuture<V> extends AbstractFuture<V> {
     @Override
     public Future<V> removeListener(GenericFutureListener<? extends Future<? super V>> listener) {
         // NOOP
+        //内部根据就没有存监听器
         return this;
     }
 
     @Override
     public Future<V> removeListeners(GenericFutureListener<? extends Future<? super V>>... listeners) {
         // NOOP
+        //内部根据就没有存监听器
         return this;
     }
 

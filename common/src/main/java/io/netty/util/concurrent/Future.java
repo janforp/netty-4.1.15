@@ -1,26 +1,12 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.util.concurrent;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * The result of an asynchronous operation.
+ *
+ * 该对象封装了一个异步操作的结果，扩展了java原生的 Future
  */
 @SuppressWarnings("ClassNameSameAsAncestorName")
 public interface Future<V> extends java.util.concurrent.Future<V> {
@@ -41,8 +27,10 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * failed.
      *
      * @return the cause of the failure.
-     *         {@code null} if succeeded or this future is not
-     *         completed yet.
+     * {@code null} if succeeded or this future is not
+     * completed yet.
+     *
+     * 只有真正失败的时候次方法返回才有对象，否则 null
      */
     Throwable cause();
 
@@ -51,6 +39,8 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * specified listener is notified when this future is
      * {@linkplain #isDone() done}.  If this future is already
      * completed, the specified listener is notified immediately.
+     *
+     * 如果在添加的时候已经完成，则会立刻通知，这可以理解为该接口定义的一个规范，要求实现必须满足此规范
      */
     Future<V> addListener(GenericFutureListener<? extends Future<? super V>> listener);
 
@@ -59,6 +49,8 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * specified listeners are notified when this future is
      * {@linkplain #isDone() done}.  If this future is already
      * completed, the specified listeners are notified immediately.
+     *
+     * 如果在添加的时候已经完成，则会立刻通知，这可以理解为该接口定义的一个规范，要求实现必须满足此规范
      */
     Future<V> addListeners(GenericFutureListener<? extends Future<? super V>>... listeners);
 
@@ -68,6 +60,8 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * future is {@linkplain #isDone() done}.  If the specified
      * listener is not associated with this future, this method
      * does nothing and returns silently.
+     *
+     * 从此 future 中删除第一次出现的指定侦听器。
      */
     Future<V> removeListener(GenericFutureListener<? extends Future<? super V>> listener);
 
@@ -83,6 +77,8 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
     /**
      * Waits for this future until it is done, and rethrows the cause of the failure if this future
      * failed.
+     *
+     * 阻塞到该异步操作完成，如果失败则会重新抛出异常
      */
     Future<V> sync() throws InterruptedException;
 
@@ -94,9 +90,9 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
 
     /**
      * Waits for this future to be completed.
+     * 等待的时候如果线程终止了，则会抛出异常
      *
-     * @throws InterruptedException
-     *         if the current thread was interrupted
+     * @throws InterruptedException if the current thread was interrupted
      */
     Future<V> await() throws InterruptedException;
 
@@ -104,6 +100,10 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * Waits for this future to be completed without
      * interruption.  This method catches an {@link InterruptedException} and
      * discards it silently.
+     *
+     * 等待的时候如果线程终止了，则不会抛出异常
+     *
+     * 等待这个 Future 完成而不中断。此方法捕获InterruptedException并以静默方式将其丢弃。
      */
     Future<V> awaitUninterruptibly();
 
@@ -112,10 +112,8 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * specified time limit.
      *
      * @return {@code true} if and only if the future was completed within
-     *         the specified time limit
-     *
-     * @throws InterruptedException
-     *         if the current thread was interrupted
+     * the specified time limit
+     * @throws InterruptedException if the current thread was interrupted
      */
     boolean await(long timeout, TimeUnit unit) throws InterruptedException;
 
@@ -124,10 +122,8 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * specified time limit.
      *
      * @return {@code true} if and only if the future was completed within
-     *         the specified time limit
-     *
-     * @throws InterruptedException
-     *         if the current thread was interrupted
+     * the specified time limit
+     * @throws InterruptedException if the current thread was interrupted
      */
     boolean await(long timeoutMillis) throws InterruptedException;
 
@@ -137,7 +133,7 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * {@link InterruptedException} and discards it silently.
      *
      * @return {@code true} if and only if the future was completed within
-     *         the specified time limit
+     * the specified time limit
      */
     boolean awaitUninterruptibly(long timeout, TimeUnit unit);
 
@@ -147,7 +143,7 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * {@link InterruptedException} and discards it silently.
      *
      * @return {@code true} if and only if the future was completed within
-     *         the specified time limit
+     * the specified time limit
      */
     boolean awaitUninterruptibly(long timeoutMillis);
 
@@ -156,6 +152,9 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      *
      * As it is possible that a {@code null} value is used to mark the future as successful you also need to check
      * if the future is really done with {@link #isDone()} and not relay on the returned {@code null} value.
+     *
+     * 完成则返回完成的值，否则返回null，但是真正完成的情况下也可能返回一个null，所以不能通过该方法的返回值去判断是否完成
+     * 而是需要通过方法 isDone() 去进行判断
      */
     V getNow();
 

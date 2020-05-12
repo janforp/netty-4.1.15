@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 import io.netty.util.concurrent.CompleteFuture;
@@ -23,9 +8,17 @@ import io.netty.util.concurrent.GenericFutureListener;
 /**
  * A skeletal {@link ChannelFuture} implementation which represents a
  * {@link ChannelFuture} which has been completed already.
+ *
+ * 一个表示已经完成了的 ChannelFuture 骨架，模版方法模式？
+ * 因为完成有多种情况，如：成功，失败都算完成
+ *
+ * 不管有没有模版设计模式，反正状态模式是肯定有的，同样的行为方法，在不同的状态下表现出不同的形式
  */
 abstract class CompleteChannelFuture extends CompleteFuture<Void> implements ChannelFuture {
 
+    /**
+     * 该 ChannelFuture 对应的 Channel
+     */
     private final Channel channel;
 
     /**
@@ -53,24 +46,28 @@ abstract class CompleteChannelFuture extends CompleteFuture<Void> implements Cha
 
     @Override
     public ChannelFuture addListener(GenericFutureListener<? extends Future<? super Void>> listener) {
+        //已经完成了的 Future，添加监听器的时候就马上通知
         super.addListener(listener);
         return this;
     }
 
     @Override
     public ChannelFuture addListeners(GenericFutureListener<? extends Future<? super Void>>... listeners) {
+        //已经完成了的 Future，添加监听器的时候就马上通知
         super.addListeners(listeners);
         return this;
     }
 
     @Override
     public ChannelFuture removeListener(GenericFutureListener<? extends Future<? super Void>> listener) {
+        //内部根据就没有存监听器
         super.removeListener(listener);
         return this;
     }
 
     @Override
     public ChannelFuture removeListeners(GenericFutureListener<? extends Future<? super Void>>... listeners) {
+        //内部根据就没有存监听器
         super.removeListeners(listeners);
         return this;
     }
