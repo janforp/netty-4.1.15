@@ -14,6 +14,11 @@ class PromiseTask<V> extends DefaultPromise<V> implements RunnableFuture<V> {
         return new RunnableAdapter<T>(runnable, result);
     }
 
+    /**
+     * 把一个 Runnable 转换成一个 Callable
+     *
+     * @param <T>
+     */
     private static final class RunnableAdapter<T> implements Callable<T> {
 
         final Runnable task;
@@ -63,7 +68,7 @@ class PromiseTask<V> extends DefaultPromise<V> implements RunnableFuture<V> {
         try {
             //当任务已经开始执行的时候，则不可能在取消了
             if (setUncancellableInternal()) {
-                //真正执行的是 Runnable runnable
+                //真正执行的是 Runnable.run()
                 V result = task.call();
                 setSuccessInternal(result);
             }

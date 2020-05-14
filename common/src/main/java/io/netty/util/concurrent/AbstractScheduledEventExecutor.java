@@ -13,6 +13,9 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractScheduledEventExecutor extends AbstractEventExecutor {
 
+    /**
+     * 任务队列
+     */
     Queue<ScheduledFutureTask<?>> scheduledTaskQueue;
 
     protected AbstractScheduledEventExecutor() {
@@ -41,6 +44,8 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
      * Cancel all scheduled tasks.
      *
      * This method MUST be called only when {@link #inEventLoop()} is {@code true}.
+     *
+     * 只有在 inEventLoop 返回 true 的时候才能调用该函数
      */
     protected void cancelScheduledTasks() {
         assert inEventLoop();
