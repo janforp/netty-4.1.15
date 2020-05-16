@@ -211,6 +211,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
         SocketAddress remoteAddress();
 
         /**
+         * 注册指定的 ChannelPromise 的 Channel，并在注册完成后通知 ChannelFuture（ChannelPromise）。
+         *
+         * <p></p>
          * Register the {@link Channel} of the {@link ChannelPromise} and notify
          * the {@link ChannelFuture} once the registration was complete.
          */
@@ -232,12 +235,18 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
         void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise);
 
         /**
+         * 断开连接完成的时候会通知 ChannelPromise
+         *
+         * <p></p>
          * Disconnect the {@link Channel} of the {@link ChannelFuture} and notify the {@link ChannelPromise} once the
          * operation was complete.
          */
         void disconnect(ChannelPromise promise);
 
         /**
+         * 操作完成的时候会通知传入的 ChannelPromise
+         *
+         * <p></p>
          * Close the {@link Channel} of the {@link ChannelPromise} and notify the {@link ChannelPromise} once the
          * operation was complete.
          */
@@ -250,12 +259,22 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
         void closeForcibly();
 
         /**
+         * 操作完成的时候会通知传入的 ChannelPromise
+         *
+         * <p></p>
          * Deregister the {@link Channel} of the {@link ChannelPromise} from {@link EventLoop} and notify the
          * {@link ChannelPromise} once the operation was complete.
          */
         void deregister(ChannelPromise promise);
 
         /**
+         * 调度读取操作，该操作将填充ChannelPipeline中第一个ChannelInboundHandler的入站缓冲区。
+         *
+         * <p></p>
+         *
+         * 如果已经有待处理的读取操作，则此方法不执行任何操作。
+         *
+         * <p></p>
          * Schedules a read operation that fills the inbound buffer of the first {@link ChannelInboundHandler} in the
          * {@link ChannelPipeline}.  If there's already a pending read operation, this method does nothing.
          */
@@ -267,11 +286,25 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
         void write(Object msg, ChannelPromise promise);
 
         /**
+         * 清空所有通过write（Object，ChannelPromise）安排的写操作。
+         *
+         * <p></p>
          * Flush out all write operations scheduled via {@link #write(Object, ChannelPromise)}.
          */
         void flush();
 
         /**
+         * 返回一个特殊的ChannelPromise，可以重复使用并将其传递给Channel.Unsafe中的操作。
+         *
+         * <p></p>
+         *
+         * 它永远不会收到成功或错误的通知，因此它只是一个
+         *
+         * 占位符，
+         *
+         * 用于以ChannelPromise作为参数但您不想收到通知的操作。
+         *
+         * <p></p>
          * Return a special ChannelPromise which can be reused and passed to the operations in {@link Unsafe}.
          * It will never be notified of a success or error and so is only a placeholder for operations
          * that take a {@link ChannelPromise} as argument but for which you not want to get notified.
@@ -279,6 +312,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
         ChannelPromise voidPromise();
 
         /**
+         * 返回存储 等待 写请求的Channel的ChannelOutboundBuffer。
+         *
+         * <p></p>
          * Returns the {@link ChannelOutboundBuffer} of the {@link Channel} where the pending write requests are stored.
          */
         ChannelOutboundBuffer outboundBuffer();

@@ -7,6 +7,9 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 /**
+ * AbstractChannelHandlerContext 中使用的就是该类型的 ChannelPromise，也是处理器中使用的类型
+ *
+ * <p></p>
  * The default {@link ChannelPromise} implementation.  It is recommended to use {@link Channel#newPromise()} to create
  * a new {@link ChannelPromise} rather than calling the constructor explicitly.
  *

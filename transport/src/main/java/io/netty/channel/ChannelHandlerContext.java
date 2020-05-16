@@ -10,6 +10,11 @@ import io.netty.util.concurrent.EventExecutor;
 import java.nio.channels.Channels;
 
 /**
+ * 如您在图中所示，您可能会注意到，处理程序必须调用 ChannelHandlerContext 中的事件传播方法以将事件转发到其下一个处理程序
+ * 图：是指 ChannelPipeline 中的图
+ * 那么该  ChannelHandlerContext 中就定义了很多事件传播方法
+ *
+ * <p></p>
  * Enables a {@link ChannelHandler} to interact with its {@link ChannelPipeline}
  * and other handlers. Among other things a handler can notify the next {@link ChannelHandler} in the
  * {@link ChannelPipeline} as well as modify the {@link ChannelPipeline} it belongs to dynamically.

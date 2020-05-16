@@ -21,35 +21,70 @@ import java.net.SocketAddress;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
+ * 该类实现了事件的传播，保证事件能经过所有的 ChannelHandler 处理
+ *
+ *
+ * 每一个 ChannelHandler 都有自己的 ChannelHandlerContext
+ * <p></p>
  * ChannelHandlerContext 的抽象基类
+ *
+ * <p></p>
+ * 通过该上下文对象就可以指定当前 ChannelHandler 的前一个以及后一个 ChannelHandlerContext
+ *
+ * <p></p>
+ * 所以与其说 ChannelHandler 有一个列表，不如说 ChannelHandlerContext 有一个列表，他其实就是一个链表
  */
 abstract class AbstractChannelHandlerContext extends DefaultAttributeMap implements ChannelHandlerContext, ResourceLeakHint {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannelHandlerContext.class);
 
+    /**
+     * 下一个 ChannelHandler 对应的 ChannelHandlerContext
+     *
+     * 这个链表会在 DefaultChannelPipeline 中被各种移动
+     */
     volatile AbstractChannelHandlerContext next;
 
+    /**
+     * 上一个 ChannelHandler 对应的 ChannelHandlerContext
+     *
+     * 这个链表会在 DefaultChannelPipeline 中被各种移动
+     */
     volatile AbstractChannelHandlerContext prev;
 
+    /**
+     * 整型字段更新器
+     *
+     * @see AbstractChannelHandlerContext#setAddPending()
+     * @see AbstractChannelHandlerContext#setAddComplete()
+     */
     private static final AtomicIntegerFieldUpdater<AbstractChannelHandlerContext> HANDLER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(AbstractChannelHandlerContext.class, "handlerState");
 
     /**
+     * 待添加
+     *
      * {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} is about to be called.
      */
     private static final int ADD_PENDING = 1;
 
     /**
+     * 已经添加
+     *
      * {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} was called.
      */
     private static final int ADD_COMPLETE = 2;
 
     /**
+     * 已经移除
+     *
      * {@link ChannelHandler#handlerRemoved(ChannelHandlerContext)} was called.
      */
     private static final int REMOVE_COMPLETE = 3;
 
     /**
+     * 既没有添加也没有移除
+     *
      * Neither {@link ChannelHandler#handlerAdded(ChannelHandlerContext)}
      * nor {@link ChannelHandler#handlerRemoved(ChannelHandlerContext)} was called.
      * <p></p>
@@ -61,6 +96,9 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
 
     private final boolean outbound;
 
+    /**
+     * ChannelHandler 管道
+     */
     private final DefaultChannelPipeline pipeline;
 
     private final String name;
@@ -70,18 +108,42 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
     // Will be set to null if no child executor should be used, otherwise it will be set to the child executor.
     final EventExecutor executor;
 
+    /**
+     * @see SucceededChannelFuture
+     */
     private ChannelFuture succeededFuture;
 
     // Lazily instantiated tasks used to trigger events to a handler with different executor.
     // There is no need to make this volatile as at worse it will just create a few more instances then needed.
+    //
+
+    /**
+     * 当发生读完成事件的时候才实例化该属性，专门处理读完成事件
+     *
+     * @see AbstractChannelHandlerContext#invokeChannelReadComplete(io.netty.channel.AbstractChannelHandlerContext)
+     */
     private Runnable invokeChannelReadCompleteTask;
 
+    /**
+     * @see AbstractChannelHandlerContext#read()
+     */
     private Runnable invokeReadTask;
 
+    /**
+     * 当发生 ChannelWritableStateChanged 事件的时候才实例化该属性，专门处理读完成事件
+     *
+     * @see AbstractChannelHandlerContext#invokeChannelWritabilityChanged(io.netty.channel.AbstractChannelHandlerContext)
+     */
     private Runnable invokeChannelWritableStateChangedTask;
 
+    /**
+     * @see AbstractChannelHandlerContext#flush()
+     */
     private Runnable invokeFlushTask;
 
+    /**
+     * 初始化的时候的处理器状态
+     */
     private volatile int handlerState = INIT;
 
     AbstractChannelHandlerContext(DefaultChannelPipeline pipeline, EventExecutor executor, String name, boolean inbound, boolean outbound) {
@@ -94,6 +156,15 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         ordered = (executor == null || executor instanceof OrderedEventExecutor);
     }
 
+    /**
+     * 返回该 pipeline 对应的 Channel
+     *
+     * 一个 Channel 有一个 pipeline
+     *
+     * 一个 pipeline 维护多个 处理器上下文以及多个 处理器
+     *
+     * @return
+     */
     @Override
     public Channel channel() {
         return pipeline.channel();
@@ -123,12 +194,22 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         return name;
     }
 
+    /**
+     * 启动链式调用，也就是传播事件
+     *
+     * @return
+     */
     @Override
     public ChannelHandlerContext fireChannelRegistered() {
         invokeChannelRegistered(findContextInbound());
         return this;
     }
 
+    /**
+     * 调用注册channel方法
+     *
+     * @param next
+     */
     static void invokeChannelRegistered(final AbstractChannelHandlerContext next) {
         EventExecutor executor = next.executor();
         if (executor.inEventLoop()) {
@@ -143,9 +224,13 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         }
     }
 
+    /**
+     * 调用注册channel方法
+     */
     private void invokeChannelRegistered() {
         if (invokeHandler()) {
             try {
+                //真正调用处理器的时候
                 ((ChannelInboundHandler) handler()).channelRegistered(this);
             } catch (Throwable t) {
                 notifyHandlerException(t);
@@ -176,13 +261,13 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
     }
 
     private void invokeChannelUnregistered() {
-        if (invokeHandler()) {
+        if (invokeHandler()) {//如果需要调用当前上下文的处理器
             try {
                 ((ChannelInboundHandler) handler()).channelUnregistered(this);
             } catch (Throwable t) {
                 notifyHandlerException(t);
             }
-        } else {
+        } else {//如果不需要调用当前上下文的处理器
             fireChannelUnregistered();
         }
     }
@@ -302,8 +387,15 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         }
     }
 
+    /**
+     * 用户事件触发事件传播起来
+     *
+     * @param event 具体事件
+     * @return
+     */
     @Override
     public ChannelHandlerContext fireUserEventTriggered(final Object event) {
+        //链式调用
         invokeUserEventTriggered(findContextInbound(), event);
         return this;
     }
@@ -331,6 +423,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
                 notifyHandlerException(t);
             }
         } else {
+            //把事件传播给下一个处理器
             fireUserEventTriggered(event);
         }
     }
@@ -364,6 +457,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
                 notifyHandlerException(t);
             }
         } else {
+            //把事件传播给下一个处理器
             fireChannelRead(msg);
         }
     }
@@ -379,6 +473,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         if (executor.inEventLoop()) {
             next.invokeChannelReadComplete();
         } else {
+            //当发生读完成事件的时候才实例化该属性，专门处理读完成事件
             Runnable task = next.invokeChannelReadCompleteTask;
             if (task == null) {
                 next.invokeChannelReadCompleteTask = task = new Runnable() {
@@ -479,7 +574,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
             // cancelled
             return promise;
         }
-
+        //找到下一个未处理的出站处理器上下文（可能是当前对象自身）
         final AbstractChannelHandlerContext next = findContextOutbound();
         EventExecutor executor = next.executor();
         if (executor.inEventLoop()) {
@@ -503,6 +598,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
                 notifyOutboundHandlerException(t, promise);
             }
         } else {
+            //事件传播给下一个
             bind(localAddress, promise);
         }
     }
@@ -513,8 +609,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
     }
 
     @Override
-    public ChannelFuture connect(
-            final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
+    public ChannelFuture connect(final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
 
         if (remoteAddress == null) {
             throw new NullPointerException("remoteAddress");
@@ -561,8 +656,8 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         final AbstractChannelHandlerContext next = findContextOutbound();
         EventExecutor executor = next.executor();
         if (executor.inEventLoop()) {
-            // Translate disconnect to close if the channel has no notion of disconnect-reconnect.
-            // So far, UDP/IP is the only transport that has such behavior.
+            // Translate disconnect to close if the channel has no notion of disconnect-reconnect.（如果通道没有断开-重新连接的概念，则将断开转换为关闭。）
+            // So far, UDP/IP is the only transport that has such behavior.（到目前为止，UDP / IP是唯一具有这种行为的传输）
             if (!channel().metadata().hasDisconnect()) {
                 next.invokeClose(promise);
             } else {
@@ -591,6 +686,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
                 notifyOutboundHandlerException(t, promise);
             }
         } else {
+            //事件传播给下一个
             disconnect(promise);
         }
     }
@@ -870,6 +966,12 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         return false;
     }
 
+    /**
+     * 返回一个 ChannelPromise，该 ChannelPromise 中封装的 Channel 跟 Executor 就是该对象中的 Channel 跟 Executor
+     * 只有这样才能达到正确通知的目的
+     *
+     * @return
+     */
     @Override
     public ChannelPromise newPromise() {
         return new DefaultChannelPromise(channel(), executor());
@@ -894,6 +996,15 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         return new FailedChannelFuture(channel(), executor(), cause);
     }
 
+    /**
+     * 对 promise 进行校验
+     * 1.promise 中的 Channel 必须跟该对象中对应的 Channel 是同一个
+     * 2.必须是 DefaultChannelPromise 类型的
+     *
+     * @param promise
+     * @param allowVoidPromise
+     * @return
+     */
     private boolean isNotValidPromise(ChannelPromise promise, boolean allowVoidPromise) {
         if (promise == null) {
             throw new NullPointerException("promise");
@@ -931,18 +1042,32 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         return false;
     }
 
+    /**
+     * 从当前对象开始便利查询出一个入站类型的 AbstractChannelHandlerContext
+     *
+     * @return
+     */
     private AbstractChannelHandlerContext findContextInbound() {
+        //从当前上下文开始遍历，找到下一个入站处理器对应的上下文
         AbstractChannelHandlerContext ctx = this;
         do {
             ctx = ctx.next;
+            //如果下一个上下文不是入站类型的，则继续便利，否则就返回找到的入站处理器上下文
         } while (!ctx.inbound);
         return ctx;
     }
 
+    /**
+     * 从当前对象开始便利查询出一个出站类型的 AbstractChannelHandlerContext
+     *
+     * @return
+     */
     private AbstractChannelHandlerContext findContextOutbound() {
+        //从当前上下文开始遍历，找到下一个出站处理器对应的上下文
         AbstractChannelHandlerContext ctx = this;
         do {
             ctx = ctx.prev;
+            //如果下一个上下文不是出站类型的，则继续便利，否则就返回找到的出站处理器上下文
         } while (!ctx.outbound);
         return ctx;
     }
@@ -956,6 +1081,9 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         handlerState = REMOVE_COMPLETE;
     }
 
+    /**
+     * 修改该 AbstractChannelHandlerContext 的 handlerState 为 添加完成
+     */
     final void setAddComplete() {
         for (; ; ) {
             int oldState = handlerState;
@@ -968,12 +1096,25 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         }
     }
 
+    /**
+     * @see DefaultChannelPipeline#addFirst(io.netty.util.concurrent.EventExecutorGroup, java.lang.String, io.netty.channel.ChannelHandler)
+     */
     final void setAddPending() {
+        //this:调用该方法的对象
+        //修改这个新建的 AbstractChannelHandlerContext 的 handlerState 字段，让他变为 待添加状态
         boolean updated = HANDLER_STATE_UPDATER.compareAndSet(this, INIT, ADD_PENDING);
         assert updated; // This should always be true as it MUST be called before setAddComplete() or setRemoved().
     }
 
     /**
+     * 判断是否需要调用当前 上下文 中维护的 处理器，避免重复调用
+     * <p></p>
+     *
+     * 尽最大努力检测是否已调用ChannelHandler.handlerAdded（ChannelHandlerContext）
+     * 如果不是，则返回false；如果未调用，则返回true。如果此方法返回false，我们将不调用ChannelHandler，而只是转发事件。
+     * 这是必需的，因为DefaultChannelPipeline可能已将ChannelHandler放在链接列表中，但未称为ChannelHandler.handlerAdded（ChannelHandlerContext）。
+     *
+     * <p></p>
      * Makes best possible effort to detect if {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} was called
      * yet. If not return {@code false} and if called or could not detect return {@code true}.
      *
@@ -1026,6 +1167,9 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap impleme
         return StringUtil.simpleClassName(ChannelHandlerContext.class) + '(' + name + ", " + channel() + ')';
     }
 
+    /**
+     * 分为 写刷跟只写2个子类
+     */
     abstract static class AbstractWriteTask implements Runnable {
 
         private static final boolean ESTIMATE_TASK_SIZE_ON_SUBMIT =

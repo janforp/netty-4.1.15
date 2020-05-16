@@ -1,26 +1,14 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.util;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * 允许存储值引用的属性。它可能会自动更新，因此是线程安全的。
+ *
+ * <p></p>
  * An attribute which allows to store a value reference. It may be updated atomically and so is thread-safe.
  *
- * @param <T>   the type of the value it holds.
+ * @param <T> the type of the value it holds.
  */
 public interface Attribute<T> {
 
@@ -33,6 +21,7 @@ public interface Attribute<T> {
      * Returns the current value, which may be {@code null}
      *
      * 该方法是简介通过 java.util.concurrent.atomic.AtomicReference 实现的
+     *
      * @see AtomicReference#get()
      */
     T get();
@@ -45,15 +34,15 @@ public interface Attribute<T> {
     void set(T value);
 
     /**
-     *  Atomically sets to the given value and returns the old value which may be {@code null} if non was set before.
+     * Atomically sets to the given value and returns the old value which may be {@code null} if non was set before.
      *
-     *  @see AtomicReference#get()
+     * @see AtomicReference#get()
      */
     T getAndSet(T value);
 
     /**
-     *  Atomically sets to the given value if this {@link Attribute}'s value is {@code null}.
-     *  If it was not possible to set the value as it contains a value it will just return the current value.
+     * Atomically sets to the given value if this {@link Attribute}'s value is {@code null}.
+     * If it was not possible to set the value as it contains a value it will just return the current value.
      */
     T setIfAbsent(T value);
 

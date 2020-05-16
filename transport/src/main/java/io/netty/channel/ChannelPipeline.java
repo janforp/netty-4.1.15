@@ -13,6 +13,25 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 /**
+ * 一个 ChannelHandler 的列表，用于处理或拦截Channel的入站事件和出站操作。
+ * <p></p>
+ * ChannelPipeline实现了Intercepting Filter模式的高级形式，以使用户可以完全控制事件的处理方式以及管道中的ChannelHandlers如何交互
+ * <p></p>
+ * 每个 Channel 都有其自己的 ChannelPipeline，并且在创建新 channel 时会自动创建它。
+ * 每个 ChannelPipeline 中都有一个 ChannelHandler 列表，专门用来处理该 Channel 的 io 操作
+ *
+ * <p></p>
+ *
+ * I / O事件由ChannelInboundHandler或ChannelOutboundHandler处理，
+ * 并通过调用ChannelHandlerContext中定义的事件传播方法
+ * （例如ChannelHandlerContext.fireChannelRead（Object）和ChannelHandlerContext.write（Object））转发到其最近的处理程序。
+ *
+ * <p></p>
+ *
+ * 如您在图中所示，您可能会注意到，处理程序必须调用ChannelHandlerContext中的事件传播方法以将事件转发到其下一个处理程序
+ *
+ * <p></p>
+ *
  * A list of {@link ChannelHandler}s which handles or intercepts inbound events and outbound operations of a
  * {@link Channel}.  {@link ChannelPipeline} implements an advanced form of the
  * <a href="http://www.oracle.com/technetwork/java/interceptingfilter-142169.html">Intercepting Filter</a> pattern
@@ -166,6 +185,8 @@ import java.util.NoSuchElementException;
  * in each channel's pipeline, but your mileage may vary depending on the complexity and characteristics of the
  * protocol and business logic:
  *
+ * <p>例如，典型的服务器在每个通道的管道中将具有以下处理程序，但是您的里程可能会因协议和业务逻辑的复杂性和特征而有所不同：</p>
+ *
  * <ol>
  * <li>Protocol Decoder - translates binary data (e.g. {@link ByteBuf}) into a Java object.</li>
  * <li>Protocol Encoder - translates a Java object into binary data.</li>
@@ -214,7 +235,8 @@ public interface ChannelPipeline
      * Inserts a {@link ChannelHandler} at the first position of this pipeline.
      *
      * @param group the {@link EventExecutorGroup} which will be used to execute the {@link ChannelHandler}
-     * methods
+     * methods( If your business logic is fully asynchronous or finished very quickly, you don't
+     * need to specify a group.)
      * @param name the name of the handler to insert first
      * @param handler the handler to insert first
      * @throws IllegalArgumentException if there's an entry with the same name already in the pipeline
@@ -433,6 +455,11 @@ public interface ChannelPipeline
     ChannelHandler first();
 
     /**
+     * 返回此管道中第一个 ChannelHandler 的上下文。
+     *
+     * 说明：每一个 ChannelHandler 都有自己的 ChannelHandlerContext
+     *
+     * <p></p>
      * Returns the context of the first {@link ChannelHandler} in this pipeline.
      *
      * @return the context of the first handler.  {@code null} if this pipeline is empty.
