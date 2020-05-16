@@ -21,9 +21,9 @@ public class MyServer {
     public static void main(String[] args) throws InterruptedException {
         //监听客户端连接，转发到 childGroup
         //底层就是一个死循环
-        EventLoopGroup parentGroup = new NioEventLoopGroup(5);
+        EventLoopGroup parentGroup = new NioEventLoopGroup();
         //真正处理业务的
-        EventLoopGroup childGroup = new NioEventLoopGroup(10);
+        EventLoopGroup childGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap

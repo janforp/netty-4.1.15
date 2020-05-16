@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 import io.netty.util.Attribute;
@@ -26,8 +11,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>
+ *     AttributeKey跟@Sharable注释可以配合使用，使一个处理器实例可以添加到不同的Channel
+ *     <p></p>
+ *     ChannelInboundHandler,ChannelOutboundHandler
+ * </p>
  * Handles an I/O event or intercepts an I/O operation, and forwards it to its next handler in
  * its {@link ChannelPipeline}.
+ *
+ * 处理I / O事件或拦截I / O操作，并将其转发到其ChannelPipeline中的下一个处理程序。
  *
  * <h3>Sub-types</h3>
  * <p>
@@ -50,6 +42,9 @@ import java.lang.annotation.Target;
  * </p>
  *
  * <h3>The context object</h3>
+ * 上下文对象，
+ * ChannelHandler随ChannelHandlerContext对象一起提供。
+ * ChannelHandler应该通过上下文对象与其所属的ChannelPipeline进行交互
  * <p>
  * A {@link ChannelHandler} is provided with a {@link ChannelHandlerContext}
  * object.  A {@link ChannelHandler} is supposed to interact with the
@@ -62,6 +57,7 @@ import java.lang.annotation.Target;
  *
  * A {@link ChannelHandler} often needs to store some stateful information.
  * The simplest and recommended approach is to use member variables:
+ * （ChannelHandler通常需要存储一些状态信息。推荐的最简单方法是使用成员变量：）
  * <pre>
  * public interface Message {
  *     // your methods here

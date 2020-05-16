@@ -1,24 +1,15 @@
-/*
- * Copyright 2016 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.util.concurrent;
 
 import io.netty.util.internal.UnstableApi;
 
 /**
  * Factory that creates new {@link EventExecutorChooser}s.
+ *
+ * 创建新的EventExecutorChooserFactory.EventExecutorChoosers的工厂。
+ *
+ * 每一个工厂实现中都会实现 EventExecutorChooser 接口，然后返回该类型的 EventExecutorChooser
+ *
+ * 抽象工厂方法设计模式
  */
 @UnstableApi
 public interface EventExecutorChooserFactory {
@@ -36,6 +27,8 @@ public interface EventExecutorChooserFactory {
 
         /**
          * Returns the new {@link EventExecutor} to use.
+         *
+         * 从 EventExecutor[] 数组中选择一个 EventExecutor 去执行任务
          */
         EventExecutor next();
     }

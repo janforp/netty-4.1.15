@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * Abstract base class for {@link OrderedEventExecutor}'s that execute all its submitted tasks in a single thread.
+ *
+ * 子类只要是一个 protected abstract void run(); 一个方法即可
  */
 public abstract class SingleThreadEventExecutor extends AbstractScheduledEventExecutor implements OrderedEventExecutor {
 
@@ -242,6 +244,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      */
     protected static Runnable pollTaskFrom(Queue<Runnable> taskQueue) {
         for (; ; ) {
+            //循环获取
             Runnable task = taskQueue.poll();
             if (task == WAKEUP_TASK) {
                 continue;
@@ -262,13 +265,14 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     protected Runnable takeTask() {
         assert inEventLoop();
         if (!(taskQueue instanceof BlockingQueue)) {
+            //如果队列不是 BlockingQueue，则报错
             throw new UnsupportedOperationException();
         }
 
         BlockingQueue<Runnable> taskQueue = (BlockingQueue<Runnable>) this.taskQueue;
         for (; ; ) {
             ScheduledFutureTask<?> scheduledTask = peekScheduledTask();
-            if (scheduledTask == null) {
+            if (scheduledTask == null) {//如果没有调度任务
                 Runnable task = null;
                 try {
                     task = taskQueue.take();
@@ -279,7 +283,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                     // Ignore
                 }
                 return task;
-            } else {
+            } else {//如果有调度任务
                 long delayNanos = scheduledTask.delayNanos();
                 Runnable task = null;
                 if (delayNanos > 0) {

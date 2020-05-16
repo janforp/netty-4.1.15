@@ -79,6 +79,7 @@ public class KQueueServerChannelConfig extends KQueueChannelConfig implements Se
         return true;
     }
 
+    @Override
     public boolean isReuseAddress() {
         try {
             return channel.socket.isReuseAddress();
@@ -87,6 +88,7 @@ public class KQueueServerChannelConfig extends KQueueChannelConfig implements Se
         }
     }
 
+    @Override
     public KQueueServerChannelConfig setReuseAddress(boolean reuseAddress) {
         try {
             channel.socket.setReuseAddress(reuseAddress);
@@ -113,10 +115,12 @@ public class KQueueServerChannelConfig extends KQueueChannelConfig implements Se
         }
     }
 
+    @Override
     public int getBacklog() {
         return backlog;
     }
 
+    @Override
     public KQueueServerChannelConfig setBacklog(int backlog) {
         if (backlog < 0) {
             throw new IllegalArgumentException("backlog: " + backlog);

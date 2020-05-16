@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package io.netty.channel;
 
 import io.netty.buffer.ByteBufAllocator;
@@ -41,12 +42,14 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * The default {@link ChannelConfig} implementation.
  */
 public class DefaultChannelConfig implements ChannelConfig {
+
     private static final MessageSizeEstimator DEFAULT_MSG_SIZE_ESTIMATOR = DefaultMessageSizeEstimator.DEFAULT;
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
 
     private static final AtomicIntegerFieldUpdater<DefaultChannelConfig> AUTOREAD_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(DefaultChannelConfig.class, "autoRead");
+
     private static final AtomicReferenceFieldUpdater<DefaultChannelConfig, WriteBufferWaterMark> WATERMARK_UPDATER =
             AtomicReferenceFieldUpdater.newUpdater(
                     DefaultChannelConfig.class, WriteBufferWaterMark.class, "writeBufferWaterMark");
@@ -54,15 +57,22 @@ public class DefaultChannelConfig implements ChannelConfig {
     protected final Channel channel;
 
     private volatile ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
+
     private volatile RecvByteBufAllocator rcvBufAllocator;
+
     private volatile MessageSizeEstimator msgSizeEstimator = DEFAULT_MSG_SIZE_ESTIMATOR;
 
     private volatile int connectTimeoutMillis = DEFAULT_CONNECT_TIMEOUT;
+
     private volatile int writeSpinCount = 16;
+
     @SuppressWarnings("FieldMayBeFinal")
     private volatile int autoRead = 1;
+
     private volatile boolean autoClose = true;
+
     private volatile WriteBufferWaterMark writeBufferWaterMark = WriteBufferWaterMark.DEFAULT;
+
     private volatile boolean pinEventExecutor = true;
 
     public DefaultChannelConfig(Channel channel) {
@@ -90,7 +100,7 @@ public class DefaultChannelConfig implements ChannelConfig {
         if (result == null) {
             result = new IdentityHashMap<ChannelOption<?>, Object>();
         }
-        for (ChannelOption<?> o: options) {
+        for (ChannelOption<?> o : options) {
             result.put(o, getOption(o));
         }
         return result;
@@ -104,7 +114,7 @@ public class DefaultChannelConfig implements ChannelConfig {
         }
 
         boolean setAllOptions = true;
-        for (Entry<ChannelOption<?>, ?> e: options.entrySet()) {
+        for (Entry<ChannelOption<?>, ?> e : options.entrySet()) {
             if (!setOption((ChannelOption<Object>) e.getKey(), e.getValue())) {
                 setAllOptions = false;
             }
@@ -220,6 +230,7 @@ public class DefaultChannelConfig implements ChannelConfig {
     /**
      * {@inheritDoc}
      * <p>
+     *
      * @throws IllegalStateException if {@link #getRecvByteBufAllocator()} does not return an object of type
      * {@link MaxMessagesRecvByteBufAllocator}.
      */
@@ -238,6 +249,7 @@ public class DefaultChannelConfig implements ChannelConfig {
     /**
      * {@inheritDoc}
      * <p>
+     *
      * @throws IllegalStateException if {@link #getRecvByteBufAllocator()} does not return an object of type
      * {@link MaxMessagesRecvByteBufAllocator}.
      */
@@ -297,6 +309,7 @@ public class DefaultChannelConfig implements ChannelConfig {
 
     /**
      * Set the {@link RecvByteBufAllocator} which is used for the channel to allocate receive buffers.
+     *
      * @param allocator the allocator to set.
      * @param metadata Used to set the {@link ChannelMetadata#defaultMaxMessagesPerRead()} if {@code allocator}
      * is of type {@link MaxMessagesRecvByteBufAllocator}.
@@ -330,7 +343,8 @@ public class DefaultChannelConfig implements ChannelConfig {
      * Is called once {@link #setAutoRead(boolean)} is called with {@code false} and {@link #isAutoRead()} was
      * {@code true} before.
      */
-    protected void autoReadCleared() { }
+    protected void autoReadCleared() {
+    }
 
     @Override
     public boolean isAutoClose() {
@@ -354,7 +368,7 @@ public class DefaultChannelConfig implements ChannelConfig {
             throw new IllegalArgumentException(
                     "writeBufferHighWaterMark must be >= 0");
         }
-        for (;;) {
+        for (; ; ) {
             WriteBufferWaterMark waterMark = writeBufferWaterMark;
             if (writeBufferHighWaterMark < waterMark.low()) {
                 throw new IllegalArgumentException(
@@ -380,7 +394,7 @@ public class DefaultChannelConfig implements ChannelConfig {
             throw new IllegalArgumentException(
                     "writeBufferLowWaterMark must be >= 0");
         }
-        for (;;) {
+        for (; ; ) {
             WriteBufferWaterMark waterMark = writeBufferWaterMark;
             if (writeBufferLowWaterMark > waterMark.high()) {
                 throw new IllegalArgumentException(

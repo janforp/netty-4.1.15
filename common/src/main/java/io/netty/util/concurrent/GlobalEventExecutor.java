@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.util.concurrent;
 
 import io.netty.util.internal.logging.InternalLogger;
@@ -31,16 +16,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Single-thread singleton {@link EventExecutor}.  It starts the thread automatically and stops it when there is no
  * task pending in the task queue for 1 second.  Please note it is not scalable to schedule large number of tasks to
  * this executor; use a dedicated executor.
+ *
+ * 单线程单例EventExecutor。当任务队列中没有待处理的任务1秒钟时，
+ * 它将自动启动线程并停止线程。请注意，为该执行程序安排大量任务是不可扩展的；
+ * 使用专门的执行器。
  */
 public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(GlobalEventExecutor.class);
 
+    /**
+     * 单线程单例EventExecutor。当任务队列中没有待处理的任务1秒钟时，它将自动启动线程并停止线程。
+     */
     private static final long SCHEDULE_QUIET_PERIOD_INTERVAL = TimeUnit.SECONDS.toNanos(1);
 
+    /**
+     * 单例
+     */
     public static final GlobalEventExecutor INSTANCE = new GlobalEventExecutor();
 
     final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
+
     final ScheduledFutureTask<Void> quietPeriodTask = new ScheduledFutureTask<Void>(
             this, Executors.<Void>callable(new Runnable() {
         @Override
@@ -55,13 +51,20 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
     // visible for testing
     final ThreadFactory threadFactory =
             new DefaultThreadFactory(DefaultThreadFactory.toPoolName(getClass()), false, Thread.NORM_PRIORITY, null);
+
     private final TaskRunner taskRunner = new TaskRunner();
+
     private final AtomicBoolean started = new AtomicBoolean();
+
     volatile Thread thread;
 
     private final Future<?> terminationFuture = new FailedFuture<Object>(this, new UnsupportedOperationException());
 
+    /**
+     * 私有的构造器，单例模式
+     */
     private GlobalEventExecutor() {
+        //添加一个 什么都不做的 quietPeriodTask 任务
         scheduledTaskQueue().add(quietPeriodTask);
     }
 
@@ -72,7 +75,7 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
      */
     Runnable takeTask() {
         BlockingQueue<Runnable> taskQueue = this.taskQueue;
-        for (;;) {
+        for (; ; ) {
             ScheduledFutureTask<?> scheduledTask = peekScheduledTask();
             if (scheduledTask == null) {
                 Runnable task = null;
@@ -207,7 +210,9 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
         }
 
         addTask(task);
+        //如果当前线程不是该执行器中的唯一的线程
         if (!inEventLoop()) {
+            //则启动这个执行器中的线程
             startThread();
         }
     }
@@ -224,9 +229,11 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
     }
 
     final class TaskRunner implements Runnable {
+
         @Override
         public void run() {
-            for (;;) {
+            for (; ; ) {
+                //内部类可以直接返回外部类的方法
                 Runnable task = takeTask();
                 if (task != null) {
                     try {
@@ -240,8 +247,10 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
                     }
                 }
 
+                //通过 外部类.this 获取当前内部类所对应的外部类实例
                 Queue<ScheduledFutureTask<?>> scheduledTaskQueue = GlobalEventExecutor.this.scheduledTaskQueue;
                 // Terminate if there is no task in the queue (except the noop task).
+                //如果队列中没有任何任务（noop任务除外），则终止
                 if (taskQueue.isEmpty() && (scheduledTaskQueue == null || scheduledTaskQueue.size() == 1)) {
                     // Mark the current thread as stopped.
                     // The following CAS must always success and must be uncontended,
@@ -250,6 +259,7 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
                     assert stopped;
 
                     // Check if there are pending entries added by execute() or schedule*() while we do CAS above.
+                    //在执行上面的CAS时，检查是否有execute（）或schedule *（）添加的未决条目。
                     if (taskQueue.isEmpty() && (scheduledTaskQueue == null || scheduledTaskQueue.size() == 1)) {
                         // A) No new task was added and thus there's nothing to handle
                         //    -> safe to terminate because there's nothing left to do

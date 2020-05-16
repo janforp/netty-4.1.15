@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel.nio;
 
 import io.netty.buffer.ByteBuf;
@@ -55,9 +40,13 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             new ClosedChannelException(), AbstractNioChannel.class, "doClose()");
 
     private final SelectableChannel ch;
+
     protected final int readInterestOp;
+
     volatile SelectionKey selectionKey;
+
     boolean readPending;
+
     private final Runnable clearReadPendingRunnable = new Runnable() {
         @Override
         public void run() {
@@ -70,15 +59,17 @@ public abstract class AbstractNioChannel extends AbstractChannel {
      * connection attempts will fail.
      */
     private ChannelPromise connectPromise;
+
     private ScheduledFuture<?> connectTimeoutFuture;
+
     private SocketAddress requestedRemoteAddress;
 
     /**
      * Create a new instance
      *
-     * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}
-     * @param ch                the underlying {@link SelectableChannel} on which it operates
-     * @param readInterestOp    the ops to set to receive data from the {@link SelectableChannel}
+     * @param parent the parent {@link Channel} by which this instance was created. May be {@code null}
+     * @param ch the underlying {@link SelectableChannel} on which it operates
+     * @param readInterestOp the ops to set to receive data from the {@link SelectableChannel}
      */
     protected AbstractNioChannel(Channel parent, SelectableChannel ch, int readInterestOp) {
         super(parent);
@@ -197,6 +188,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
      * Special {@link Unsafe} sub-type which allows to access the underlying {@link SelectableChannel}
      */
     public interface NioUnsafe extends Unsafe {
+
         /**
          * Return underlying {@link SelectableChannel}
          */
@@ -382,7 +374,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     @Override
     protected void doRegister() throws Exception {
         boolean selected = false;
-        for (;;) {
+        for (; ; ) {
             try {
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;

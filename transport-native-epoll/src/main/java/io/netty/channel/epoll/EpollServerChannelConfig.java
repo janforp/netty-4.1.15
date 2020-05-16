@@ -83,6 +83,7 @@ public class EpollServerChannelConfig extends EpollChannelConfig implements Serv
         return true;
     }
 
+    @Override
     public boolean isReuseAddress() {
         try {
             return channel.socket.isReuseAddress();
@@ -91,6 +92,7 @@ public class EpollServerChannelConfig extends EpollChannelConfig implements Serv
         }
     }
 
+    @Override
     public EpollServerChannelConfig setReuseAddress(boolean reuseAddress) {
         try {
             channel.socket.setReuseAddress(reuseAddress);
@@ -117,10 +119,12 @@ public class EpollServerChannelConfig extends EpollChannelConfig implements Serv
         }
     }
 
+    @Override
     public int getBacklog() {
         return backlog;
     }
 
+    @Override
     public EpollServerChannelConfig setBacklog(int backlog) {
         if (backlog < 0) {
             throw new IllegalArgumentException("backlog: " + backlog);

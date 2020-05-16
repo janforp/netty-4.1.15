@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 import io.netty.buffer.ByteBufAllocator;
@@ -23,6 +8,11 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 
 /**
+ * TCP/IP Channel 的一些配置
+ *
+ * 建议使用更具体的子类是配置
+ * 也可以直接使用 setOption(XXX)配置，这样就可以不用向下转型为具体类啦
+ * <p></p>
  * A set of configuration properties of a {@link Channel}.
  * <p>
  * Please down-cast to more specific configuration type such as
@@ -116,7 +106,7 @@ public interface ChannelConfig {
      * used at all, and therefore will be ignored.
      *
      * @param connectTimeoutMillis the connect timeout in milliseconds.
-     *                             {@code 0} to disable.
+     * {@code 0} to disable.
      */
     ChannelConfig setConnectTimeoutMillis(int connectTimeoutMillis);
 
@@ -140,6 +130,13 @@ public interface ChannelConfig {
     ChannelConfig setMaxMessagesPerRead(int maxMessagesPerRead);
 
     /**
+     * 返回写操作的最大循环计数，直到WritableByteChannel.write（ByteBuffer）返回非零值为止
+     * <p>
+     * 它类似于并发编程中使用的自旋锁
+     * </p>
+     * <p>
+     * 根据JVM运行的平台，它可以提高内存利用率和写入吞吐量。预设值为16。
+     * </p>
      * Returns the maximum loop count for a write operation until
      * {@link WritableByteChannel#write(ByteBuffer)} returns a non-zero value.
      * It is similar to what a spin lock is used for in concurrency programming.
@@ -155,8 +152,7 @@ public interface ChannelConfig {
      * It improves memory utilization and write throughput depending on
      * the platform that JVM runs on.  The default value is {@code 16}.
      *
-     * @throws IllegalArgumentException
-     *         if the specified value is {@code 0} or less than {@code 0}
+     * @throws IllegalArgumentException if the specified value is {@code 0} or less than {@code 0}
      */
     ChannelConfig setWriteSpinCount(int writeSpinCount);
 
@@ -173,6 +169,7 @@ public interface ChannelConfig {
     ChannelConfig setAllocator(ByteBufAllocator allocator);
 
     /**
+     * <p>返回RecvByteBufAllocator，用于给 channel 分配接收缓冲区。</p>
      * Returns {@link RecvByteBufAllocator} which is used for the channel to allocate receive buffers.
      */
     <T extends RecvByteBufAllocator> T getRecvByteBufAllocator();
@@ -183,6 +180,9 @@ public interface ChannelConfig {
     ChannelConfig setRecvByteBufAllocator(RecvByteBufAllocator allocator);
 
     /**
+     * <p>
+     * 当且仅当ChannelHandlerContext.read（）会被自动调用，用户应用程序根本不需要主动调用它的时时候，才返回true。默认值是true。
+     * </p>
      * Returns {@code true} if and only if {@link ChannelHandlerContext#read()} will be invoked automatically so that
      * a user application doesn't need to call it at all. The default value is {@code true}.
      */
@@ -195,7 +195,7 @@ public interface ChannelConfig {
     ChannelConfig setAutoRead(boolean autoRead);
 
     /**
-     * @deprecated  Auto close will be removed in a future release.
+     * @deprecated Auto close will be removed in a future release.
      *
      * Returns {@code true} if and only if the {@link Channel} will be closed automatically and immediately on
      * write failure.  The default is {@code false}.
@@ -204,7 +204,7 @@ public interface ChannelConfig {
     boolean isAutoClose();
 
     /**
-     * @deprecated  Auto close will be removed in a future release.
+     * @deprecated Auto close will be removed in a future release.
      *
      * Sets whether the {@link Channel} should be closed automatically and immediately on write failure.
      * The default is {@code false}.
@@ -213,6 +213,10 @@ public interface ChannelConfig {
     ChannelConfig setAutoClose(boolean autoClose);
 
     /**
+     * <p>名字直译：获取写缓冲区高水位线</p>
+     * <p>返回写缓冲区的高水位线(也就是高位报警)。如果写入缓冲区中排队的字节数超过此值，则Channel.isWritable（）将开始返回false。</p>
+     * <p>当写入缓冲区的字节数达到报警值的时候，就会变为不可写</p>
+     *
      * Returns the high water mark of the write buffer.  If the number of bytes
      * queued in the write buffer exceeds this value, {@link Channel#isWritable()}
      * will start to return {@code false}.
@@ -228,6 +232,14 @@ public interface ChannelConfig {
     ChannelConfig setWriteBufferHighWaterMark(int writeBufferHighWaterMark);
 
     /**
+     * <p>名称直译：获取写缓冲区低水位线</p>
+     * <p></p>
+     * <p>返回写缓冲区的低水位线(也就是低液位报警)。一旦在写缓冲区中排队的字节数超过了高水位线，然后降至该值以下，Channel.isWritable（）将再次开始返回true。</p>
+     * <p></p>
+     * <p>从高液位降至低液位以下的时候就重新变为可写</p>
+     *
+     *
+     * <p></p>
      * Returns the low water mark of the write buffer.  Once the number of bytes
      * queued in the write buffer exceeded the
      * {@linkplain #setWriteBufferHighWaterMark(int) high water mark} and then
@@ -247,6 +259,8 @@ public interface ChannelConfig {
     ChannelConfig setWriteBufferLowWaterMark(int writeBufferLowWaterMark);
 
     /**
+     * 返回MessageSizeEstimator，该消息用于通道检测消息的大小。
+     * <p></p>
      * Returns {@link MessageSizeEstimator} which is used for the channel
      * to detect the size of a message.
      */

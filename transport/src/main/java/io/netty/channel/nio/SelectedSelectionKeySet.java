@@ -1,18 +1,3 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel.nio;
 
 import java.nio.channels.SelectionKey;
@@ -22,7 +7,14 @@ import java.util.Iterator;
 
 final class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
 
+    /**
+     * 一个容量为 1024 的数组，当然可以扩容
+     */
     SelectionKey[] keys;
+
+    /**
+     * 下一个存放元素的下标，也就是当前数组中的元素个数
+     */
     int size;
 
     SelectedSelectionKeySet() {
@@ -37,6 +29,7 @@ final class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
 
         keys[size++] = o;
         if (size == keys.length) {
+            //满了就扩容
             increaseCapacity();
         }
 
@@ -68,6 +61,7 @@ final class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
     }
 
     void reset(int start) {
+        //就是把数组的每一个元素都填成 null
         Arrays.fill(keys, start, size, null);
         size = 0;
     }

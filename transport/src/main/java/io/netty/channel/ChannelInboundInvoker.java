@@ -1,23 +1,13 @@
-/*
- * Copyright 2016 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 public interface ChannelInboundInvoker {
 
     /**
+     * Channel 已注册到 EventLoop的时候触发,
+     * 这将导致Channel的ChannelPipeline中包含的下一个ChannelInboundHandler调用ChannelInboundHandler.channelRegistered（ChannelHandlerContext）方法。
+     * <p></p>
+     * 一个 ChannelPipeline 中有很多的 处理器
+     * <p>
      * A {@link Channel} was registered to its {@link EventLoop}.
      *
      * This will result in having the  {@link ChannelInboundHandler#channelRegistered(ChannelHandlerContext)} method
@@ -27,6 +17,9 @@ public interface ChannelInboundInvoker {
     ChannelInboundInvoker fireChannelRegistered();
 
     /**
+     * 事件传播给方法：该 Channel 的 ChannelPipeline 中的下一个ChannelInboundHandler，并且调用他的
+     * {@link ChannelInboundHandler#channelUnregistered(ChannelHandlerContext)}
+     * <p>
      * A {@link Channel} was unregistered from its {@link EventLoop}.
      *
      * This will result in having the  {@link ChannelInboundHandler#channelUnregistered(ChannelHandlerContext)} method
@@ -36,6 +29,8 @@ public interface ChannelInboundInvoker {
     ChannelInboundInvoker fireChannelUnregistered();
 
     /**
+     * 连接建立的时候
+     * <p>
      * A {@link Channel} is active now, which means it is connected.
      *
      * This will result in having the  {@link ChannelInboundHandler#channelActive(ChannelHandlerContext)} method
@@ -63,6 +58,8 @@ public interface ChannelInboundInvoker {
     ChannelInboundInvoker fireExceptionCaught(Throwable cause);
 
     /**
+     * 用户事件触发
+     * <p></p>
      * A {@link Channel} received an user defined event.
      *
      * This will result in having the  {@link ChannelInboundHandler#userEventTriggered(ChannelHandlerContext, Object)}
@@ -72,6 +69,8 @@ public interface ChannelInboundInvoker {
     ChannelInboundInvoker fireUserEventTriggered(Object event);
 
     /**
+     * 收到数据
+     * <p></p>
      * A {@link Channel} received a message.
      *
      * This will result in having the {@link ChannelInboundHandler#channelRead(ChannelHandlerContext, Object)}

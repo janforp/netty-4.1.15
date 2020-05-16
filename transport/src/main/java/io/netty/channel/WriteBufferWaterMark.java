@@ -1,21 +1,13 @@
-/*
- * Copyright 2016 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 /**
+ * 封装了一个高低液位的报警阀值
+ * <p></p>
+ * 并且提供了一个默认值。
+ * <p></p>
+ * WriteBufferWaterMark用于设置写缓冲区的低水位标记和高水位标记。
+ * <P>如果写入缓冲区中排队的字节数超过了高水位线，则Channel.isWritable（）将开始返回false。如果在写缓冲区中排队的字节数超过了高水位线，然后降到了低水位线以下，则Channel.isWritable（）将再次开始返回true。</P>
+ * <p></p>
  * WriteBufferWaterMark is used to set low water mark and high water mark for the write buffer.
  * <p>
  * If the number of bytes queued in the write buffer exceeds the
@@ -30,13 +22,21 @@ package io.netty.channel;
  */
 public final class WriteBufferWaterMark {
 
+    /**
+     * 写缓冲区的低液位报警阀值
+     */
     private static final int DEFAULT_LOW_WATER_MARK = 32 * 1024;
+
+    /**
+     * 写缓冲区的高液位报警阀值
+     */
     private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024;
 
     public static final WriteBufferWaterMark DEFAULT =
             new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK, DEFAULT_HIGH_WATER_MARK, false);
 
     private final int low;
+
     private final int high;
 
     /**
@@ -85,11 +85,11 @@ public final class WriteBufferWaterMark {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(55)
-            .append("WriteBufferWaterMark(low: ")
-            .append(low)
-            .append(", high: ")
-            .append(high)
-            .append(")");
+                .append("WriteBufferWaterMark(low: ")
+                .append(low)
+                .append(", high: ")
+                .append(high)
+                .append(")");
         return builder.toString();
     }
 
