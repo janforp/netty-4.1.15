@@ -1263,6 +1263,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * @see AbstractChannel.AbstractUnsafe#register0(io.netty.channel.ChannelPromise)
+     * 会在真正的注册成功之后回调该方法
+     */
     private void callHandlerAddedForAllHandlers() {
         final PendingHandlerCallback pendingHandlerCallbackHead;
         synchronized (this) {

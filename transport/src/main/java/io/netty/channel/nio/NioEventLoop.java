@@ -111,6 +111,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     /**
      * 会通过把老的选择器替换成新的选择器来解决 CPU 100% 的问题
+     *
+     * 未包装过的 java 原生选择器
      */
     private Selector unwrappedSelector;
 
@@ -119,6 +121,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      */
     private SelectedSelectionKeySet selectedKeys;
 
+    /**
+     * java 原生
+     */
     private final SelectorProvider provider;
 
     /**
@@ -129,6 +134,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      */
     private final AtomicBoolean wakenUp = new AtomicBoolean();
 
+    /**
+     * 选择策略 select()
+     */
     private final SelectStrategy selectStrategy;
 
     private volatile int ioRatio = 50;
@@ -141,14 +149,17 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * NioEventLoopGroup 会调用该构造器实例化
      *
      * @param parent NioEventLoopGroup
-     * @param executor 执行器
+     * @param executor 执行器  = new ThreadPerTaskExecutor(newDefaultThreadFactory());
      * @param selectorProvider 选择
      * @param strategy 选择策略
      * @param rejectedExecutionHandler 拒绝策略
+     * @see NioEventLoopGroup#newChild(java.util.concurrent.Executor, java.lang.Object...)
      */
     NioEventLoop(NioEventLoopGroup parent, Executor executor, SelectorProvider selectorProvider,
             SelectStrategy strategy, RejectedExecutionHandler rejectedExecutionHandler) {
+
         super(parent, executor, false, DEFAULT_MAX_PENDING_TASKS, rejectedExecutionHandler);
+
         if (selectorProvider == null) {
             throw new NullPointerException("selectorProvider");
         }

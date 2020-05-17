@@ -15,6 +15,7 @@
  */
 package io.netty.channel;
 
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.NettyRuntime;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
@@ -34,6 +35,9 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(MultithreadEventLoopGroup.class);
 
+    /**
+     * 如果用户没有指定线程数量，则使用该值
+     */
     private static final int DEFAULT_EVENT_LOOP_THREADS;
 
     static {
@@ -46,7 +50,14 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
     }
 
     /**
+     * 传入的值：
+     *
+     * @see NioEventLoopGroup#NioEventLoopGroup(int, java.util.concurrent.Executor, java.nio.channels.spi.SelectorProvider, io.netty.channel.SelectStrategyFactory)
+     * super(nThreads, executor, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject());
+     *
      * @see MultithreadEventExecutorGroup#MultithreadEventExecutorGroup(int, Executor, Object...)
+     *
+     * @param args selectStrategyFactory, RejectedExecutionHandlers.reject()
      */
     protected MultithreadEventLoopGroup(int nThreads, Executor executor, Object... args) {
         super(nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor, args);

@@ -177,16 +177,15 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     /**
      * Create a new instance
      *
-     * @param parent the {@link EventExecutorGroup} which is the parent of this instance and belongs to it
-     * @param executor the {@link Executor} which will be used for executing
-     * @param addTaskWakesUp {@code true} if and only if invocation of {@link #addTask(Runnable)} will wake up the
-     * executor thread
-     * @param maxPendingTasks the maximum number of pending tasks before new tasks will be rejected.
+     * @param parent the {@link EventExecutorGroup} which is the parent of this instance and belongs to it （一般情况下为NioEventLoopGroup）
+     * @param executor the {@link Executor} which will be used for executing （一般= new ThreadPerTaskExecutor(newDefaultThreadFactory());）
+     * @param addTaskWakesUp {@code true} if and only if invocation of {@link #addTask(Runnable)} will wake up the executor thread
+     * @param maxPendingTasks the maximum number of pending tasks before new tasks will be rejected. （在拒绝新任务之前，最大待处理任务数。）
      * @param rejectedHandler the {@link RejectedExecutionHandler} to use.
      */
-    protected SingleThreadEventExecutor(EventExecutorGroup parent, Executor executor,
-            boolean addTaskWakesUp, int maxPendingTasks,
+    protected SingleThreadEventExecutor(EventExecutorGroup parent, Executor executor, boolean addTaskWakesUp, int maxPendingTasks,
             RejectedExecutionHandler rejectedHandler) {
+
         super(parent);
         this.addTaskWakesUp = addTaskWakesUp;
         //最少为16

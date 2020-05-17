@@ -22,6 +22,9 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
     protected AbstractScheduledEventExecutor() {
     }
 
+    /**
+     * @param parent （一般情况下为NioEventLoopGroup）
+     */
     protected AbstractScheduledEventExecutor(EventExecutorGroup parent) {
         super(parent);
     }
@@ -37,7 +40,7 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
         return scheduledTaskQueue;
     }
 
-    private static  boolean isNullOrEmpty(Queue<ScheduledFutureTask<?>> queue) {
+    private static boolean isNullOrEmpty(Queue<ScheduledFutureTask<?>> queue) {
         return queue == null || queue.isEmpty();
     }
 
@@ -58,7 +61,7 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
         final ScheduledFutureTask<?>[] scheduledTasks =
                 scheduledTaskQueue.toArray(new ScheduledFutureTask<?>[scheduledTaskQueue.size()]);
 
-        for (ScheduledFutureTask<?> task: scheduledTasks) {
+        for (ScheduledFutureTask<?> task : scheduledTasks) {
             task.cancelWithoutRemove(false);
         }
 

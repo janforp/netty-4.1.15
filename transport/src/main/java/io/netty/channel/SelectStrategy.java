@@ -26,6 +26,11 @@ public interface SelectStrategy {
     int CONTINUE = -2;
 
     /**
+     * SelectStrategy可用于控制潜在选择调用的结果
+     *
+     * 如果下一步应阻止，则选择SELECT（如果下一步不选择，而是跳回IO循环，然后重试）。任何大于等于0的值都视为需要完成工作的指标。
+     *
+     * <p></p>
      * The {@link SelectStrategy} can be used to steer the outcome of a potential select
      * call.
      *

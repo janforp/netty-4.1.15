@@ -567,6 +567,11 @@ public interface ChannelPipeline
     @Override
     ChannelPipeline fireChannelReadComplete();
 
+    /**
+     * @return
+     * @see ChannelOutboundBuffer#setUnwritable(boolean)
+     * @see ChannelOutboundBuffer#decrementPendingOutboundBytes(long, boolean, boolean)
+     */
     @Override
     ChannelPipeline fireChannelWritabilityChanged();
 

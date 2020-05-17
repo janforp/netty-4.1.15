@@ -20,6 +20,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
     /**
+     * children = new EventExecutor[nThreads];
+     *
+     * 数组大小由用户传入的线程数量而定，如果没指定，则使用系统默认的值
+     *
+     * 其中的每一个元素为：NioEventLoop
+     *
+     * <p></p>
      * the threads that will be used by this instance
      */
     private final EventExecutor[] children;
@@ -29,10 +36,16 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      */
     private final Set<EventExecutor> readonlyChildren;
 
+    /**
+     * ·用于记录 所有 NioEventLoop 的终止数量
+     */
     private final AtomicInteger terminatedChildren = new AtomicInteger();
 
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
 
+    /**
+     * @see DefaultEventExecutorChooserFactory
+     */
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
     /**
@@ -47,11 +60,17 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     }
 
     /**
+     * (nThreads, executor, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject())
+     *
+     * <p></p>
+     *
      * Create a new instance.
      *
      * @param nThreads the number of threads that will be used by this instance.
-     * @param executor the Executor to use, or {@code null} if the default should be used.
+     * @param executor the Executor to use, or {@code null} if the default should be used.(要使用的执行器；如果应使用默认值，则为null)
      * @param args arguments which will passed to each {@link #newChild(Executor, Object...)} call
+     *
+     * 一般为：（selectStrategyFactory, RejectedExecutionHandlers.reject()）
      */
     protected MultithreadEventExecutorGroup(int nThreads, Executor executor, Object... args) {
         this(nThreads, executor, DefaultEventExecutorChooserFactory.INSTANCE, args);
@@ -64,24 +83,38 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      * @param executor the Executor to use, or {@code null} if the default should be used.
      * @param chooserFactory the {@link EventExecutorChooserFactory} to use.
      * @param args arguments which will passed to each {@link #newChild(Executor, Object...)} call
+     *
+     * 一般为：EventExecutorChooserFactory chooserFactory,selectStrategyFactory, RejectedExecutionHandlers.reject()
      */
-    protected MultithreadEventExecutorGroup(int nThreads, Executor executor,
-            EventExecutorChooserFactory chooserFactory, Object... args) {
+    protected MultithreadEventExecutorGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory, Object... args) {
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
 
+        //确保 executor 被正确赋值
         if (executor == null) {
+            //如果用户没有指定类型，则使用默认的 Executor 类型
+            //默认的线程工厂：DefaultThreadFactory
+            //默认的Executor：ThreadPerTaskExecutor
+            //用户只需要传入一个 Runnable，该执行器则会生成一个线程去执行该任务
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
 
+        //创建事件处理器数组
         children = new EventExecutor[nThreads];
 
+        //根据线程数量循环实例化 EventExecutor
         for (int i = 0; i < nThreads; i++) {
             //每次循环创建执行器是否成功的标志
             boolean success = false;
             try {
-                //由具体子类实现的 newChild 逻辑
+                /**
+                 * 由具体子类实现的 newChild 逻辑，模版方法设计模式
+                 *
+                 * 第二个参数：selectStrategyFactory, RejectedExecutionHandlers.reject()）
+                 *
+                 * @see io.netty.channel.nio.NioEventLoopGroup#newChild(java.util.concurrent.Executor, java.lang.Object...)
+                 */
                 children[i] = newChild(executor, args);
                 success = true;
             } catch (Exception e) {
@@ -114,11 +147,17 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
         //所有的执行器都创建完毕之后的逻辑
 
+        //实例化选择器
         chooser = chooserFactory.newChooser(children);
 
+        /**
+         * 实例化一个监听器
+         * 用于监听每一个子 EventLoop 是不是已经终止
+         */
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {
             @Override
             public void operationComplete(Future<Object> future) throws Exception {
+                //成员变量
                 if (terminatedChildren.incrementAndGet() == children.length) {
                     //当所有的执行器都关闭的时候，就发出通知
                     terminationFuture.setSuccess(null);
@@ -126,9 +165,11 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         };
 
+        //循环初始化每一个 EventLoop 的终止回调器
         for (EventExecutor e : children) {
             //把 terminationListener 分别注册到每一个执行器
             //这样的话在关闭的时候就会通过该 terminationListener 通知所有的执行器了
+            //TODO 每一个 e 的 Future<?> terminationFuture() 如何获取的呢？
             e.terminationFuture().addListener(terminationListener);
         }
 

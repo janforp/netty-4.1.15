@@ -7,6 +7,7 @@ import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.SelectStrategyFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
+import io.netty.util.concurrent.MultithreadEventExecutorGroup;
 import io.netty.util.concurrent.RejectedExecutionHandler;
 import io.netty.util.concurrent.RejectedExecutionHandlers;
 
@@ -18,11 +19,14 @@ import java.util.concurrent.ThreadFactory;
 /**
  * {@link MultithreadEventLoopGroup} implementations which is used for NIO {@link Selector} based {@link Channel}s.
  *
- * 只需要实现 MultithreadEventExecutorGroup 的 newChild 创建一个新的 EventExecutor 即可
+ * 只需要实现 MultithreadEventExecutorGroup 的 newChild 创建一个新的 EventLoop（NioEventLoop） 即可
  */
 public class NioEventLoopGroup extends MultithreadEventLoopGroup {
 
     /**
+     * 使用默认线程数，默认ThreadFactory和SelectorProvider.provider（）返回的SelectorProvider创建一个新实例。
+     *
+     * <p></p>
      * Create a new instance using the default number of threads, the default {@link ThreadFactory} and
      * the {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
      */
@@ -35,6 +39,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
      * {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
      */
     public NioEventLoopGroup(int nThreads) {
+        //强制把 null 转换为对应的类型，是为了指定具体的构造器，否则，编译器不知道使用哪个构造器
         this(nThreads, (Executor) null);
     }
 
@@ -47,6 +52,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     }
 
     public NioEventLoopGroup(int nThreads, Executor executor) {
+        //生成一个java原生的选择器
         this(nThreads, executor, SelectorProvider.provider());
     }
 
@@ -64,13 +70,21 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
         super(nThreads, threadFactory, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject());
     }
 
-    public NioEventLoopGroup(
-            int nThreads, Executor executor, final SelectorProvider selectorProvider) {
+    /**
+     * 构造一个 实例
+     *
+     * @param nThreads 线程数（>= 0）
+     * @param executor 线程池(可以为 null)
+     * @param selectorProvider java原生的选择器提供者
+     */
+    public NioEventLoopGroup(int nThreads, Executor executor, final SelectorProvider selectorProvider) {
+        //传入一个默认的选择策略工厂实例(使用了抽象工厂模式)
         this(nThreads, executor, selectorProvider, DefaultSelectStrategyFactory.INSTANCE);
     }
 
     public NioEventLoopGroup(int nThreads, Executor executor, final SelectorProvider selectorProvider,
             final SelectStrategyFactory selectStrategyFactory) {
+        //传入一个拒绝策略：直接抛出移除
         super(nThreads, executor, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject());
     }
 
@@ -108,6 +122,14 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
         }
     }
 
+    /**
+     * @param executor = new ThreadPerTaskExecutor(newDefaultThreadFactory())
+     * @param args 由该类的构造器传入
+     * @return 一个 EventExecutor 实例
+     * @throws Exception
+     * @see NioEventLoopGroup#NioEventLoopGroup()
+     * @see MultithreadEventExecutorGroup#MultithreadEventExecutorGroup(int, java.util.concurrent.Executor, io.netty.util.concurrent.EventExecutorChooserFactory, java.lang.Object...)
+     */
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
         return new NioEventLoop(this, executor, (SelectorProvider) args[0],

@@ -1,19 +1,3 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.channel;
 
 import io.netty.buffer.ByteBufUtil;
@@ -32,6 +16,8 @@ import static io.netty.util.internal.MacAddressUtil.defaultMachineId;
 import static io.netty.util.internal.MacAddressUtil.parseMAC;
 
 /**
+ * 提供全局的id而已
+ * <p></p>
  * The default {@link ChannelId} implementation.
  */
 public final class DefaultChannelId implements ChannelId {
@@ -39,11 +25,17 @@ public final class DefaultChannelId implements ChannelId {
     private static final long serialVersionUID = 3884076183504074063L;
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultChannelId.class);
+
     private static final byte[] MACHINE_ID;
+
     private static final int PROCESS_ID_LEN = 4;
+
     private static final int PROCESS_ID;
+
     private static final int SEQUENCE_LEN = 4;
+
     private static final int TIMESTAMP_LEN = 8;
+
     private static final int RANDOM_LEN = 4;
 
     private static final AtomicInteger nextSequence = new AtomicInteger();
@@ -146,16 +138,18 @@ public final class DefaultChannelId implements ChannelId {
 
         if (pid < 0) {
             pid = PlatformDependent.threadLocalRandom().nextInt();
-            logger.warn("Failed to find the current process ID from '{}'; using a random value: {}",  value, pid);
+            logger.warn("Failed to find the current process ID from '{}'; using a random value: {}", value, pid);
         }
 
         return pid;
     }
 
     private final byte[] data;
+
     private final int hashCode;
 
     private transient String shortValue;
+
     private transient String longValue;
 
     private DefaultChannelId() {
@@ -184,22 +178,22 @@ public final class DefaultChannelId implements ChannelId {
     }
 
     private int writeInt(int i, int value) {
-        data[i ++] = (byte) (value >>> 24);
-        data[i ++] = (byte) (value >>> 16);
-        data[i ++] = (byte) (value >>> 8);
-        data[i ++] = (byte) value;
+        data[i++] = (byte) (value >>> 24);
+        data[i++] = (byte) (value >>> 16);
+        data[i++] = (byte) (value >>> 8);
+        data[i++] = (byte) value;
         return i;
     }
 
     private int writeLong(int i, long value) {
-        data[i ++] = (byte) (value >>> 56);
-        data[i ++] = (byte) (value >>> 48);
-        data[i ++] = (byte) (value >>> 40);
-        data[i ++] = (byte) (value >>> 32);
-        data[i ++] = (byte) (value >>> 24);
-        data[i ++] = (byte) (value >>> 16);
-        data[i ++] = (byte) (value >>> 8);
-        data[i ++] = (byte) value;
+        data[i++] = (byte) (value >>> 56);
+        data[i++] = (byte) (value >>> 48);
+        data[i++] = (byte) (value >>> 40);
+        data[i++] = (byte) (value >>> 32);
+        data[i++] = (byte) (value >>> 24);
+        data[i++] = (byte) (value >>> 16);
+        data[i++] = (byte) (value >>> 8);
+        data[i++] = (byte) value;
         return i;
     }
 

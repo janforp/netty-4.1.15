@@ -45,6 +45,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
     volatile SelectionKey selectionKey;
 
+    /**
+     * 等待读
+     */
     boolean readPending;
 
     private final Runnable clearReadPendingRunnable = new Runnable() {
@@ -101,6 +104,11 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         return (NioUnsafe) super.unsafe();
     }
 
+    /**
+     * 获取java原生的 SelectableChannel
+     *
+     * @return
+     */
     protected SelectableChannel javaChannel() {
         return ch;
     }
@@ -230,8 +238,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         }
 
         @Override
-        public final void connect(
-                final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
+        public final void connect(final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
+
             if (!promise.setUncancellable() || !ensureOpen(promise)) {
                 return;
             }
@@ -376,6 +384,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         boolean selected = false;
         for (; ; ) {
             try {
+                //真正的使用 java.nio 注册的过程
+                //java.nio.channels.SelectableChannel.register(java.nio.channels.Selector, int, java.lang.Object)
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {

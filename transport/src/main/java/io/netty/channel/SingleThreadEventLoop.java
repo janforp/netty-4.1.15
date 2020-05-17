@@ -1,5 +1,6 @@
 package io.netty.channel;
 
+import io.netty.channel.nio.NioEventLoop;
 import io.netty.util.concurrent.RejectedExecutionHandler;
 import io.netty.util.concurrent.RejectedExecutionHandlers;
 import io.netty.util.concurrent.SingleThreadEventExecutor;
@@ -16,9 +17,17 @@ import java.util.concurrent.ThreadFactory;
  */
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
 
+    /**
+     * 最大待处理任务（在拒绝新任务之前，最大待处理任务数。）
+     */
     protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
             SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
 
+    /**
+     * 待处理任务列表
+     *
+     * 在构造器：tailTasks = newTaskQueue(maxPendingTasks);
+     */
     private final Queue<Runnable> tailTasks;
 
     protected SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory, boolean addTaskWakesUp) {
@@ -36,10 +45,21 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
         tailTasks = newTaskQueue(maxPendingTasks);
     }
 
-    protected SingleThreadEventLoop(EventLoopGroup parent, Executor executor,
-            boolean addTaskWakesUp, int maxPendingTasks,
+    /**
+     * @param parent = new NioEventLoopGroup()
+     * @param executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
+     * @param addTaskWakesUp 构造 NioEventLoop 的时候传的false
+     * @param maxPendingTasks 最大待处理任务
+     * @param rejectedExecutionHandler 拒绝策略：直接排除异常
+     * @see NioEventLoop#NioEventLoop(io.netty.channel.nio.NioEventLoopGroup, java.util.concurrent.Executor, java.nio.channels.spi.SelectorProvider, io.netty.channel.SelectStrategy, io.netty.util.concurrent.RejectedExecutionHandler)
+     */
+    protected SingleThreadEventLoop(EventLoopGroup parent, Executor executor, boolean addTaskWakesUp, int maxPendingTasks,
             RejectedExecutionHandler rejectedExecutionHandler) {
+
         super(parent, executor, addTaskWakesUp, maxPendingTasks, rejectedExecutionHandler);
+        /**
+         * @see NioEventLoop#newTaskQueue(int) 可以被子类复写
+         */
         tailTasks = newTaskQueue(maxPendingTasks);
     }
 

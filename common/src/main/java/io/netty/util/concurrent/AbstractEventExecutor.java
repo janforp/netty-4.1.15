@@ -32,7 +32,9 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
     static final long DEFAULT_SHUTDOWN_TIMEOUT = 15;
 
     /**
-     * 该线程池所在的线程池组
+     * 该线程池所在的线程池组 （一般情况下为 NioEventLoopGroup）
+     *
+     * @see NioEventLoopGroup
      */
     private final EventExecutorGroup parent;
 
@@ -43,6 +45,9 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
         this(null);
     }
 
+    /**
+     * @param parent （一般情况下为NioEventLoopGroup）
+     */
     protected AbstractEventExecutor(EventExecutorGroup parent) {
         //子类调用
         this.parent = parent;

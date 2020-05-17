@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package io.netty.channel;
 
 import io.netty.buffer.ByteBuf;
@@ -48,6 +49,7 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
  * </p>
  */
 public final class ChannelOutboundBuffer {
+
     // Assuming a 64-bit JVM:
     //  - 16 bytes object header
     //  - 8 reference fields
@@ -73,14 +75,18 @@ public final class ChannelOutboundBuffer {
     //
     // The Entry that is the first in the linked-list structure that was flushed
     private Entry flushedEntry;
+
     // The Entry which is the first unflushed in the linked-list structure
     private Entry unflushedEntry;
+
     // The Entry which represents the tail of the buffer
     private Entry tailEntry;
+
     // The number of flushed entries that are not written yet
     private int flushed;
 
     private int nioBufferCount;
+
     private long nioBufferSize;
 
     private boolean inFail;
@@ -104,6 +110,9 @@ public final class ChannelOutboundBuffer {
     }
 
     /**
+     * 将给定消息添加到此ChannelOutboundBuffer。写入消息后，将通知给定的ChannelPromise。
+     *
+     * <p></p>
      * Add given message to this {@link ChannelOutboundBuffer}. The given {@link ChannelPromise} will be notified once
      * the message was written.
      */
@@ -127,6 +136,9 @@ public final class ChannelOutboundBuffer {
     }
 
     /**
+     * 向此ChannelOutboundBuffer添加刷新。这意味着以前添加的所有消息都标记为已刷新，因此您将能够处理它们。
+     *
+     * <p></p>
      * Add a flush to this {@link ChannelOutboundBuffer}. This means all previous added messages are marked as flushed
      * and so you will be able to handle them.
      */
@@ -142,7 +154,7 @@ public final class ChannelOutboundBuffer {
                 flushedEntry = entry;
             }
             do {
-                flushed ++;
+                flushed++;
                 if (!entry.promise.setUncancellable()) {
                     // Was cancelled so make sure we free up memory and notify about the freed bytes
                     int pending = entry.cancel();
@@ -301,7 +313,7 @@ public final class ChannelOutboundBuffer {
     }
 
     private void removeEntry(Entry e) {
-        if (-- flushed == 0) {
+        if (--flushed == 0) {
             // processed everything
             flushedEntry = null;
             if (e == tailEntry) {
@@ -318,7 +330,7 @@ public final class ChannelOutboundBuffer {
      * This operation assumes all messages in this buffer is {@link ByteBuf}.
      */
     public void removeBytes(long writtenBytes) {
-        for (;;) {
+        for (; ; ) {
             Object msg = current();
             if (!(msg instanceof ByteBuf)) {
                 assert writtenBytes == 0;
@@ -396,7 +408,7 @@ public final class ChannelOutboundBuffer {
                     int count = entry.count;
                     if (count == -1) {
                         //noinspection ConstantValueVariableUse
-                        entry.count = count =  buf.nioBufferCount();
+                        entry.count = count = buf.nioBufferCount();
                     }
                     int neededSpace = nioBufferCount + count;
                     if (neededSpace > nioBuffers.length) {
@@ -410,7 +422,7 @@ public final class ChannelOutboundBuffer {
                             // derived buffer
                             entry.buf = nioBuf = buf.internalNioBuffer(readerIndex, readableBytes);
                         }
-                        nioBuffers[nioBufferCount ++] = nioBuf;
+                        nioBuffers[nioBufferCount++] = nioBuf;
                     } else {
                         ByteBuffer[] nioBufs = entry.bufs;
                         if (nioBufs == null) {
@@ -431,11 +443,11 @@ public final class ChannelOutboundBuffer {
     }
 
     private static int fillBufferArray(ByteBuffer[] nioBufs, ByteBuffer[] nioBuffers, int nioBufferCount) {
-        for (ByteBuffer nioBuf: nioBufs) {
+        for (ByteBuffer nioBuf : nioBufs) {
             if (nioBuf == null) {
                 break;
             }
-            nioBuffers[nioBufferCount ++] = nioBuf;
+            nioBuffers[nioBufferCount++] = nioBuf;
         }
         return nioBufferCount;
     }
@@ -508,7 +520,7 @@ public final class ChannelOutboundBuffer {
 
     private void setUserDefinedWritability(int index) {
         final int mask = ~writabilityMask(index);
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue & mask;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -522,7 +534,7 @@ public final class ChannelOutboundBuffer {
 
     private void clearUserDefinedWritability(int index) {
         final int mask = writabilityMask(index);
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue | mask;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -542,7 +554,7 @@ public final class ChannelOutboundBuffer {
     }
 
     private void setWritable(boolean invokeLater) {
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue & ~1;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -555,7 +567,7 @@ public final class ChannelOutboundBuffer {
     }
 
     private void setUnwritable(boolean invokeLater) {
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue | 1;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -612,7 +624,7 @@ public final class ChannelOutboundBuffer {
 
         try {
             inFail = true;
-            for (;;) {
+            for (; ; ) {
                 if (!remove0(cause, notify)) {
                     break;
                 }
@@ -748,6 +760,7 @@ public final class ChannelOutboundBuffer {
     }
 
     public interface MessageProcessor {
+
         /**
          * Will be called for each flushed message until it either there are no more flushed messages or this
          * method returns {@code false}.
@@ -756,6 +769,10 @@ public final class ChannelOutboundBuffer {
     }
 
     static final class Entry {
+
+        /**
+         * 回收器
+         */
         private static final Recycler<Entry> RECYCLER = new Recycler<Entry>() {
             @Override
             protected Entry newObject(Handle<Entry> handle) {
@@ -764,15 +781,25 @@ public final class ChannelOutboundBuffer {
         };
 
         private final Handle<Entry> handle;
+
         Entry next;
+
         Object msg;
+
         ByteBuffer[] bufs;
+
         ByteBuffer buf;
+
         ChannelPromise promise;
+
         long progress;
+
         long total;
+
         int pendingSize;
+
         int count = -1;
+
         boolean cancelled;
 
         private Entry(Handle<Entry> handle) {

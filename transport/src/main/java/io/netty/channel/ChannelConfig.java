@@ -217,6 +217,8 @@ public interface ChannelConfig {
      * <p>返回写缓冲区的高水位线(也就是高位报警)。如果写入缓冲区中排队的字节数超过此值，则Channel.isWritable（）将开始返回false。</p>
      * <p>当写入缓冲区的字节数达到报警值的时候，就会变为不可写</p>
      *
+     * @see ChannelOutboundBuffer#incrementPendingOutboundBytes(long, boolean)
+     *
      * Returns the high water mark of the write buffer.  If the number of bytes
      * queued in the write buffer exceeds this value, {@link Channel#isWritable()}
      * will start to return {@code false}.

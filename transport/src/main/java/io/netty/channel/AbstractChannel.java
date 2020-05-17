@@ -1,6 +1,7 @@
 package io.netty.channel;
 
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.nio.AbstractNioChannel;
 import io.netty.channel.socket.ChannelOutputShutdownEvent;
 import io.netty.channel.socket.ChannelOutputShutdownException;
 import io.netty.util.DefaultAttributeMap;
@@ -32,6 +33,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     private static final ClosedChannelException FLUSH0_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new ClosedChannelException(), AbstractUnsafe.class, "flush0()");
 
+    /**
+     * ensureOpen 的时候是不的时候塞入的异常
+     */
     private static final ClosedChannelException ENSURE_OPEN_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new ClosedChannelException(), AbstractUnsafe.class, "ensureOpen(...)");
 
@@ -48,26 +52,45 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     private final ChannelId id;
 
+    /**
+     * AbstractUnsafe
+     */
     private final Unsafe unsafe;
 
     private final DefaultChannelPipeline pipeline;
 
     private final VoidChannelPromise unsafeVoidPromise = new VoidChannelPromise(this, false);
 
+    /**
+     * 其中的很多方法都是直接抛出异常
+     */
     private final CloseFuture closeFuture = new CloseFuture(this);
 
     private volatile SocketAddress localAddress;
 
     private volatile SocketAddress remoteAddress;
 
+    /**
+     * @see AbstractUnsafe#register(io.netty.channel.EventLoop, io.netty.channel.ChannelPromise)
+     */
     private volatile EventLoop eventLoop;
 
+    /**
+     * 该 Channel 是否已经注册
+     *
+     * @see AbstractUnsafe#register0(io.netty.channel.ChannelPromise)
+     */
     private volatile boolean registered;
 
+    /**
+     *
+     */
     private boolean closeInitiated;
 
     /**
      * Cache for the string representation of this channel
+     *
+     * 缓存此通道的字符串表示形式
      */
     private boolean strValActive;
 
@@ -425,10 +448,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
         private RecvByteBufAllocator.Handle recvHandle;
 
+        /**
+         * 是否正在刷新
+         */
         private boolean inFlush0;
 
         /**
          * true if the channel has never been registered, false otherwise
+         *
+         * @see AbstractUnsafe#register0(io.netty.channel.ChannelPromise)
          */
         private boolean neverRegistered = true;
 
@@ -459,21 +487,30 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             return remoteAddress0();
         }
 
+        /**
+         * 不可复写的方法
+         *
+         * @param eventLoop 事件循环
+         * @param promise 回调对象
+         */
         @Override
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
             if (eventLoop == null) {
                 throw new NullPointerException("eventLoop");
             }
             if (isRegistered()) {
+                //如果当前 Channel 已经注册过了，则无法重复注册
                 promise.setFailure(new IllegalStateException("registered to an event loop already"));
                 return;
             }
             if (!isCompatible(eventLoop)) {
+                //如果给定的EventLoop与此实例兼容，则返回true。如果不兼容返回false，是否兼容由具体的 Channel 实例决定
                 promise.setFailure(
                         new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
                 return;
             }
 
+            //初始化该成员变量
             AbstractChannel.this.eventLoop = eventLoop;
 
             if (eventLoop.inEventLoop()) {
@@ -497,6 +534,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        /**
+         * 经过之前的一些操作，使用该方法注册 Channel
+         *
+         * @param promise
+         */
         private void register0(ChannelPromise promise) {
             try {
                 // check if the channel is still open as it could be closed in the mean time when the register
@@ -505,18 +547,22 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
+                //调用java.nio 注册
                 doRegister();
                 neverRegistered = false;
                 registered = true;
 
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
                 // user may already fire events through the pipeline in the ChannelFutureListener.
+                //回调 Channel 添加函数
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);
+                //触发 ChannelHandler 的事件(Channel注册事件)传播
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
                 // multiple channel actives if the channel is deregistered and re-registered.
+                //如果从未注册过频道，则仅触发channelActive。如果通道已注销并重新注册，这可以防止触发多个通道活动对象。
                 if (isActive()) {
                     if (firstRegistration) {
                         pipeline.fireChannelActive();
@@ -559,6 +605,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             boolean wasActive = isActive();
             try {
+                //真正的使用 java.nio 绑定函数
                 doBind(localAddress);
             } catch (Throwable t) {
                 safeSetFailure(promise, t);
@@ -570,6 +617,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        //触发 Channel 激活事件传播
                         pipeline.fireChannelActive();
                     }
                 });
@@ -588,6 +636,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             boolean wasActive = isActive();
             try {
+                //java.nio.channels.spi.AbstractInterruptibleChannel.close
                 doDisconnect();
             } catch (Throwable t) {
                 safeSetFailure(promise, t);
@@ -599,6 +648,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        //失活事件传播
                         pipeline.fireChannelInactive();
                     }
                 });
@@ -628,8 +678,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             pipeline.fireUserEventTriggered(ChannelOutputShutdownEvent.INSTANCE);
         }
 
-        private void close(final ChannelPromise promise, final Throwable cause,
-                final ClosedChannelException closeCause, final boolean notify) {
+        private void close(final ChannelPromise promise, final Throwable cause, final ClosedChannelException closeCause, final boolean notify) {
+
             if (!promise.setUncancellable()) {
                 return;
             }
@@ -984,7 +1034,17 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
     }
 
+    //AbstractUnsafe end
+
     /**
+     * 如果给定的EventLoop与此实例兼容，则返回true。
+     *
+     * @Override protected boolean isCompatible(EventLoop loop) {
+     * return loop instanceof NioEventLoop;
+     * }
+     * @see AbstractNioChannel#isCompatible(io.netty.channel.EventLoop)
+     *
+     * <p></p>
      * Return {@code true} if the given {@link EventLoop} is compatible with this instance.
      */
     protected abstract boolean isCompatible(EventLoop loop);
@@ -1023,7 +1083,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected abstract void doClose() throws Exception;
 
-    /**
+    /**+
      * Deregister the {@link Channel} from its {@link EventLoop}.
      *
      * Sub-classes may override this method
