@@ -66,12 +66,17 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     ChannelId id();
 
     /**
+     * 返回此通道已注册到的EventLoop。
+     *
+     * <p></p>
      * Return the {@link EventLoop} this {@link Channel} was registered to.
      */
     EventLoop eventLoop();
 
     /**
      * Returns the parent of this channel.
+     *
+     * 如果没有，则返回null
      *
      * @return the parent channel.
      * {@code null} if this channel does not have a parent channel.
@@ -84,11 +89,17 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     ChannelConfig config();
 
     /**
+     * 如果通道处于打开状态，则返回true，以后可能会激活
+     *
+     * <p></p>
      * Returns {@code true} if the {@link Channel} is open and may get active later
      */
     boolean isOpen();
 
     /**
+     * 如果Channel已向EventLoop注册，则返回true。
+     *
+     * <p></p>
      * Returns {@code true} if the {@link Channel} is registered with an {@link EventLoop}.
      */
     boolean isRegistered();
@@ -104,6 +115,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     ChannelMetadata metadata();
 
     /**
+     * 返回此通道绑定到的本地地址。返回的SocketAddress应该向下转换为更具体的类型，例如InetSocketAddress以检索详细信息。
+     *
+     * <p></p>
      * Returns the local address where this channel is bound to.  The returned
      * {@link SocketAddress} is supposed to be down-cast into more concrete
      * type such as {@link InetSocketAddress} to retrieve the detailed
@@ -131,12 +145,23 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     SocketAddress remoteAddress();
 
     /**
+     * 返回该通道关闭时将通知的ChannelFuture。此方法始终返回相同的Future实例。
+     *
+     * @see AbstractChannel#closeFuture 同一个 Channel 对象只返回这一个实例
+     *
+     * <p></p>
      * Returns the {@link ChannelFuture} which will be notified when this
      * channel is closed.  This method always returns the same future instance.
      */
     ChannelFuture closeFuture();
 
     /**
+     * 当且仅当I / O线程将立即执行请求的写操作时，才返回true
+     *
+     * <p></p>
+     * 当此方法返回false时发出的所有写请求都将排队，直到I / O线程准备好处理排队的写请求为止。
+     *
+     * <p></p>
      * Returns {@code true} if and only if the I/O thread will perform the
      * requested write operation immediately.  Any write requests made when
      * this method returns {@code false} are queued until the I/O thread is
@@ -145,6 +170,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     boolean isWritable();
 
     /**
+     * 获取直到isWritable（）返回false为止可以写入的字节数。此数量将始终为非负数。如果isWritable（）为false，则为0。
+     *
+     * <p></p>
      * Get how many bytes can be written until {@link #isWritable()} returns {@code false}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code false} then 0.
      */

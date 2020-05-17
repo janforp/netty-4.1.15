@@ -69,6 +69,9 @@ public final class ChannelOutboundBuffer {
         }
     };
 
+    /**
+     * 对应的 Channel
+     */
     private final Channel channel;
 
     // Entry(flushedEntry) --> ... Entry(unflushedEntry) --> ... Entry(tailEntry)

@@ -167,9 +167,11 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
         //循环初始化每一个 EventLoop 的终止回调器
         for (EventExecutor e : children) {
-            //把 terminationListener 分别注册到每一个执行器
-            //这样的话在关闭的时候就会通过该 terminationListener 通知所有的执行器了
-            //TODO 每一个 e 的 Future<?> terminationFuture() 如何获取的呢？
+            /**
+             * 把 terminationListener 分别注册到每一个执行器
+             * 这样的话在关闭的时候就会通过该 terminationListener 通知所有的执行器了
+             * @see SingleThreadEventExecutor#terminationFuture
+             */
             e.terminationFuture().addListener(terminationListener);
         }
 

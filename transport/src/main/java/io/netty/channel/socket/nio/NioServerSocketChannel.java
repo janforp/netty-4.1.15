@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel.socket.nio;
 
 import io.netty.channel.ChannelException;
@@ -41,13 +26,24 @@ import java.util.List;
  * NIO selector based implementation to accept new connections.
  */
 public class NioServerSocketChannel extends AbstractNioMessageChannel
-                             implements io.netty.channel.socket.ServerSocketChannel {
+        implements io.netty.channel.socket.ServerSocketChannel {
 
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
+
+    /**
+     * 全局唯一哦
+     */
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioServerSocketChannel.class);
 
+    /**
+     * 获取java原生的服务端的：ServerSocketChannel
+     *
+     * @param provider 系统的提供器
+     * @return
+     * @see ServerSocketChannel#open() 如果使用java.nio写，则使用该方法
+     */
     private static ServerSocketChannel newSocket(SelectorProvider provider) {
         try {
             /**
@@ -63,12 +59,18 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         }
     }
 
+    /**
+     * config = new NioServerSocketChannelConfig(this, serverSocket);
+     * @see NioServerSocketChannel#NioServerSocketChannel(java.nio.channels.ServerSocketChannel)
+     */
     private final ServerSocketChannelConfig config;
 
     /**
      * Create a new instance
      */
     public NioServerSocketChannel() {
+        //ServerSocketChannel serverSocketChannel = newSocket(DEFAULT_SELECTOR_PROVIDER);
+        //传入java原生的服务端的：ServerSocketChannel
         this(newSocket(DEFAULT_SELECTOR_PROVIDER));
     }
 
@@ -83,8 +85,14 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
      * Create a new instance using the given {@link ServerSocketChannel}.
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
+        //注册感兴趣的事件
         super(null, channel, SelectionKey.OP_ACCEPT);
-        config = new NioServerSocketChannelConfig(this, javaChannel().socket());
+        //java nio
+        ServerSocketChannel serverSocketChannel = javaChannel();
+        //java nio
+        ServerSocket serverSocket = serverSocketChannel.socket();
+        //这是一个私有内部类
+        config = new NioServerSocketChannelConfig(this, serverSocket);
     }
 
     @Override
@@ -104,7 +112,9 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     public boolean isActive() {
-        return javaChannel().socket().isBound();
+        ServerSocket serverSocket = javaChannel().socket();
+        boolean bound = serverSocket.isBound();
+        return bound;
     }
 
     @Override
@@ -191,6 +201,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
     }
 
     private final class NioServerSocketChannelConfig extends DefaultServerSocketChannelConfig {
+
         private NioServerSocketChannelConfig(NioServerSocketChannel channel, ServerSocket javaSocket) {
             super(channel, javaSocket);
         }

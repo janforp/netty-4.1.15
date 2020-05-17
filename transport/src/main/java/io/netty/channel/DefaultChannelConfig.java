@@ -54,10 +54,16 @@ public class DefaultChannelConfig implements ChannelConfig {
             AtomicReferenceFieldUpdater.newUpdater(
                     DefaultChannelConfig.class, WriteBufferWaterMark.class, "writeBufferWaterMark");
 
+    /**
+     * 自己关联的 Channel
+     */
     protected final Channel channel;
 
     private volatile ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
 
+    /**
+     * 创建 Channel 的时候会实例化
+     */
     private volatile RecvByteBufAllocator rcvBufAllocator;
 
     private volatile MessageSizeEstimator msgSizeEstimator = DEFAULT_MSG_SIZE_ESTIMATOR;
@@ -76,11 +82,13 @@ public class DefaultChannelConfig implements ChannelConfig {
     private volatile boolean pinEventExecutor = true;
 
     public DefaultChannelConfig(Channel channel) {
+        //传入一个自适应接收字节缓冲区分配器
         this(channel, new AdaptiveRecvByteBufAllocator());
     }
 
     protected DefaultChannelConfig(Channel channel, RecvByteBufAllocator allocator) {
-        setRecvByteBufAllocator(allocator, channel.metadata());
+        ChannelMetadata channelMetadata = channel.metadata();//不同类型的 Channel 就只有一个这样的实例，全局唯一的静态变量而已
+        setRecvByteBufAllocator(allocator, channelMetadata);
         this.channel = channel;
     }
 
@@ -316,7 +324,8 @@ public class DefaultChannelConfig implements ChannelConfig {
      */
     private void setRecvByteBufAllocator(RecvByteBufAllocator allocator, ChannelMetadata metadata) {
         if (allocator instanceof MaxMessagesRecvByteBufAllocator) {
-            ((MaxMessagesRecvByteBufAllocator) allocator).maxMessagesPerRead(metadata.defaultMaxMessagesPerRead());
+            int maxMessagesPerRead = metadata.defaultMaxMessagesPerRead();
+            ((MaxMessagesRecvByteBufAllocator) allocator).maxMessagesPerRead(maxMessagesPerRead);
         } else if (allocator == null) {
             throw new NullPointerException("allocator");
         }

@@ -29,6 +29,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 使用基于选择器的方法的Channel实现的抽象基类。
+ *
+ * <p></p>
  * Abstract base class for {@link Channel} implementations which use a Selector based approach.
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
@@ -198,6 +201,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     public interface NioUnsafe extends Unsafe {
 
         /**
+         * 返回底层的SelectableChannel
+         *
          * Return underlying {@link SelectableChannel}
          */
         SelectableChannel ch();
@@ -208,6 +213,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         void finishConnect();
 
         /**
+         * 从底层SelectableChannel读取
+         *
          * Read from underlying {@link SelectableChannel}
          */
         void read();
@@ -386,6 +393,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             try {
                 //真正的使用 java.nio 注册的过程
                 //java.nio.channels.SelectableChannel.register(java.nio.channels.Selector, int, java.lang.Object)
+                //serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {

@@ -1,5 +1,6 @@
 package io.netty.channel;
 
+import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.socket.SocketChannelConfig;
 
@@ -191,6 +192,8 @@ public interface ChannelConfig {
     /**
      * Sets if {@link ChannelHandlerContext#read()} will be invoked automatically so that a user application doesn't
      * need to call it at all. The default value is {@code true}.
+     *
+     * @see ServerBootstrap.ServerBootstrapAcceptor#ServerBootstrapAcceptor(io.netty.channel.Channel, io.netty.channel.EventLoopGroup, io.netty.channel.ChannelHandler, java.util.Map.Entry[], java.util.Map.Entry[])
      */
     ChannelConfig setAutoRead(boolean autoRead);
 

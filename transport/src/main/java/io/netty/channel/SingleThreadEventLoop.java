@@ -82,7 +82,9 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
     public ChannelFuture register(final ChannelPromise promise) {
         ObjectUtil.checkNotNull(promise, "promise");
         //通过 netty 的 Unsafe 去注册 promise
-        promise.channel().unsafe().register(this, promise);
+        Channel channel = promise.channel();
+        Channel.Unsafe unsafe = channel.unsafe();
+        unsafe.register(this, promise);
         return promise;
     }
 

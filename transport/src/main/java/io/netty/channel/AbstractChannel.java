@@ -71,6 +71,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     private volatile SocketAddress remoteAddress;
 
     /**
+     * 当前Channel注册的时候传进来，然后注册到该 EventLoop上
      * @see AbstractUnsafe#register(io.netty.channel.EventLoop, io.netty.channel.ChannelPromise)
      */
     private volatile EventLoop eventLoop;
@@ -454,6 +455,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         private boolean inFlush0;
 
         /**
+         * 如果从未注册过，则为true，否则为false
+         *
+         *
          * true if the channel has never been registered, false otherwise
          *
          * @see AbstractUnsafe#register0(io.netty.channel.ChannelPromise)
@@ -461,6 +465,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         private boolean neverRegistered = true;
 
         private void assertEventLoop() {
+            //所在的channel未注册，并且在当前事件循环
             assert !registered || eventLoop.inEventLoop();
         }
 
@@ -1083,7 +1088,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected abstract void doClose() throws Exception;
 
-    /**+
+    /**
+     * +
      * Deregister the {@link Channel} from its {@link EventLoop}.
      *
      * Sub-classes may override this method

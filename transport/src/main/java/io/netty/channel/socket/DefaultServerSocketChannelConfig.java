@@ -7,6 +7,7 @@ import io.netty.channel.DefaultChannelConfig;
 import io.netty.channel.MessageSizeEstimator;
 import io.netty.channel.RecvByteBufAllocator;
 import io.netty.channel.WriteBufferWaterMark;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.NetUtil;
 
 import java.net.ServerSocket;
@@ -22,12 +23,18 @@ import static io.netty.channel.ChannelOption.SO_REUSEADDR;
  */
 public class DefaultServerSocketChannelConfig extends DefaultChannelConfig implements ServerSocketChannelConfig {
 
+    /**
+     * java.nio 服务端的 socket
+     */
     protected final ServerSocket javaSocket;
 
     private volatile int backlog = NetUtil.SOMAXCONN;
 
     /**
      * Creates a new instance.
+     *
+     * @see NioServerSocketChannel#NioServerSocketChannel(java.nio.channels.ServerSocketChannel)
+     * @see NioServerSocketChannel.NioServerSocketChannelConfig#NioServerSocketChannelConfig(io.netty.channel.socket.nio.NioServerSocketChannel, java.net.ServerSocket)
      */
     public DefaultServerSocketChannelConfig(ServerSocketChannel channel, ServerSocket javaSocket) {
         super(channel);

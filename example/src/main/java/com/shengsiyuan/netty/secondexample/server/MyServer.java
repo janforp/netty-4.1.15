@@ -3,11 +3,13 @@ package com.shengsiyuan.netty.secondexample.server;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.AttributeKey;
 
 /**
  * 类说明：opPY_wsCsxEKJ1K6Hd83trnakuXg
@@ -28,8 +30,8 @@ public class MyServer {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap
                     .group(parentGroup, childGroup)
-                    //.option(ChannelOption.SO_RCVBUF, 123)
-                    //.attr()
+//                    .option(ChannelOption.SO_RCVBUF, 123)
+//                    .attr(AttributeKey.valueOf("login"), "123")
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.WARN))
                     //给worker，如果用handler，则给boss

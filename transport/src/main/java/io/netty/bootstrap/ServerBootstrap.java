@@ -1,20 +1,6 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.bootstrap;
 
+import io.netty.channel.AbstractChannel;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelFuture;
@@ -25,8 +11,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
+import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -38,19 +26,32 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * {@link Bootstrap} sub-class which allows easy bootstrap of {@link ServerChannel}
- *
  */
 public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerChannel> {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ServerBootstrap.class);
 
     private final Map<ChannelOption<?>, Object> childOptions = new LinkedHashMap<ChannelOption<?>, Object>();
+
     private final Map<AttributeKey<?>, Object> childAttrs = new LinkedHashMap<AttributeKey<?>, Object>();
+
     private final ServerBootstrapConfig config = new ServerBootstrapConfig(this);
+
+    /**
+     * serverBootstrap.group(parentGroup, childGroup) 的 childGroup
+     */
     private volatile EventLoopGroup childGroup;
+
+    /**
+     * serverBootstrap.childHandler(new MyServerInitializer());
+     * 处理工作线程的处理器
+     *
+     * @see com.shengsiyuan.netty.secondexample.server.MyServerInitializer
+     */
     private volatile ChannelHandler childHandler;
 
-    public ServerBootstrap() { }
+    public ServerBootstrap() {
+    }
 
     private ServerBootstrap(ServerBootstrap bootstrap) {
         super(bootstrap);
@@ -139,25 +140,42 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     @Override
     void init(Channel channel) throws Exception {
+        //用户传入的
         final Map<ChannelOption<?>, Object> options = options0();
         synchronized (options) {
             setChannelOptions(channel, options, logger);
         }
-
+        //用户传入的
         final Map<AttributeKey<?>, Object> attrs = attrs0();
         synchronized (attrs) {
-            for (Entry<AttributeKey<?>, Object> e: attrs.entrySet()) {
+            //便利map: Set<Map.Entry<K, V>> entrySet();
+            for (Entry<AttributeKey<?>, Object> e : attrs.entrySet()) {
                 @SuppressWarnings("unchecked")
                 AttributeKey<Object> key = (AttributeKey<Object>) e.getKey();
-                channel.attr(key).set(e.getValue());
+                //因为 AbstractChannel 实现了 AttributeMap 接口
+                Attribute<Object> attribute = channel.attr(key);
+                attribute.set(e.getValue());
             }
         }
 
+        /**
+         * 该 Channel 对应的 ChannelPipeline
+         *
+         * 实例化 Channel 的时候也实例化了该 ChannelPipeline，是一个 DefaultChannelPipeline 实例
+         * @see AbstractChannel#AbstractChannel(io.netty.channel.Channel)
+         * @see AbstractChannel#newChannelPipeline()
+         */
         ChannelPipeline p = channel.pipeline();
 
+        //serverBootstrap.group(parentGroup, childGroup) 的 childGroup
         final EventLoopGroup currentChildGroup = childGroup;
+        //serverBootstrap.childHandler(new MyServerInitializer());
         final ChannelHandler currentChildHandler = childHandler;
+
+        //用户指定的一些配置
         final Entry<ChannelOption<?>, Object>[] currentChildOptions;
+
+        //用户传的一些值
         final Entry<AttributeKey<?>, Object>[] currentChildAttrs;
         synchronized (childOptions) {
             currentChildOptions = childOptions.entrySet().toArray(newOptionArray(childOptions.size()));
@@ -166,20 +184,24 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             currentChildAttrs = childAttrs.entrySet().toArray(newAttrArray(childAttrs.size()));
         }
 
+        //添加处理器到 pipeline
         p.addLast(new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) throws Exception {
+                //每一个 Channel 都有一个 ChannelPipeline
                 final ChannelPipeline pipeline = ch.pipeline();
-                ChannelHandler handler = config.handler();
+                ChannelHandler handler = config.handler();//parent的处理器
                 if (handler != null) {
+                    //往pipeline中添加parent的处理器
                     pipeline.addLast(handler);
                 }
 
-                ch.eventLoop().execute(new Runnable() {
+                EventLoop eventLoop = ch.eventLoop();
+                eventLoop.execute(new Runnable() {
                     @Override
                     public void run() {
-                        pipeline.addLast(new ServerBootstrapAcceptor(
-                                ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));
+                        ServerBootstrapAcceptor bootstrapAcceptor = new ServerBootstrapAcceptor(ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs);
+                        pipeline.addLast(bootstrapAcceptor);
                     }
                 });
             }
@@ -211,15 +233,34 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     private static class ServerBootstrapAcceptor extends ChannelInboundHandlerAdapter {
 
+        /**
+         * 工作线程
+         */
         private final EventLoopGroup childGroup;
+
+        /**
+         * 工作线程处理器：用户自定义处理器也在其中
+         */
         private final ChannelHandler childHandler;
+
+        /**
+         * 用户配置
+         */
         private final Entry<ChannelOption<?>, Object>[] childOptions;
+
+        /**
+         * 用户配置
+         */
         private final Entry<AttributeKey<?>, Object>[] childAttrs;
+
+        /**
+         * 构造器中实例化：把 Channel 配置成自动读
+         */
         private final Runnable enableAutoReadTask;
 
-        ServerBootstrapAcceptor(
-                final Channel channel, EventLoopGroup childGroup, ChannelHandler childHandler,
+        ServerBootstrapAcceptor(final Channel channel, EventLoopGroup childGroup, ChannelHandler childHandler,
                 Entry<ChannelOption<?>, Object>[] childOptions, Entry<AttributeKey<?>, Object>[] childAttrs) {
+
             this.childGroup = childGroup;
             this.childHandler = childHandler;
             this.childOptions = childOptions;
@@ -233,6 +274,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             enableAutoReadTask = new Runnable() {
                 @Override
                 public void run() {
+                    //把 Channel 配置成自动读
                     channel.config().setAutoRead(true);
                 }
             };
@@ -241,33 +283,39 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         @Override
         @SuppressWarnings("unchecked")
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
-            final Channel child = (Channel) msg;
+            //TODO ? 为什么这里会是 Channel 呢？
+            final Channel childChannel = (Channel) msg;
 
-            child.pipeline().addLast(childHandler);
+            ChannelPipeline pipeline = childChannel.pipeline();
+            pipeline.addLast(childHandler);
 
-            setChannelOptions(child, childOptions, logger);
+            setChannelOptions(childChannel, childOptions, logger);
 
-            for (Entry<AttributeKey<?>, Object> e: childAttrs) {
-                child.attr((AttributeKey<Object>) e.getKey()).set(e.getValue());
+            for (Entry<AttributeKey<?>, Object> e : childAttrs) {
+                childChannel.attr((AttributeKey<Object>) e.getKey()).set(e.getValue());
             }
 
             try {
-                childGroup.register(child).addListener(new ChannelFutureListener() {
+                //把该 childChannel Channel 注册到工作线程，那么该子线程的所有io操作都交给了工作线程
+                ChannelFuture channelFuture = childGroup.register(childChannel);
+                channelFuture.addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
+                        //参数中的 future 其实就是外面的 channelFuture
                         if (!future.isSuccess()) {
-                            forceClose(child, future.cause());
+                            forceClose(childChannel, future.cause());
                         }
                     }
                 });
             } catch (Throwable t) {
-                forceClose(child, t);
+                forceClose(childChannel, t);
             }
         }
 
-        private static void forceClose(Channel child, Throwable t) {
-            child.unsafe().closeForcibly();
-            logger.warn("Failed to register an accepted channel: {}", child, t);
+        private static void forceClose(Channel childChannel, Throwable t) {
+            Channel.Unsafe unsafe = childChannel.unsafe();
+            unsafe.closeForcibly();
+            logger.warn("Failed to register an accepted channel: {}", childChannel, t);
         }
 
         @Override

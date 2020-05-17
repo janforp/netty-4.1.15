@@ -20,6 +20,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 单线程单例EventExecutor。当任务队列中没有待处理的任务1秒钟时，
  * 它将自动启动线程并停止线程。请注意，为该执行程序安排大量任务是不可扩展的；
  * 使用专门的执行器。
+ *
+ *
+ * 该执行器在一些场景如无法使用Channel自身的执行器的时候，可以使用该执行器
  */
 public final class GlobalEventExecutor extends AbstractScheduledEventExecutor {
 
