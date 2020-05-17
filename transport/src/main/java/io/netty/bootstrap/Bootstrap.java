@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.bootstrap;
 
 import io.netty.channel.Channel;
@@ -55,11 +40,12 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     private final BootstrapConfig config = new BootstrapConfig(this);
 
     @SuppressWarnings("unchecked")
-    private volatile AddressResolverGroup<SocketAddress> resolver =
-            (AddressResolverGroup<SocketAddress>) DEFAULT_RESOLVER;
+    private volatile AddressResolverGroup<SocketAddress> resolver = (AddressResolverGroup<SocketAddress>) DEFAULT_RESOLVER;
+
     private volatile SocketAddress remoteAddress;
 
-    public Bootstrap() { }
+    public Bootstrap() {
+    }
 
     private Bootstrap(Bootstrap bootstrap) {
         super(bootstrap);
@@ -71,8 +57,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
      * Sets the {@link NameResolver} which will resolve the address of the unresolved named address.
      *
      * @param resolver the {@link NameResolver} for this {@code Bootstrap}; may be {@code null}, in which case a default
-     *                 resolver will be used
-     *
+     * resolver will be used
      * @see io.netty.resolver.DefaultAddressResolverGroup
      */
     @SuppressWarnings("unchecked")
@@ -123,7 +108,9 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
      * Connect a {@link Channel} to the remote peer.
      */
     public ChannelFuture connect(String inetHost, int inetPort) {
-        return connect(InetSocketAddress.createUnresolved(inetHost, inetPort));
+        //参数校验而已
+        InetSocketAddress inetSocketAddress = InetSocketAddress.createUnresolved(inetHost, inetPort);
+        return connect(inetSocketAddress);
     }
 
     /**
@@ -142,7 +129,8 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
         }
 
         validate();
-        return doResolveAndConnect(remoteAddress, config.localAddress());
+        SocketAddress localAddress = config.localAddress();
+        return doResolveAndConnect(remoteAddress, localAddress);
     }
 
     /**
@@ -193,8 +181,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
         }
     }
 
-    private ChannelFuture doResolveAndConnect0(final Channel channel, SocketAddress remoteAddress,
-                                               final SocketAddress localAddress, final ChannelPromise promise) {
+    private ChannelFuture doResolveAndConnect0(final Channel channel, SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
         try {
             final EventLoop eventLoop = channel.eventLoop();
             final AddressResolver<SocketAddress> resolver = this.resolver.getResolver(eventLoop);
@@ -262,6 +249,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     @SuppressWarnings("unchecked")
     void init(Channel channel) throws Exception {
         ChannelPipeline p = channel.pipeline();
+        //bootstrap.handler(new MyClientInitializer());
         p.addLast(config.handler());
 
         final Map<ChannelOption<?>, Object> options = options0();
@@ -271,7 +259,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
         final Map<AttributeKey<?>, Object> attrs = attrs0();
         synchronized (attrs) {
-            for (Entry<AttributeKey<?>, Object> e: attrs.entrySet()) {
+            for (Entry<AttributeKey<?>, Object> e : attrs.entrySet()) {
                 channel.attr((AttributeKey<Object>) e.getKey()).set(e.getValue());
             }
         }
