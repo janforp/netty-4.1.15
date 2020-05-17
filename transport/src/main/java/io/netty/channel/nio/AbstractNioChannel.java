@@ -25,6 +25,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ConnectionPendingException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -394,7 +395,11 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                 //真正的使用 java.nio 注册的过程
                 //java.nio.channels.SelectableChannel.register(java.nio.channels.Selector, int, java.lang.Object)
                 //serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-                selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
+                SelectableChannel selectableChannel = javaChannel();
+                Selector selector = eventLoop().unwrappedSelector();
+
+                //TODO 传入 0 是什么意思？
+                selectionKey = selectableChannel.register(selector, 0, this);
                 return;
             } catch (CancelledKeyException e) {
                 if (!selected) {
