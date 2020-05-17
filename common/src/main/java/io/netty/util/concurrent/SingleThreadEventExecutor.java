@@ -77,6 +77,13 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * 封装的单独的线程
+     *
+     * 1.一个EventLoop（SingleThreadEventExecutor）在他的整个生命周期中都只会与唯一的一个Thread进行绑定
+     * 2.所有由 EventLoop 所处理的各种I/O事件都将在它（该EventLoop）所关联的那个Thread上进行处理
+     * 3.一个 Channel 在它的整个生命周期中只会注册在一个 EventLoop 上
+     * 4.一个 EventLoop 在运行过程当中会被分配给一个或者多个 Channel（也就是说一个线程可以处理多个连接）更直白的说一个 EventLoop 需要处理一个或者多个 Channel,但是每一个 Channel 只属于唯一的一个 EventLoop
+     *
+     * TODO 如何做到执行多个任务呢？
      */
     private volatile Thread thread;
 
@@ -896,6 +903,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                 boolean success = false;
                 updateLastExecutionTime();
                 try {
+                    /**
+                     * @see io.netty.channel.nio.NioEventLoop#run()
+                     */
                     SingleThreadEventExecutor.this.run();
                     success = true;
                 } catch (Throwable t) {

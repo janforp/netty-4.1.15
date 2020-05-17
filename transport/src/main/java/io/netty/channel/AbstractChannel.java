@@ -521,7 +521,14 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             //初始化该成员变量
             AbstractChannel.this.eventLoop = eventLoop;
 
-            //为了保证任务在当前的 eventLoop 中执行
+            /**
+             * 封装的单独的线程
+             *
+             * 1.一个EventLoop（SingleThreadEventExecutor）在他的整个生命周期中都只会与唯一的一个Thread进行绑定
+             * 2.所有由 EventLoop 所处理的各种I/O事件都将在它（该EventLoop）所关联的那个Thread上进行处理
+             * 3.一个 Channel 在它的整个生命周期中只会注册在一个 EventLoop 上
+             * 4.一个 EventLoop 在运行过程当中会被分配给一个或者多个 Channel（也就是说一个线程可以处理多个连接）更直白的说一个 EventLoop 需要处理一个或者多个 Channel,但是每一个 Channel 只属于唯一的一个 EventLoop
+             */
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
@@ -534,6 +541,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                      * @see SingleThreadEventExecutor#execute(java.lang.Runnable)
                      */
                     eventLoop.execute(new Runnable() {
+                        /**
+                         * 保证是但线程执行，避免多线程并发的问题
+                         */
                         @Override
                         public void run() {
                             register0(promise);
