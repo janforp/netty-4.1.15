@@ -1,24 +1,14 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.TypeParameterMatcher;
 
 /**
+ * ChannelInboundHandlerAdapter，它允许仅显式处理特定类型的消息
+ * 而他的父类并不是一个泛型类，这个类避免了类型转换
+ *
+ *
+ * <p></p>
  * {@link ChannelInboundHandlerAdapter} which allows to explicit only handle a specific type of messages.
  *
  * For example here is an implementation which only handle {@link String} messages.
@@ -48,6 +38,7 @@ import io.netty.util.internal.TypeParameterMatcher;
 public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandlerAdapter {
 
     private final TypeParameterMatcher matcher;
+
     private final boolean autoRelease;
 
     /**
@@ -60,8 +51,8 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
     /**
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
      *
-     * @param autoRelease   {@code true} if handled messages should be released automatically by passing them to
-     *                      {@link ReferenceCountUtil#release(Object)}.
+     * @param autoRelease {@code true} if handled messages should be released automatically by passing them to
+     * {@link ReferenceCountUtil#release(Object)}.
      */
     protected SimpleChannelInboundHandler(boolean autoRelease) {
         matcher = TypeParameterMatcher.find(this, SimpleChannelInboundHandler.class, "I");
@@ -78,9 +69,9 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
     /**
      * Create a new instance
      *
-     * @param inboundMessageType    The type of messages to match
-     * @param autoRelease           {@code true} if handled messages should be released automatically by passing them to
-     *                              {@link ReferenceCountUtil#release(Object)}.
+     * @param inboundMessageType The type of messages to match
+     * @param autoRelease {@code true} if handled messages should be released automatically by passing them to
+     * {@link ReferenceCountUtil#release(Object)}.
      */
     protected SimpleChannelInboundHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
         matcher = TypeParameterMatcher.get(inboundMessageType);
@@ -102,6 +93,8 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
             if (acceptInboundMessage(msg)) {
                 @SuppressWarnings("unchecked")
                 I imsg = (I) msg;
+                //模版方法设计模式
+                //该方法推迟到子类执行
                 channelRead0(ctx, imsg);
             } else {
                 release = false;
@@ -109,21 +102,27 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
             }
         } finally {
             if (autoRelease && release) {
+                //对该对象(msg)的引用数 -1
+                //最好不要在用户代码中保持该对象的引用
                 ReferenceCountUtil.release(msg);
             }
         }
     }
 
     /**
+     * 这个方法是用户必须要实现的方法
+     *
+     * <p></p>
+     *
      * <strong>Please keep in mind that this method will be renamed to
      * {@code messageReceived(ChannelHandlerContext, I)} in 5.0.</strong>
      *
      * Is called for each message of type {@link I}.
      *
-     * @param ctx           the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
-     *                      belongs to
-     * @param msg           the message to handle
-     * @throws Exception    is thrown if an error occurred
+     * @param ctx the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
+     * belongs to
+     * @param msg the message to handle
+     * @throws Exception is thrown if an error occurred
      */
     protected abstract void channelRead0(ChannelHandlerContext ctx, I msg) throws Exception;
 }

@@ -20,6 +20,8 @@ import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
 /**
+ * 使用引用计数的方法
+ *
  * Collection of method to handle objects that may implement {@link ReferenceCounted}.
  */
 public final class ReferenceCountUtil {
@@ -76,6 +78,8 @@ public final class ReferenceCountUtil {
     }
 
     /**
+     * 对该对象(msg)的引用数 -1
+     *
      * Try to call {@link ReferenceCounted#release()} if the specified message implements {@link ReferenceCounted}.
      * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
      */

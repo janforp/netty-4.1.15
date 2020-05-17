@@ -1,21 +1,16 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 /**
+ * 适配器模式
+ *
+ * 这个类的方法实现原则；直接调用 ChannelPipeline 中的下一个处理器，所以对于当前处理器来说这是一个空实现
+ *
+ * 如果用户只对处理器接口中的某一个或者几个方法感兴趣，则只需要继承该适配器，然后重写感兴趣的方法即可，其他的方法不做任何逻辑，直接传播给下一个处理器即可
+ *
+ * @see SimpleChannelInboundHandler
+ *
+ *
+ * <p></p>
  * Abstract base class for {@link ChannelInboundHandler} implementations which provide
  * implementations of all of their methods.
  *
@@ -39,6 +34,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
      */
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        //直接调用 ChannelPipeline 中的下一个处理器，所以对于当前处理器来说这是一个空实现
         ctx.fireChannelRegistered();
     }
 
