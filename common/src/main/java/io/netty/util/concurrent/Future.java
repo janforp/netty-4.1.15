@@ -4,9 +4,18 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * JDK所提供的 Future 只能通过手工的方式检查执行结果，而这个操作是会阻塞的；netty 则对 ChannelFuture 进行了增强，通过 ChannelFutureListener 以回调的方式来获取执行结果，
+ * 去除了手工检查阻塞的操作；值得注意的是：ChannelFutureListener 的 operationComplete 方法是由 I/O 线程执行的，因此，要注意的是不要在这里执行耗时操作，否则需要通过另外的
+ * 线程或线程池来执行
+ */
+
+
+/**
  * The result of an asynchronous operation.
  *
  * 该对象封装了一个异步操作的结果，扩展了java原生的 Future
+ *
+ * 使用了观察者模式，所有的监听器一般都存储在一个集合或者其他对象中，当时间发生的时候由主题对象来遍历这些观察者进行回调
  */
 @SuppressWarnings("ClassNameSameAsAncestorName")
 public interface Future<V> extends java.util.concurrent.Future<V> {

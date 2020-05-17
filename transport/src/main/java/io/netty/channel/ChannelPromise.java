@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 import io.netty.util.concurrent.Future;
@@ -22,7 +7,7 @@ import io.netty.util.concurrent.Promise;
 /**
  * Special {@link ChannelFuture} which is writable.
  *
- * Promise：一个可写的 Future
+ * Promise：一个可写的 Future，写是指：设置该 future 的结果以及异常，如：setSuccess(Void result);setFailure(Throwable cause);
  * ChannelFuture：一个 channel 对应的 Future，并且内部可以获取对应的 channel
  */
 public interface ChannelPromise extends ChannelFuture, Promise<Void> {

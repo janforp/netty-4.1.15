@@ -156,6 +156,8 @@ public interface ChannelFuture extends Future<Void> {
      * Returns a channel where the I/O operation associated with this future takes place.
      *
      * ChannelFuture 中封装了 该 ChannelFuture 对应的 Channel
+     *
+     * 这是额外提供的一个方法，很关键
      */
     Channel channel();
 

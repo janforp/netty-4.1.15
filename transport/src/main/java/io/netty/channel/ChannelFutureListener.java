@@ -18,7 +18,11 @@ import io.netty.util.concurrent.GenericFutureListener;
  */
 public interface ChannelFutureListener extends GenericFutureListener<ChannelFuture> {
 
+    //提供了3个匿名类的实例，简化我们的开发，可以直接使用，当然开发者也是可以定义其他的实例
+
     /**
+     * 一个匿名类：关闭
+     *
      * A {@link ChannelFutureListener} that closes the {@link Channel} which is
      * associated with the specified {@link ChannelFuture}.
      */
@@ -30,6 +34,8 @@ public interface ChannelFutureListener extends GenericFutureListener<ChannelFutu
     };
 
     /**
+     * 一个匿名类：关闭失败
+     *
      * A {@link ChannelFutureListener} that closes the {@link Channel} when the
      * operation ended up with a failure or cancellation rather than a success.
      */
@@ -43,6 +49,8 @@ public interface ChannelFutureListener extends GenericFutureListener<ChannelFutu
     };
 
     /**
+     * 一个匿名类：失败的时候触发异常
+     *
      * A {@link ChannelFutureListener} that forwards the {@link Throwable} of the {@link ChannelFuture} into the
      * {@link ChannelPipeline}. This mimics the old behavior of Netty 3.
      */

@@ -19,6 +19,9 @@ public class DefaultChannelPromise extends DefaultPromise<Void> implements Chann
 
     private final Channel channel;
 
+    /**
+     * TODO ？
+     */
     private long checkpoint;
 
     /**

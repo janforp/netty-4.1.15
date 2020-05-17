@@ -9,6 +9,8 @@ package io.netty.util.concurrent;
  * 用于写结果
  *
  * 在写结果的时候可以进行通知监听器
+ *
+ * 写是指：设置该 future 的结果以及异常，如：setSuccess(Void result);setFailure(Throwable cause);
  */
 public interface Promise<V> extends Future<V> {
 
@@ -16,7 +18,7 @@ public interface Promise<V> extends Future<V> {
      * Marks this future as a success and notifies all
      * listeners.
      *
-     * If it is success or failed already it will throw an {@link IllegalStateException}.
+     * If it is success or failed already it will throw an {@link IllegalStateException}. ===》 该方法最多只能被调用一次
      */
     Promise<V> setSuccess(V result);
 

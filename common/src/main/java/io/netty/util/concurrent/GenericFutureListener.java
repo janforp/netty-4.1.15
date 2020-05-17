@@ -17,7 +17,9 @@ public interface GenericFutureListener<F extends Future<?>> extends EventListene
      *
      * 该方法在：与Future相关的操作完成时调用。
      *
-     * @param future the source {@link Future} which called this callback （调用此回调的源Future）
+     * @param future the source {@link Future} which called this callback （调用此回调的源Future）观察者模式中的主题模式，把主题对象（future）传递给了观察者
+     *
+     * 通过该 future 可以拿到 Channel 对象
      */
     void operationComplete(F future) throws Exception;
 }
