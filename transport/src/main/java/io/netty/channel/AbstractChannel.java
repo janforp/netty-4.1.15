@@ -528,6 +528,17 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
              * 2.所有由 EventLoop 所处理的各种I/O事件都将在它（该EventLoop）所关联的那个Thread上进行处理
              * 3.一个 Channel 在它的整个生命周期中只会注册在一个 EventLoop 上
              * 4.一个 EventLoop 在运行过程当中会被分配给一个或者多个 Channel（也就是说一个线程可以处理多个连接）更直白的说一个 EventLoop 需要处理一个或者多个 Channel,但是每一个 Channel 只属于唯一的一个 EventLoop
+             * 5.所有同一个 Channel 的操作，他们的任务提交顺序跟任务的执行顺序是一样的，这一点netty是可以保证的（通过一个queue实现的FIFO）
+             *
+             *  ===》1：在netty当中，Channel 的实现一定是线程安全的；基于此，我们可以存储一个Channel的引用，并且在需要向远程端点发送数据时，通过这个引用来调用Channel相应的方法；
+             *  即便当时有很多线程都在使用它也不会出现多线程问题，而且消息一定会按照顺序发送出去。
+             *
+             *  ===》2：我们在业务开发中，不要将长时间的耗时任务放入到 EventLoop 的执行队列中，因为它将会一直阻塞该线程所对应的Channel上的其他执行任务，
+             *  如果我们需要进行阻塞调用或者耗时操作（实际开发中很常见），那么我们需要使用一个专门的 EventExecutor(业务线程池)。
+             *
+             *  业务线程池通常有2种实现方式"
+             *  1.在 ChannelHandler 的回调方法中使用自定义的业务线程池，这样就可以实现异步调用。
+             *  2.借助于netty提供的向 ChannelPipeline 添加 ChannelHandler 时调用的如 addLast 方法来传递 EventExecutor。
              */
             if (eventLoop.inEventLoop()) {
                 register0(promise);

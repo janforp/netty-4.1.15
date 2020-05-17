@@ -4,6 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -30,8 +31,8 @@ public class MyServer {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap
                     .group(parentGroup, childGroup)
-//                    .option(ChannelOption.SO_RCVBUF, 123)
-//                    .attr(AttributeKey.valueOf("login"), "123")
+                    //                    .option(ChannelOption.SO_RCVBUF, 123)
+                    //                    .attr(AttributeKey.valueOf("login"), "123")
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.WARN))
                     //给worker，如果用handler，则给boss
@@ -40,10 +41,21 @@ public class MyServer {
 
             //bind中启动
             ChannelFuture channelFuture = serverBootstrap.bind(8899);
-            channelFuture = channelFuture.sync();
 
+            /**
+             * 调用该方法，阻塞到上面的 bind 完成
+             * @see DefaultChannelPromise#sync()
+             *
+             * 确保整个服务端的注册初始化操作真正的完成
+             */
+            channelFuture = channelFuture.sync();
+            //NioServerSocketChannel
             Channel channel = channelFuture.channel();
             ChannelFuture closeFuture = channel.closeFuture();
+
+            //等待异步任务 closeFuture 完成
+
+            //正常的服务器的主线程就会一直阻塞在这行代码，直到 显示的调用 channel.close 的时候才返回
             closeFuture.sync();
         } finally {
             parentGroup.shutdownGracefully();

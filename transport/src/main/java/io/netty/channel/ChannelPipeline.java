@@ -32,6 +32,11 @@ import java.util.NoSuchElementException;
  *
  * <p></p>
  *
+ * 当该处理器逻辑比较复杂耗时的时候可以使用专门的线程池处理该业务
+ *
+ * 如果添加处理器的时候不指定线程池，则默认使用当前io线程执行，可能会发生阻塞其他 Channel 的任务的情况
+ * <p></p>
+ *
  * A list of {@link ChannelHandler}s which handles or intercepts inbound events and outbound operations of a
  * {@link Channel}.  {@link ChannelPipeline} implements an advanced form of the
  * <a href="http://www.oracle.com/technetwork/java/interceptingfilter-142169.html">Intercepting Filter</a> pattern
@@ -258,7 +263,7 @@ public interface ChannelPipeline
      * Appends a {@link ChannelHandler} at the last position of this pipeline.
      *
      * @param group the {@link EventExecutorGroup} which will be used to execute the {@link ChannelHandler}
-     * methods
+     * methods，当该处理器逻辑比较复杂耗时的时候可以使用专门的线程池处理该业务
      * @param name the name of the handler to append
      * @param handler the handler to append
      * @throws IllegalArgumentException if there's an entry with the same name already in the pipeline
