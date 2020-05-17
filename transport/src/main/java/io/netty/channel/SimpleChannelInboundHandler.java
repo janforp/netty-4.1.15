@@ -104,6 +104,8 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
             if (autoRelease && release) {
                 //对该对象(msg)的引用数 -1
                 //最好不要在用户代码中保持该对象的引用
+                //如果收到该消息之后，业务逻辑是异步的，并且业务逻辑中还使用了该消息，那么就可能存在，业务逻辑还没有
+                //处理完毕的情况，该消息被 release 了，这样就可能会产生问题
                 ReferenceCountUtil.release(msg);
             }
         }
