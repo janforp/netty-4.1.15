@@ -6,6 +6,7 @@ import io.netty.channel.socket.ChannelOutputShutdownEvent;
 import io.netty.channel.socket.ChannelOutputShutdownException;
 import io.netty.util.DefaultAttributeMap;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.SingleThreadEventExecutor;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.ThrowableUtil;
 import io.netty.util.internal.UnstableApi;
@@ -73,6 +74,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * 当前Channel注册的时候传进来，然后注册到该 EventLoop上
+     *
      * @see AbstractUnsafe#register(io.netty.channel.EventLoop, io.netty.channel.ChannelPromise)
      */
     private volatile EventLoop eventLoop;
@@ -519,10 +521,18 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             //初始化该成员变量
             AbstractChannel.this.eventLoop = eventLoop;
 
+            //为了保证任务在当前的 eventLoop 中执行
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
                 try {
+                    /**
+                     * 提交一个任务
+                     *
+                     * 并且在该方法中真正的创建线程
+                     *
+                     * @see SingleThreadEventExecutor#execute(java.lang.Runnable)
+                     */
                     eventLoop.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -543,7 +553,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         /**
          * 经过之前的一些操作，使用该方法注册 Channel
          *
-         * @param promise
+         * @param promise 其中包含了 Channel
          */
         private void register0(ChannelPromise promise) {
             try {
@@ -553,7 +563,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
-                //调用java.nio 注册
+
+                /**
+                 * 具体逻辑：selectionKey = nioSelectableChannel.register(nioSelector, 0, this);
+                 *
+                 * @see AbstractNioChannel#doRegister() 调用java.nio 注册
+                 */
                 doRegister();
                 neverRegistered = false;
                 registered = true;
@@ -578,6 +593,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                         // again so that we process inbound data.
                         //
                         // See https://github.com/netty/netty/issues/4805
+                        //开始接收客户端的数据了
                         beginRead();
                     }
                 }

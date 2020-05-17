@@ -22,6 +22,8 @@ public interface EventExecutor extends EventExecutorGroup {
 
     /**
      * Calls {@link #inEventLoop(Thread)} with {@link Thread#currentThread()} as argument
+     *
+     * @see SingleThreadEventExecutor#inEventLoop(java.lang.Thread)
      */
     boolean inEventLoop();
 

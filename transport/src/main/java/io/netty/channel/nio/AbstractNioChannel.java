@@ -395,11 +395,13 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                 //真正的使用 java.nio 注册的过程
                 //java.nio.channels.SelectableChannel.register(java.nio.channels.Selector, int, java.lang.Object)
                 //serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-                SelectableChannel selectableChannel = javaChannel();
-                Selector selector = eventLoop().unwrappedSelector();
+                SelectableChannel nioSelectableChannel = javaChannel();
+                Selector nioSelector = eventLoop().unwrappedSelector();
 
-                //TODO 传入 0 是什么意思？
-                selectionKey = selectableChannel.register(selector, 0, this);
+                //netty 底层其实就是 java.nio
+
+                //传入 0 的意思：不关心任何类型的事件，当然后面是可以修改的，否则的话什么事件都做不了
+                selectionKey = nioSelectableChannel.register(nioSelector, 0, this);
                 return;
             } catch (CancelledKeyException e) {
                 if (!selected) {

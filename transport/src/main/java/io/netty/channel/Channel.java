@@ -206,6 +206,11 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     Channel flush();
 
     /**
+     * 封装了一些jdk.nio的api的使用而已
+     *
+     * 每一个Channel实例都有一个相应的Unsafe实例
+     *
+     * <p></p>
      * <em>Unsafe</em> operations that should <em>never</em> be called from user-code. These methods
      * are only provided to implement the actual transport, and must be invoked from an I/O thread except for the
      * following methods:
