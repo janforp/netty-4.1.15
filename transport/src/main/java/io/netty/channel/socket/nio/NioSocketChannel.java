@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel.socket.nio;
 
 import io.netty.buffer.ByteBuf;
@@ -24,13 +9,13 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.FileRegion;
 import io.netty.channel.RecvByteBufAllocator;
-import io.netty.util.internal.SocketUtils;
 import io.netty.channel.nio.AbstractNioByteChannel;
 import io.netty.channel.socket.DefaultSocketChannelConfig;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannelConfig;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.internal.PlatformDependent;
+import io.netty.util.internal.SocketUtils;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -48,7 +33,9 @@ import java.util.concurrent.Executor;
  * {@link io.netty.channel.socket.SocketChannel} which uses NIO selector based implementation.
  */
 public class NioSocketChannel extends AbstractNioByteChannel implements io.netty.channel.socket.SocketChannel {
+
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioSocketChannel.class);
+
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
     private static SocketChannel newSocket(SelectorProvider provider) {
@@ -91,8 +78,8 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
     /**
      * Create a new instance
      *
-     * @param parent    the {@link Channel} which created this instance or {@code null} if it was created by the user
-     * @param socket    the {@link SocketChannel} which will be used
+     * @param parent the {@link Channel} which created this instance or {@code null} if it was created by the user
+     * @param socket the {@link SocketChannel} which will be used
      */
     public NioSocketChannel(Channel parent, SocketChannel socket) {
         super(parent, socket);
@@ -387,7 +374,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
     @Override
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
-        for (;;) {
+        for (; ; ) {
             int size = in.size();
             if (size == 0) {
                 // All written so clear OP_WRITE
@@ -414,7 +401,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                 case 1:
                     // Only one ByteBuf so use non-gathering write
                     ByteBuffer nioBuffer = nioBuffers[0];
-                    for (int i = config().getWriteSpinCount() - 1; i >= 0; i --) {
+                    for (int i = config().getWriteSpinCount() - 1; i >= 0; i--) {
                         final int localWrittenBytes = ch.write(nioBuffer);
                         if (localWrittenBytes == 0) {
                             setOpWrite = true;
@@ -429,7 +416,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                     }
                     break;
                 default:
-                    for (int i = config().getWriteSpinCount() - 1; i >= 0; i --) {
+                    for (int i = config().getWriteSpinCount() - 1; i >= 0; i--) {
                         final long localWrittenBytes = ch.write(nioBuffers, 0, nioBufferCnt);
                         if (localWrittenBytes == 0) {
                             setOpWrite = true;
@@ -462,6 +449,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
     }
 
     private final class NioSocketChannelUnsafe extends NioByteUnsafe {
+
         @Override
         protected Executor prepareToClose() {
             try {
@@ -482,7 +470,8 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         }
     }
 
-    private final class NioSocketChannelConfig  extends DefaultSocketChannelConfig {
+    private final class NioSocketChannelConfig extends DefaultSocketChannelConfig {
+
         private NioSocketChannelConfig(NioSocketChannel channel, Socket javaSocket) {
             super(channel, javaSocket);
         }

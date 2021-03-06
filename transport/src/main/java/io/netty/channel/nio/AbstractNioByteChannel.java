@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel.nio;
 
 import io.netty.buffer.ByteBuf;
@@ -35,21 +20,26 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
 /**
+ * 字节操作的基类
+ *
+ * <p></p>
  * {@link AbstractNioChannel} base class for {@link Channel}s that operate on bytes.
  */
 public abstract class AbstractNioByteChannel extends AbstractNioChannel {
+
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
+
     private static final String EXPECTED_TYPES =
             " (expected: " + StringUtil.simpleClassName(ByteBuf.class) + ", " +
-            StringUtil.simpleClassName(FileRegion.class) + ')';
+                    StringUtil.simpleClassName(FileRegion.class) + ')';
 
     private Runnable flushTask;
 
     /**
      * Create a new instance
      *
-     * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}
-     * @param ch                the underlying {@link SelectableChannel} on which it operates
+     * @param parent the parent {@link Channel} by which this instance was created. May be {@code null}
+     * @param ch the underlying {@link SelectableChannel} on which it operates
      */
     protected AbstractNioByteChannel(Channel parent, SelectableChannel ch) {
         super(parent, ch, SelectionKey.OP_READ);
@@ -162,7 +152,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         int writeSpinCount = -1;
 
         boolean setOpWrite = false;
-        for (;;) {
+        for (; ; ) {
             Object msg = in.current();
             if (msg == null) {
                 // Wrote all messages.
@@ -184,7 +174,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 if (writeSpinCount == -1) {
                     writeSpinCount = config().getWriteSpinCount();
                 }
-                for (int i = writeSpinCount - 1; i >= 0; i --) {
+                for (int i = writeSpinCount - 1; i >= 0; i--) {
                     int localFlushedAmount = doWriteBytes(buf);
                     if (localFlushedAmount == 0) {
                         setOpWrite = true;
@@ -288,7 +278,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     /**
      * Write a {@link FileRegion}
      *
-     * @param region        the {@link FileRegion} from which the bytes should be written
+     * @param region the {@link FileRegion} from which the bytes should be written
      * @return amount       the amount of written bytes
      */
     protected abstract long doWriteFileRegion(FileRegion region) throws Exception;
@@ -300,7 +290,8 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
     /**
      * Write bytes form the given {@link ByteBuf} to the underlying {@link java.nio.channels.Channel}.
-     * @param buf           the {@link ByteBuf} from which the bytes should be written
+     *
+     * @param buf the {@link ByteBuf} from which the bytes should be written
      * @return amount       the amount of written bytes
      */
     protected abstract int doWriteBytes(ByteBuf buf) throws Exception;
