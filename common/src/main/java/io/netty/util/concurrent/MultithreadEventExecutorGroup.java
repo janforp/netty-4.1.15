@@ -73,20 +73,58 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      * 一般为：（selectStrategyFactory, RejectedExecutionHandlers.reject()）
      */
     protected MultithreadEventExecutorGroup(int nThreads, Executor executor, Object... args) {
-        this(nThreads, executor, DefaultEventExecutorChooserFactory.INSTANCE, args);
+        this(
+                nThreads,//在此处，该参数肯定有值了
+
+                executor,//在此处，可能为null
+
+                /**
+                 * Chooser的工厂
+                 * @see EventExecutorChooserFactory.EventExecutorChooser
+                 * @see DefaultEventExecutorChooserFactory.PowerOfTwoEventExecutorChooser 性能好点的
+                 * @see DefaultEventExecutorChooserFactory.GenericEventExecutorChooser 性能差点的
+                 */
+                DefaultEventExecutorChooserFactory.INSTANCE,
+                /**
+                 * args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
+                 * args[1]=selectStrategy（选择器工作策略）
+                 * args[2]=线程池拒绝策略
+                 */
+                args);
     }
 
     /**
      * Create a new instance.
      *
-     * @param nThreads the number of threads that will be used by this instance.
-     * @param executor the Executor to use, or {@code null} if the default should be used.
-     * @param chooserFactory the {@link EventExecutorChooserFactory} to use.
+     * @param nThreads the number of threads that will be used by this instance.在此处，该参数肯定有值了
+     * @param executor the Executor to use, or {@code null} if the default should be used. 在此处，可能为null
+     * @param chooserFactory the {@link EventExecutorChooserFactory} to use. Chooser的工厂 {@link EventExecutorChooserFactory.EventExecutorChooser} 有2个实现，性能有点不一样，逻辑是一样的
      * @param args arguments which will passed to each {@link #newChild(Executor, Object...)} call
      *
      * 一般为：EventExecutorChooserFactory chooserFactory,selectStrategyFactory, RejectedExecutionHandlers.reject()
      */
-    protected MultithreadEventExecutorGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory, Object... args) {
+    protected MultithreadEventExecutorGroup(
+
+            //在此处，该参数肯定有值了
+            int nThreads,
+
+            //在此处，可能为null
+            Executor executor,
+
+            /**
+             * Chooser的工厂
+             * @see EventExecutorChooserFactory.EventExecutorChooser
+             * @see DefaultEventExecutorChooserFactory.PowerOfTwoEventExecutorChooser 性能好点的
+             * @see DefaultEventExecutorChooserFactory.GenericEventExecutorChooser 性能差点的
+             */
+            EventExecutorChooserFactory chooserFactory,
+            /**
+             * args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
+             * args[1]=selectStrategy（选择器工作策略）
+             * args[2]=线程池拒绝策略
+             */
+            Object... args) {
+
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
@@ -97,13 +135,29 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             //默认的线程工厂：DefaultThreadFactory
             //默认的Executor：ThreadPerTaskExecutor
             //用户只需要传入一个 Runnable，该执行器则会生成一个线程去执行该任务
-            executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
+
+            //真正生产出来执行任务的线程的作用
+            executor = new ThreadPerTaskExecutor(
+
+                    /**
+                     * 构建出来一个线程工厂，用来生产具体的线程
+                     * @see FastThreadLocalThread 工厂产生的线程类型
+                     */
+                    newDefaultThreadFactory()
+            );
         }
 
-        //创建事件处理器数组
+        /**
+         * 创建事件处理器数组
+         * 这里假设平台是 8 核心，则会创建长度为 16 的 EventExecutor 数组
+         */
         children = new EventExecutor[nThreads];
 
-        //根据线程数量循环实例化 EventExecutor
+        /**
+         * 根据线程数量循环实例化 EventExecutor
+         *
+         * 循环实例化数组中每一个单元的 EventExecutor
+         */
         for (int i = 0; i < nThreads; i++) {
             //每次循环创建执行器是否成功的标志
             boolean success = false;
@@ -114,8 +168,19 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                  * 第二个参数：selectStrategyFactory, RejectedExecutionHandlers.reject()）
                  *
                  * @see io.netty.channel.nio.NioEventLoopGroup#newChild(java.util.concurrent.Executor, java.lang.Object...)
+                 * 会返回一个 NioEventLoop 实例
                  */
-                children[i] = newChild(executor, args);
+                children[i] = newChild(
+
+                        executor,
+
+                        /**
+                         * args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
+                         * args[1]=selectStrategy（选择器工作策略）
+                         * args[2]=线程池拒绝策略
+                         */
+                        args);
+
                 success = true;
             } catch (Exception e) {
                 // TODO: Think about if this is a good exception type
@@ -147,7 +212,17 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
         //所有的执行器都创建完毕之后的逻辑
 
-        //实例化选择器
+        /**
+         * 通过 ChooserFactory 根据当前 children 数组的长度，构建一个 合适的 chooser 实例
+         * 后面，外部只有想要 获取 或者 注册... 到 NioEventLoop， 都是通过该  chooser 来分配 NioEventLoop 的
+         *
+         * @see DefaultEventExecutorChooserFactory#newChooser(io.netty.util.concurrent.EventExecutor[])
+         * 实例化选择器
+         * Chooser的工厂
+         * @see EventExecutorChooserFactory.EventExecutorChooser
+         * @see DefaultEventExecutorChooserFactory.PowerOfTwoEventExecutorChooser 性能好点的
+         * @see DefaultEventExecutorChooserFactory.GenericEventExecutorChooser 性能差点的
+         */
         chooser = chooserFactory.newChooser(children);
 
         /**
@@ -156,7 +231,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
          */
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {
             @Override
-            public void operationComplete(Future<Object> future) throws Exception {
+            public void operationComplete(Future<Object> future) {
                 //成员变量
                 if (terminatedChildren.incrementAndGet() == children.length) {
                     //当所有的执行器都关闭的时候，就发出通知
@@ -171,6 +246,8 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
              * 把 terminationListener 分别注册到每一个执行器
              * 这样的话在关闭的时候就会通过该 terminationListener 通知所有的执行器了
              * @see SingleThreadEventExecutor#terminationFuture
+             *
+             * @see io.netty.util.concurrent.FutureListener#operationComplete 回调
              */
             e.terminationFuture().addListener(terminationListener);
         }

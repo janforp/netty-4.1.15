@@ -1,19 +1,3 @@
-/*
- * Copyright 2017 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.util;
 
 import io.netty.util.internal.ObjectUtil;
@@ -38,7 +22,7 @@ public final class NettyRuntime {
          *
          * @param availableProcessors the number of available processors
          * @throws IllegalArgumentException if the specified number of available processors is non-positive
-         * @throws IllegalStateException    if the number of available processors is already configured
+         * @throws IllegalStateException if the number of available processors is already configured
          */
         synchronized void setAvailableProcessors(final int availableProcessors) {
             ObjectUtil.checkPositive(availableProcessors, "availableProcessors");
@@ -80,7 +64,7 @@ public final class NettyRuntime {
      *
      * @param availableProcessors the number of available processors
      * @throws IllegalArgumentException if the specified number of available processors is non-positive
-     * @throws IllegalStateException    if the number of available processors is already configured
+     * @throws IllegalStateException if the number of available processors is already configured
      */
     @SuppressWarnings("unused,WeakerAccess") // this method is part of the public API
     public static void setAvailableProcessors(final int availableProcessors) {

@@ -1,8 +1,8 @@
 package io.netty.channel.nio;
 
 import io.netty.channel.Channel;
-import io.netty.channel.EventLoop;
 import io.netty.channel.DefaultSelectStrategyFactory;
+import io.netty.channel.EventLoop;
 import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.SelectStrategyFactory;
 import io.netty.util.concurrent.EventExecutor;
@@ -53,7 +53,11 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
 
     public NioEventLoopGroup(int nThreads, Executor executor) {
         //生成一个java原生的选择器
-        this(nThreads, executor, SelectorProvider.provider());
+        this(
+                nThreads,
+                executor,
+                SelectorProvider.provider() // 选择器提供器，通过这个参数可以获取到jdk层面的 selector 实例(这是java nio 的知识)
+        );
     }
 
     /**
@@ -78,14 +82,40 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
      * @param selectorProvider java原生的选择器提供者
      */
     public NioEventLoopGroup(int nThreads, Executor executor, final SelectorProvider selectorProvider) {
-        //传入一个默认的选择策略工厂实例(使用了抽象工厂模式)
-        this(nThreads, executor, selectorProvider, DefaultSelectStrategyFactory.INSTANCE);
+        /**
+         * 传入一个默认的选择策略工厂实例(使用了抽象工厂模式)
+         * @see NioEventLoopGroup#NioEventLoopGroup() 如果使用默认构造方法，则，这里的参数情况如下面的注释
+         */
+        this(
+                nThreads, //0
+                executor, //null
+                selectorProvider,//SelectorProvider.provider()
+                /**
+                 * @see DefaultSelectStrategy
+                 */
+                DefaultSelectStrategyFactory.INSTANCE //选择器工作策略
+        );
     }
 
-    public NioEventLoopGroup(int nThreads, Executor executor, final SelectorProvider selectorProvider,
-            final SelectStrategyFactory selectStrategyFactory) {
-        //传入一个拒绝策略：直接抛出移除
-        super(nThreads, executor, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject());
+    public NioEventLoopGroup(int nThreads, Executor executor, final SelectorProvider selectorProvider, final SelectStrategyFactory selectStrategyFactory) {
+        /**
+         * 传入一个拒绝策略：直接抛出移除
+         * @see NioEventLoopGroup#NioEventLoopGroup() 如果使用默认构造方法，则，这里的参数情况如下面的注释
+         */
+        super(
+                nThreads, //0
+                executor, //null
+                selectorProvider,//SelectorProvider.provider()
+                /**
+                 * @see DefaultSelectStrategy
+                 */
+                selectStrategyFactory, //DefaultSelectStrategyFactory.INSTANCE
+                /**
+                 * 线程池拒绝策略
+                 * @see RejectedExecutionHandler 直接抛出异常
+                 */
+                RejectedExecutionHandlers.reject() // 直接抛出异常的策略
+        );
     }
 
     public NioEventLoopGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory,
@@ -123,7 +153,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     }
 
     /**
-     * @param executor = new ThreadPerTaskExecutor(newDefaultThreadFactory())
+     * @param executor = new ThreadPerTaskExecutor(newDefaultThreadFactory()) {@link io.netty.util.concurrent.ThreadPerTaskExecutor }
      * @param args 由该类的构造器传入
      * @return 一个 EventExecutor 实例
      * @throws Exception
@@ -131,8 +161,40 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
      * @see MultithreadEventExecutorGroup#MultithreadEventExecutorGroup(int, java.util.concurrent.Executor, io.netty.util.concurrent.EventExecutorChooserFactory, java.lang.Object...)
      */
     @Override
-    protected EventLoop newChild(Executor executor, Object... args) throws Exception {
-        return new NioEventLoop(this, executor, (SelectorProvider) args[0],
-                ((SelectStrategyFactory) args[1]).newSelectStrategy(), (RejectedExecutionHandler) args[2]);
+    protected EventLoop newChild(
+
+            /**
+             * ThreadPerTaskExecutor 实例，这个实例里面包含一个 ThreadFactory 实例，
+             * 创建出来的实例的类型为{@link io.netty.util.concurrent.FastThreadLocalThread}
+             * @see io.netty.util.concurrent.ThreadPerTaskExecutor
+             */
+            Executor executor,
+
+            /**
+             * args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
+             * args[1]=selectStrategy（选择器工作策略）
+             * args[2]=线程池拒绝策略
+             */
+            Object... args) throws Exception {
+
+        return new NioEventLoop(
+                /**
+                 * NioEventLoopGroup
+                 */
+                this,
+
+                /**
+                 * ThreadPerTaskExecutor 实例，这个实例里面包含一个 ThreadFactory 实例，
+                 * 创建出来的实例的类型为{@link io.netty.util.concurrent.FastThreadLocalThread}
+                 * @see io.netty.util.concurrent.ThreadPerTaskExecutor
+                 */
+                executor,
+                //java
+                (SelectorProvider) args[0],
+                //
+                ((SelectStrategyFactory) args[1]).newSelectStrategy(),
+                //拒绝策略
+                (RejectedExecutionHandler) args[2]
+        );
     }
 }

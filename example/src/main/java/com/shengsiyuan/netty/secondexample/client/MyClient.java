@@ -30,7 +30,7 @@ public class MyClient {
                     .channel(NioSocketChannel.class)
                     .handler(new MyClientInitializer());
 
-            ChannelFuture channelFuture = bootstrap.connect("localhost", 8899);
+            ChannelFuture channelFuture = bootstrap.connect("localhost", 8888);
             channelFuture.sync();
 
             Channel channel = channelFuture.channel();

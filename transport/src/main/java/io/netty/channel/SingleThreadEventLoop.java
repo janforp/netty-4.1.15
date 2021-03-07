@@ -54,7 +54,11 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
      * @param rejectedExecutionHandler 拒绝策略：直接排除异常
      * @see NioEventLoop#NioEventLoop(io.netty.channel.nio.NioEventLoopGroup, java.util.concurrent.Executor, java.nio.channels.spi.SelectorProvider, io.netty.channel.SelectStrategy, io.netty.util.concurrent.RejectedExecutionHandler)
      */
-    protected SingleThreadEventLoop(EventLoopGroup parent, Executor executor, boolean addTaskWakesUp, int maxPendingTasks,
+    protected SingleThreadEventLoop(
+            EventLoopGroup parent,
+            Executor executor,
+            boolean addTaskWakesUp,
+            int maxPendingTasks,
             RejectedExecutionHandler rejectedExecutionHandler) {
 
         super(parent, executor, addTaskWakesUp, maxPendingTasks, rejectedExecutionHandler);

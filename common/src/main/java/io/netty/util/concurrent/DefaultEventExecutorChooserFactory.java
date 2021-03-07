@@ -21,7 +21,6 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
     private DefaultEventExecutorChooserFactory() {
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public EventExecutorChooser newChooser(EventExecutor[] executors) {
         //是不是2个幂数，选择不通的选择器
@@ -34,12 +33,23 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
     }
 
     /**
-     * 是不是2个幂数
+     * val 是不是2的次方
      *
      * @param val
      * @return
      */
     private static boolean isPowerOfTwo(int val) {
+        /**
+         * 假设 val = 16
+         * 则16的二进制：0001 0000
+         * - 16的二进制：1111 0000
+         * 则二者进行& ：0001 0000
+         *
+         * 反例。val = 15
+         * 则15的二进制：0000 1111
+         * - 15的二进制：1111 0001
+         * 则二者进行& ：0000 0001
+         */
         return (val & -val) == val;
     }
 
@@ -55,6 +65,9 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
 
         @Override
         public EventExecutor next() {
+            /**
+             * idx.getAndIncrement() & executors.length - 1 该算法相当于取模,性能好点
+             */
             return executors[idx.getAndIncrement() & executors.length - 1];
         }
     }
@@ -71,6 +84,9 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
 
         @Override
         public EventExecutor next() {
+            /**
+             * Math.abs(idx.getAndIncrement() % executors.length) 该算法直接取模,性能差点
+             */
             return executors[Math.abs(idx.getAndIncrement() % executors.length)];
         }
     }

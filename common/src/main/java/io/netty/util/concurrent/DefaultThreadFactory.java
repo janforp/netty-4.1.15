@@ -11,10 +11,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DefaultThreadFactory implements ThreadFactory {
 
+    /**
+     * 每个DefaultThreadFactory实例有自己的 poolId
+     */
     private static final AtomicInteger poolId = new AtomicInteger();
 
     /**
      * 线程名称的一部分
+     *
+     * 每个DefaultThreadFactory实例内部生产的线程都有自己的线程ID
      */
     private final AtomicInteger nextId = new AtomicInteger();
 
@@ -29,7 +34,7 @@ public class DefaultThreadFactory implements ThreadFactory {
     private final boolean daemon;
 
     /**
-     * 线程的优先级
+     * 线程的优先级,默认 5
      */
     private final int priority;
 
@@ -63,24 +68,48 @@ public class DefaultThreadFactory implements ThreadFactory {
     }
 
     public DefaultThreadFactory(Class<?> poolType, boolean daemon, int priority) {
-        this(toPoolName(poolType), daemon, priority);
+        this(
+                /**
+                 * 获取名字
+                 * @see NioEventLoopGroup
+                 */
+                toPoolName(poolType),
+                daemon, priority
+        );
     }
 
+    /**
+     * TODO 此处是否可以缓存？？？
+     */
     public static String toPoolName(Class<?> poolType) {
         if (poolType == null) {
             throw new NullPointerException("poolType");
         }
 
+        //com.a.b.NioEventLoopGroup ====》 NioEventLoopGroup 获取一个不包含包名称的 className
         String poolName = StringUtil.simpleClassName(poolType);
         switch (poolName.length()) {
             case 0:
+                //一般不会发生
                 return "unknown";
             case 1:
+
+                //类只有一个字符
                 return poolName.toLowerCase(Locale.US);
             default:
-                if (Character.isUpperCase(poolName.charAt(0)) && Character.isLowerCase(poolName.charAt(1))) {
+
+                //正常的类名称
+                if (Character.isUpperCase(poolName.charAt(0))//第一个字符大写？
+                        && Character.isLowerCase(poolName.charAt(1)))//第二个字符小写？
+
+                {
+                    /**
+                     * 如果是 Aaxxxx 这样，则转换为 aaxxxx
+                     * NioEventLoopGroup -----> nioEventLoopGroup
+                     */
                     return Character.toLowerCase(poolName.charAt(0)) + poolName.substring(1);
                 } else {
+
                     return poolName;
                 }
         }
@@ -91,8 +120,7 @@ public class DefaultThreadFactory implements ThreadFactory {
             throw new NullPointerException("poolName");
         }
         if (priority < Thread.MIN_PRIORITY || priority > Thread.MAX_PRIORITY) {
-            throw new IllegalArgumentException(
-                    "priority: " + priority + " (expected: Thread.MIN_PRIORITY <= priority <= Thread.MAX_PRIORITY)");
+            throw new IllegalArgumentException("priority: " + priority + " (expected: Thread.MIN_PRIORITY <= priority <= Thread.MAX_PRIORITY)");
         }
 
         prefix = poolName + '-' + poolId.incrementAndGet() + '-';
@@ -102,13 +130,27 @@ public class DefaultThreadFactory implements ThreadFactory {
     }
 
     public DefaultThreadFactory(String poolName, boolean daemon, int priority) {
-        this(poolName, daemon, priority, System.getSecurityManager() == null ?
-                Thread.currentThread().getThreadGroup() : System.getSecurityManager().getThreadGroup());
+        this(poolName, daemon, priority,
+
+                //线程组
+                System.getSecurityManager() == null ?
+                        Thread.currentThread().getThreadGroup()
+                        : System.getSecurityManager().getThreadGroup());
     }
 
     @Override
     public Thread newThread(Runnable r) {
-        Thread t = newThread(new DefaultRunnableDecorator(r), prefix + nextId.incrementAndGet());
+        Thread t = newThread(
+
+                /**
+                 * 装饰下传入的任务
+                 */
+                new DefaultRunnableDecorator(r),
+
+                //线程名称:前缀 + 线程ID
+                prefix + nextId.incrementAndGet()
+        );
+
         try {
             if (t.isDaemon() != daemon) {
                 t.setDaemon(daemon);

@@ -34,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * Nio事件循环
+ *
  * {@link SingleThreadEventLoop} implementation which register the {@link Channel}'s to a
  * {@link Selector} and so does the multi-plexing of these in the event loop.
  *
@@ -155,10 +157,28 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * @param rejectedExecutionHandler 拒绝策略
      * @see NioEventLoopGroup#newChild(java.util.concurrent.Executor, java.lang.Object...)
      */
-    NioEventLoop(NioEventLoopGroup parent, Executor executor, SelectorProvider selectorProvider,
-            SelectStrategy strategy, RejectedExecutionHandler rejectedExecutionHandler) {
+    NioEventLoop(
+            NioEventLoopGroup parent,
+            /**
+             * ThreadPerTaskExecutor 实例，这个实例里面包含一个 ThreadFactory 实例，
+             * 创建出来的实例的类型为{@link io.netty.util.concurrent.FastThreadLocalThread}
+             * @see io.netty.util.concurrent.ThreadPerTaskExecutor
+             */
+            Executor executor,
+            SelectorProvider selectorProvider,
+            SelectStrategy strategy,
+            RejectedExecutionHandler rejectedExecutionHandler) {
 
-        super(parent, executor, false, DEFAULT_MAX_PENDING_TASKS, rejectedExecutionHandler);
+        /**
+         * 可以打开类继承关系图分析
+         * @see SingleThreadEventLoop
+         */
+        super(
+                parent,//NioEventLoop
+                executor,//ThreadPerTaskExecutor
+                false,
+                DEFAULT_MAX_PENDING_TASKS,//最少16
+                rejectedExecutionHandler);
 
         if (selectorProvider == null) {
             throw new NullPointerException("selectorProvider");
@@ -167,12 +187,19 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             throw new NullPointerException("selectStrategy");
         }
         provider = selectorProvider;
+        /**
+         * 封装类一个原始的selector跟一个包装后的selector
+         * 也就是说，每个 NioEventLoop 都持有一个 selector 实例
+         */
         final SelectorTuple selectorTuple = openSelector();
         selector = selectorTuple.selector;
         unwrappedSelector = selectorTuple.unwrappedSelector;
         selectStrategy = strategy;
     }
 
+    /**
+     * Tuple：元组
+     */
     private static final class SelectorTuple {
 
         final Selector unwrappedSelector;

@@ -26,8 +26,13 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
     private static final int DEFAULT_EVENT_LOOP_THREADS;
 
     static {
-        DEFAULT_EVENT_LOOP_THREADS = Math.max(1, SystemPropertyUtil.getInt(
-                "io.netty.eventLoopThreads", NettyRuntime.availableProcessors() * 2));
+        DEFAULT_EVENT_LOOP_THREADS = Math.max(1,
+
+                /**
+                 * io.netty.eventLoopThreads：配置项
+                 * 如果存在，则使用配置项，否则使用 NettyRuntime.availableProcessors() * 2 ( 8 核 则 16)
+                 */
+                SystemPropertyUtil.getInt("io.netty.eventLoopThreads", NettyRuntime.availableProcessors() * 2));
 
         if (logger.isDebugEnabled()) {
             logger.debug("-Dio.netty.eventLoopThreads: {}", DEFAULT_EVENT_LOOP_THREADS);
@@ -37,14 +42,29 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
     /**
      * 传入的值：
      *
-     * @see NioEventLoopGroup#NioEventLoopGroup(int, java.util.concurrent.Executor, java.nio.channels.spi.SelectorProvider, io.netty.channel.SelectStrategyFactory)
-     * super(nThreads, executor, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject());
-     *
-     * @see MultithreadEventExecutorGroup#MultithreadEventExecutorGroup(int, Executor, Object...)
+     * nThreads, //0
+     * executor, //null
+     * selectorProvider,//SelectorProvider.provider()
      *
      * @param args selectStrategyFactory, RejectedExecutionHandlers.reject()
+     * @see DefaultSelectStrategy
+     * selectStrategyFactory, //DefaultSelectStrategyFactory.INSTANCE
+     * @see RejectedExecutionHandler 直接抛出异常
+     * RejectedExecutionHandlers.reject() // 直接抛出异常的策略
+     * @see NioEventLoopGroup#NioEventLoopGroup(int, java.util.concurrent.Executor, java.nio.channels.spi.SelectorProvider, io.netty.channel.SelectStrategyFactory)
+     * super(nThreads, executor, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject());
+     * @see MultithreadEventExecutorGroup#MultithreadEventExecutorGroup(int, Executor, Object...)
      */
-    protected MultithreadEventLoopGroup(int nThreads, Executor executor, Object... args) {
+    protected MultithreadEventLoopGroup(
+            int nThreads,
+            Executor executor,
+
+            /**
+             * args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
+             * args[1]=selectStrategy（选择器工作策略）
+             * args[2]=线程池拒绝策略
+             */
+            Object... args) {
         super(nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor, args);
     }
 
@@ -60,7 +80,7 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
      * EventExecutorChooserFactory, Object...)
      */
     protected MultithreadEventLoopGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory,
-                                     Object... args) {
+            Object... args) {
         super(nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor, chooserFactory, args);
     }
 
