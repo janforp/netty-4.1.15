@@ -7,6 +7,8 @@ import java.util.Map;
 /**
  * ChannelHandler 的一个骨架实现
  *
+ * 适配器模式
+ *
  * <p></p>
  * Skeleton implementation of a {@link ChannelHandler}.
  */

@@ -24,10 +24,13 @@ public interface ChannelInboundHandler extends ChannelHandler {
     /**
      * The {@link Channel} of the {@link ChannelHandlerContext} was registered is now inactive and reached its
      * end of lifetime.
+     * 频道无效
      */
     void channelInactive(ChannelHandlerContext ctx) throws Exception;
 
     /**
+     * 对于每个传入的消息都要调用
+     *
      * Invoked when the current {@link Channel} has read a message from the peer.
      */
     void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception;

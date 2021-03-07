@@ -175,6 +175,8 @@ import java.lang.annotation.Target;
  */
 public interface ChannelHandler {
 
+    //ChannelHandler,它是一个接口族的父接口,它的实现负责接收并响应事件通知。在 Netty 应用程序中，所有的数据处理逻辑都包含在这些核心抽象的实现中。
+
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
      */
