@@ -27,6 +27,8 @@ package io.netty.channel;
  * <<netty in action>>
  * 因为你的 Echo 服务器会响应传入的消息，所以它需要实现 ChannelInboundHandler 接口，
  * 用 来定义响应入站事件的方法。这个简单的应用程序只需要用到少量的这些方法，所以继承 ChannelInboundHandlerAdapter 类也就足够了，它提供了 ChannelInboundHandler 的默认实现。
+ *
+ * ChannelInboundHandlerAdapter 有一个直观的 API，并且它的每个方法都可以被重写以 挂钩到事件生命周期的恰当点上
  */
 public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
 
