@@ -29,6 +29,15 @@ package io.netty.channel;
  * 用 来定义响应入站事件的方法。这个简单的应用程序只需要用到少量的这些方法，所以继承 ChannelInboundHandlerAdapter 类也就足够了，它提供了 ChannelInboundHandler 的默认实现。
  *
  * ChannelInboundHandlerAdapter 有一个直观的 API，并且它的每个方法都可以被重写以 挂钩到事件生命周期的恰当点上
+ *
+ *
+ * 为什么需要适配器类
+ * 有一些适配器类可以将编写自定义的 ChannelHandler 所需要的努力降到最低限度，因为它们提 供了定义在对应接口中的所有方法的默认实现。
+ * 下面这些是编写自定义 ChannelHandler 时经常会用到的适配器类:
+ *  ChannelHandlerAdapter
+ *  ChannelInboundHandlerAdapter
+ *  ChannelOutboundHandlerAdapter
+ *  ChannelDuplexHandler
  */
 public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
 
