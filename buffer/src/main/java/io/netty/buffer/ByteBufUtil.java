@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.buffer;
 
 import io.netty.util.AsciiString;
@@ -51,6 +36,7 @@ import static io.netty.util.internal.StringUtil.isSurrogate;
 public final class ByteBufUtil {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ByteBufUtil.class);
+
     private static final FastThreadLocal<CharBuffer> CHAR_BUFFERS = new FastThreadLocal<CharBuffer>() {
         @Override
         protected CharBuffer initialValue() throws Exception {
@@ -59,8 +45,11 @@ public final class ByteBufUtil {
     };
 
     private static final byte WRITE_UTF_UNKNOWN = (byte) '?';
+
     private static final int MAX_CHAR_BUFFER_SIZE;
+
     private static final int THREAD_LOCAL_BUFFER_SIZE;
+
     private static final int MAX_BYTES_PER_CHAR_UTF8 =
             (int) CharsetUtil.encoder(CharsetUtil.UTF_8).maxBytesPerChar();
 
@@ -148,6 +137,7 @@ public final class ByteBufUtil {
     /**
      * Used to determine if the return value of {@link ByteBuf#ensureWritable(int, boolean)} means that there is
      * adequate space and a write operation will succeed.
+     *
      * @param ensureWritableResult The return value from {@link ByteBuf#ensureWritable(int, boolean)}.
      * @return {@code true} if {@code ensureWritableResult} means that there is adequate space and a write operation
      * will succeed.
@@ -168,19 +158,19 @@ public final class ByteBufUtil {
         int hashCode = 1;
         int arrayIndex = buffer.readerIndex();
         if (buffer.order() == ByteOrder.BIG_ENDIAN) {
-            for (int i = intCount; i > 0; i --) {
+            for (int i = intCount; i > 0; i--) {
                 hashCode = 31 * hashCode + buffer.getInt(arrayIndex);
                 arrayIndex += 4;
             }
         } else {
-            for (int i = intCount; i > 0; i --) {
+            for (int i = intCount; i > 0; i--) {
                 hashCode = 31 * hashCode + swapInt(buffer.getInt(arrayIndex));
                 arrayIndex += 4;
             }
         }
 
-        for (int i = byteCount; i > 0; i --) {
-            hashCode = 31 * hashCode + buffer.getByte(arrayIndex ++);
+        for (int i = byteCount; i > 0; i--) {
+            hashCode = 31 * hashCode + buffer.getByte(arrayIndex++);
         }
 
         if (hashCode == 0) {
@@ -198,8 +188,8 @@ public final class ByteBufUtil {
         int attempts = haystack.readableBytes() - needle.readableBytes() + 1;
         for (int i = 0; i < attempts; i++) {
             if (equals(needle, needle.readerIndex(),
-                       haystack, haystack.readerIndex() + i,
-                       needle.readableBytes())) {
+                    haystack, haystack.readerIndex() + i,
+                    needle.readableBytes())) {
                 return haystack.readerIndex() + i;
             }
         }
@@ -226,7 +216,7 @@ public final class ByteBufUtil {
         final int byteCount = length & 7;
 
         if (a.order() == b.order()) {
-            for (int i = longCount; i > 0; i --) {
+            for (int i = longCount; i > 0; i--) {
                 if (a.getLong(aStartIndex) != b.getLong(bStartIndex)) {
                     return false;
                 }
@@ -234,7 +224,7 @@ public final class ByteBufUtil {
                 bStartIndex += 8;
             }
         } else {
-            for (int i = longCount; i > 0; i --) {
+            for (int i = longCount; i > 0; i--) {
                 if (a.getLong(aStartIndex) != swapLong(b.getLong(bStartIndex))) {
                     return false;
                 }
@@ -243,12 +233,12 @@ public final class ByteBufUtil {
             }
         }
 
-        for (int i = byteCount; i > 0; i --) {
+        for (int i = byteCount; i > 0; i--) {
             if (a.getByte(aStartIndex) != b.getByte(bStartIndex)) {
                 return false;
             }
-            aStartIndex ++;
-            bStartIndex ++;
+            aStartIndex++;
+            bStartIndex++;
         }
 
         return true;
@@ -335,7 +325,7 @@ public final class ByteBufUtil {
     private static long compareUintBigEndianA(
             ByteBuf bufferA, ByteBuf bufferB, int aIndex, int bIndex, int uintCountIncrement) {
         for (int aEnd = aIndex + uintCountIncrement; aIndex < aEnd; aIndex += 4, bIndex += 4) {
-            long comp =  bufferA.getUnsignedInt(aIndex) - bufferB.getUnsignedIntLE(bIndex);
+            long comp = bufferA.getUnsignedInt(aIndex) - bufferB.getUnsignedIntLE(bIndex);
             if (comp != 0) {
                 return comp;
             }
@@ -346,7 +336,7 @@ public final class ByteBufUtil {
     private static long compareUintBigEndianB(
             ByteBuf bufferA, ByteBuf bufferB, int aIndex, int bIndex, int uintCountIncrement) {
         for (int aEnd = aIndex + uintCountIncrement; aIndex < aEnd; aIndex += 4, bIndex += 4) {
-            long comp =  bufferA.getUnsignedIntLE(aIndex) - bufferB.getUnsignedInt(bIndex);
+            long comp = bufferA.getUnsignedIntLE(aIndex) - bufferB.getUnsignedInt(bIndex);
             if (comp != 0) {
                 return comp;
             }
@@ -403,7 +393,7 @@ public final class ByteBufUtil {
      */
     @SuppressWarnings("deprecation")
     public static ByteBuf writeShortBE(ByteBuf buf, int shortValue) {
-        return buf.order() == ByteOrder.BIG_ENDIAN? buf.writeShort(shortValue) : buf.writeShortLE(shortValue);
+        return buf.order() == ByteOrder.BIG_ENDIAN ? buf.writeShort(shortValue) : buf.writeShortLE(shortValue);
     }
 
     /**
@@ -411,7 +401,7 @@ public final class ByteBufUtil {
      */
     @SuppressWarnings("deprecation")
     public static ByteBuf setShortBE(ByteBuf buf, int index, int shortValue) {
-        return buf.order() == ByteOrder.BIG_ENDIAN? buf.setShort(index, shortValue) : buf.setShortLE(index, shortValue);
+        return buf.order() == ByteOrder.BIG_ENDIAN ? buf.setShort(index, shortValue) : buf.setShortLE(index, shortValue);
     }
 
     /**
@@ -419,7 +409,7 @@ public final class ByteBufUtil {
      */
     @SuppressWarnings("deprecation")
     public static ByteBuf writeMediumBE(ByteBuf buf, int mediumValue) {
-        return buf.order() == ByteOrder.BIG_ENDIAN? buf.writeMedium(mediumValue) : buf.writeMediumLE(mediumValue);
+        return buf.order() == ByteOrder.BIG_ENDIAN ? buf.writeMedium(mediumValue) : buf.writeMediumLE(mediumValue);
     }
 
     /**
@@ -460,6 +450,7 @@ public final class ByteBufUtil {
     /**
      * Encode a {@link CharSequence} in <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> and write
      * it to a {@link ByteBuf} allocated with {@code alloc}.
+     *
      * @param alloc The allocator used to allocate a new {@link ByteBuf}.
      * @param seq The characters to write into a buffer.
      * @return The {@link ByteBuf} which contains the <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> encoded
@@ -479,7 +470,7 @@ public final class ByteBufUtil {
      * This method returns the actual number of bytes written.
      */
     public static int writeUtf8(ByteBuf buf, CharSequence seq) {
-        for (;;) {
+        for (; ; ) {
             if (buf instanceof AbstractByteBuf) {
                 AbstractByteBuf byteBuf = (AbstractByteBuf) buf;
                 byteBuf.ensureWritable0(utf8MaxBytes(seq));
@@ -555,6 +546,7 @@ public final class ByteBufUtil {
     /**
      * Encode a {@link CharSequence} in <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> and write
      * it to a {@link ByteBuf} allocated with {@code alloc}.
+     *
      * @param alloc The allocator used to allocate a new {@link ByteBuf}.
      * @param seq The characters to write into a buffer.
      * @return The {@link ByteBuf} which contains the <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> encoded
@@ -580,7 +572,7 @@ public final class ByteBufUtil {
             AsciiString asciiString = (AsciiString) seq;
             buf.writeBytes(asciiString.array(), asciiString.arrayOffset(), len);
         } else {
-            for (;;) {
+            for (; ; ) {
                 if (buf instanceof AbstractByteBuf) {
                     AbstractByteBuf byteBuf = (AbstractByteBuf) buf;
                     byteBuf.ensureWritable0(len);
@@ -633,7 +625,7 @@ public final class ByteBufUtil {
     }
 
     static ByteBuf encodeString0(ByteBufAllocator alloc, boolean enforceHeap, CharBuffer src, Charset charset,
-                                 int extraCapacity) {
+            int extraCapacity) {
         final CharsetEncoder encoder = CharsetUtil.encoder(charset);
         int length = (int) ((double) src.remaining() * encoder.maxBytesPerChar()) + extraCapacity;
         boolean release = true;
@@ -737,7 +729,7 @@ public final class ByteBufUtil {
      * The copy will start at {@link ByteBuf#readerIndex()} and copy {@link ByteBuf#readableBytes()} bytes.
      */
     public static byte[] getBytes(ByteBuf buf) {
-        return getBytes(buf,  buf.readerIndex(), buf.readableBytes());
+        return getBytes(buf, buf.readerIndex(), buf.readableBytes());
     }
 
     /**
@@ -776,6 +768,7 @@ public final class ByteBufUtil {
 
     /**
      * Copies the all content of {@code src} to a {@link ByteBuf} using {@link ByteBuf#writeBytes(byte[], int, int)}.
+     *
      * @param src The source of the data to copy.
      * @param dst the destination byte array.
      */
@@ -785,6 +778,7 @@ public final class ByteBufUtil {
 
     /**
      * Copies the content of {@code src} to a {@link ByteBuf} using {@link ByteBuf#writeBytes(byte[], int, int)}.
+     *
      * @param src The source of the data to copy.
      * @param srcIdx the starting offset of characters to copy.
      * @param dst the destination byte array.
@@ -794,7 +788,7 @@ public final class ByteBufUtil {
     public static void copy(AsciiString src, int srcIdx, ByteBuf dst, int dstIdx, int length) {
         if (isOutOfBounds(srcIdx, length, src.length())) {
             throw new IndexOutOfBoundsException("expected: " + "0 <= srcIdx(" + srcIdx + ") <= srcIdx + length("
-                            + length + ") <= srcLen(" + src.length() + ')');
+                    + length + ") <= srcLen(" + src.length() + ')');
         }
 
         checkNotNull(dst, "dst").setBytes(dstIdx, src.array(), srcIdx + src.arrayOffset(), length);
@@ -802,6 +796,7 @@ public final class ByteBufUtil {
 
     /**
      * Copies the content of {@code src} to a {@link ByteBuf} using {@link ByteBuf#writeBytes(byte[], int, int)}.
+     *
      * @param src The source of the data to copy.
      * @param srcIdx the starting offset of characters to copy.
      * @param dst the destination byte array.
@@ -810,7 +805,7 @@ public final class ByteBufUtil {
     public static void copy(AsciiString src, int srcIdx, ByteBuf dst, int length) {
         if (isOutOfBounds(srcIdx, length, src.length())) {
             throw new IndexOutOfBoundsException("expected: " + "0 <= srcIdx(" + srcIdx + ") <= srcIdx + length("
-                            + length + ") <= srcLen(" + src.length() + ')');
+                    + length + ") <= srcLen(" + src.length() + ')');
         }
 
         checkNotNull(dst, "dst").writeBytes(src.array(), srcIdx + src.arrayOffset(), length);
@@ -852,33 +847,38 @@ public final class ByteBufUtil {
     private static final class HexUtil {
 
         private static final char[] BYTE2CHAR = new char[256];
+
         private static final char[] HEXDUMP_TABLE = new char[256 * 4];
+
         private static final String[] HEXPADDING = new String[16];
+
         private static final String[] HEXDUMP_ROWPREFIXES = new String[65536 >>> 4];
+
         private static final String[] BYTE2HEX = new String[256];
+
         private static final String[] BYTEPADDING = new String[16];
 
         static {
             final char[] DIGITS = "0123456789abcdef".toCharArray();
-            for (int i = 0; i < 256; i ++) {
-                HEXDUMP_TABLE[ i << 1     ] = DIGITS[i >>> 4 & 0x0F];
-                HEXDUMP_TABLE[(i << 1) + 1] = DIGITS[i       & 0x0F];
+            for (int i = 0; i < 256; i++) {
+                HEXDUMP_TABLE[i << 1] = DIGITS[i >>> 4 & 0x0F];
+                HEXDUMP_TABLE[(i << 1) + 1] = DIGITS[i & 0x0F];
             }
 
             int i;
 
             // Generate the lookup table for hex dump paddings
-            for (i = 0; i < HEXPADDING.length; i ++) {
+            for (i = 0; i < HEXPADDING.length; i++) {
                 int padding = HEXPADDING.length - i;
                 StringBuilder buf = new StringBuilder(padding * 3);
-                for (int j = 0; j < padding; j ++) {
+                for (int j = 0; j < padding; j++) {
                     buf.append("   ");
                 }
                 HEXPADDING[i] = buf.toString();
             }
 
             // Generate the lookup table for the start-offset header in each row (up to 64KiB).
-            for (i = 0; i < HEXDUMP_ROWPREFIXES.length; i ++) {
+            for (i = 0; i < HEXDUMP_ROWPREFIXES.length; i++) {
                 StringBuilder buf = new StringBuilder(12);
                 buf.append(NEWLINE);
                 buf.append(Long.toHexString(i << 4 & 0xFFFFFFFFL | 0x100000000L));
@@ -888,22 +888,22 @@ public final class ByteBufUtil {
             }
 
             // Generate the lookup table for byte-to-hex-dump conversion
-            for (i = 0; i < BYTE2HEX.length; i ++) {
+            for (i = 0; i < BYTE2HEX.length; i++) {
                 BYTE2HEX[i] = ' ' + StringUtil.byteToHexStringPadded(i);
             }
 
             // Generate the lookup table for byte dump paddings
-            for (i = 0; i < BYTEPADDING.length; i ++) {
+            for (i = 0; i < BYTEPADDING.length; i++) {
                 int padding = BYTEPADDING.length - i;
                 StringBuilder buf = new StringBuilder(padding);
-                for (int j = 0; j < padding; j ++) {
+                for (int j = 0; j < padding; j++) {
                     buf.append(' ');
                 }
                 BYTEPADDING[i] = buf.toString();
             }
 
             // Generate the lookup table for byte-to-char conversion
-            for (i = 0; i < BYTE2CHAR.length; i ++) {
+            for (i = 0; i < BYTE2CHAR.length; i++) {
                 if (i <= 0x1f || i >= 0x7f) {
                     BYTE2CHAR[i] = '.';
                 } else {
@@ -914,29 +914,7 @@ public final class ByteBufUtil {
 
         private static String hexDump(ByteBuf buffer, int fromIndex, int length) {
             if (length < 0) {
-              throw new IllegalArgumentException("length: " + length);
-            }
-            if (length == 0) {
-              return "";
-            }
-
-            int endIndex = fromIndex + length;
-            char[] buf = new char[length << 1];
-
-            int srcIdx = fromIndex;
-            int dstIdx = 0;
-            for (; srcIdx < endIndex; srcIdx ++, dstIdx += 2) {
-              System.arraycopy(
-                  HEXDUMP_TABLE, buffer.getUnsignedByte(srcIdx) << 1,
-                  buf, dstIdx, 2);
-            }
-
-            return new String(buf);
-        }
-
-        private static String hexDump(byte[] array, int fromIndex, int length) {
-            if (length < 0) {
-              throw new IllegalArgumentException("length: " + length);
+                throw new IllegalArgumentException("length: " + length);
             }
             if (length == 0) {
                 return "";
@@ -947,10 +925,32 @@ public final class ByteBufUtil {
 
             int srcIdx = fromIndex;
             int dstIdx = 0;
-            for (; srcIdx < endIndex; srcIdx ++, dstIdx += 2) {
+            for (; srcIdx < endIndex; srcIdx++, dstIdx += 2) {
                 System.arraycopy(
-                    HEXDUMP_TABLE, (array[srcIdx] & 0xFF) << 1,
-                    buf, dstIdx, 2);
+                        HEXDUMP_TABLE, buffer.getUnsignedByte(srcIdx) << 1,
+                        buf, dstIdx, 2);
+            }
+
+            return new String(buf);
+        }
+
+        private static String hexDump(byte[] array, int fromIndex, int length) {
+            if (length < 0) {
+                throw new IllegalArgumentException("length: " + length);
+            }
+            if (length == 0) {
+                return "";
+            }
+
+            int endIndex = fromIndex + length;
+            char[] buf = new char[length << 1];
+
+            int srcIdx = fromIndex;
+            int dstIdx = 0;
+            for (; srcIdx < endIndex; srcIdx++, dstIdx += 2) {
+                System.arraycopy(
+                        HEXDUMP_TABLE, (array[srcIdx] & 0xFF) << 1,
+                        buf, dstIdx, 2);
             }
 
             return new String(buf);
@@ -958,9 +958,9 @@ public final class ByteBufUtil {
 
         private static String prettyHexDump(ByteBuf buffer, int offset, int length) {
             if (length == 0) {
-              return StringUtil.EMPTY_STRING;
+                return StringUtil.EMPTY_STRING;
             } else {
-                int rows = length / 16 + (length % 15 == 0? 0 : 1) + 4;
+                int rows = length / 16 + (length % 15 == 0 ? 0 : 1) + 4;
                 StringBuilder buf = new StringBuilder(rows * 80);
                 appendPrettyHexDump(buf, buffer, offset, length);
                 return buf.toString();
@@ -971,22 +971,22 @@ public final class ByteBufUtil {
             if (isOutOfBounds(offset, length, buf.capacity())) {
                 throw new IndexOutOfBoundsException(
                         "expected: " + "0 <= offset(" + offset + ") <= offset + length(" + length
-                                                    + ") <= " + "buf.capacity(" + buf.capacity() + ')');
+                                + ") <= " + "buf.capacity(" + buf.capacity() + ')');
             }
             if (length == 0) {
                 return;
             }
             dump.append(
-                              "         +-------------------------------------------------+" +
-                    NEWLINE + "         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |" +
-                    NEWLINE + "+--------+-------------------------------------------------+----------------+");
+                    "         +-------------------------------------------------+" +
+                            NEWLINE + "         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |" +
+                            NEWLINE + "+--------+-------------------------------------------------+----------------+");
 
             final int startIndex = offset;
             final int fullRows = length >>> 4;
             final int remainder = length & 0xF;
 
             // Dump the rows which have 16 bytes.
-            for (int row = 0; row < fullRows; row ++) {
+            for (int row = 0; row < fullRows; row++) {
                 int rowStartIndex = (row << 4) + startIndex;
 
                 // Per-row prefix.
@@ -994,13 +994,13 @@ public final class ByteBufUtil {
 
                 // Hex dump
                 int rowEndIndex = rowStartIndex + 16;
-                for (int j = rowStartIndex; j < rowEndIndex; j ++) {
+                for (int j = rowStartIndex; j < rowEndIndex; j++) {
                     dump.append(BYTE2HEX[buf.getUnsignedByte(j)]);
                 }
                 dump.append(" |");
 
                 // ASCII dump
-                for (int j = rowStartIndex; j < rowEndIndex; j ++) {
+                for (int j = rowStartIndex; j < rowEndIndex; j++) {
                     dump.append(BYTE2CHAR[buf.getUnsignedByte(j)]);
                 }
                 dump.append('|');
@@ -1013,14 +1013,14 @@ public final class ByteBufUtil {
 
                 // Hex dump
                 int rowEndIndex = rowStartIndex + remainder;
-                for (int j = rowStartIndex; j < rowEndIndex; j ++) {
+                for (int j = rowStartIndex; j < rowEndIndex; j++) {
                     dump.append(BYTE2HEX[buf.getUnsignedByte(j)]);
                 }
                 dump.append(HEXPADDING[remainder]);
                 dump.append(" |");
 
                 // Ascii dump
-                for (int j = rowStartIndex; j < rowEndIndex; j ++) {
+                for (int j = rowStartIndex; j < rowEndIndex; j++) {
                     dump.append(BYTE2CHAR[buf.getUnsignedByte(j)]);
                 }
                 dump.append(BYTEPADDING[remainder]);
@@ -1028,7 +1028,7 @@ public final class ByteBufUtil {
             }
 
             dump.append(NEWLINE +
-                        "+--------+-------------------------------------------------+----------------+");
+                    "+--------+-------------------------------------------------+----------------+");
         }
 
         private static void appendHexDumpRowPrefix(StringBuilder dump, int row, int rowStartIndex) {
@@ -1129,7 +1129,6 @@ public final class ByteBufUtil {
      * @param index The start index of the specified buffer.
      * @param length The length of the specified buffer.
      * @param charset The specified {@link Charset}.
-     *
      * @throws IndexOutOfBoundsException if {@code index} + {@code length} is greater than {@code buf.readableBytes}
      */
     public static boolean isText(ByteBuf buf, int index, int length, Charset charset) {
@@ -1149,7 +1148,7 @@ public final class ByteBufUtil {
                 if (buf.nioBufferCount() == 1) {
                     decoder.decode(buf.internalNioBuffer(index, length));
                 } else {
-                    ByteBuf heapBuffer =  buf.alloc().heapBuffer(length);
+                    ByteBuf heapBuffer = buf.alloc().heapBuffer(length);
                     try {
                         heapBuffer.writeBytes(buf, index, length);
                         decoder.decode(heapBuffer.internalNioBuffer(heapBuffer.readerIndex(), length));
@@ -1178,8 +1177,8 @@ public final class ByteBufUtil {
      * Returns {@code true} if the specified {@link ByteBuf} starting at {@code index} with {@code length} is valid
      * ASCII text, otherwise return {@code false}.
      *
-     * @param buf    The given {@link ByteBuf}.
-     * @param index  The start index of the specified buffer.
+     * @param buf The given {@link ByteBuf}.
+     * @param index The start index of the specified buffer.
      * @param length The length of the specified buffer.
      */
     private static boolean isAscii(ByteBuf buf, int index, int length) {
@@ -1193,9 +1192,7 @@ public final class ByteBufUtil {
      * @param buf The given {@link ByteBuf}.
      * @param index The start index of the specified buffer.
      * @param length The length of the specified buffer.
-     *
-     * @see
-     * <a href=http://www.ietf.org/rfc/rfc3629.txt>UTF-8 Definition</a>
+     * @see <a href=http://www.ietf.org/rfc/rfc3629.txt>UTF-8 Definition</a>
      *
      * <pre>
      * 1. Bytes format of UTF-8
@@ -1307,5 +1304,6 @@ public final class ByteBufUtil {
         return true;
     }
 
-    private ByteBufUtil() { }
+    private ByteBufUtil() {
+    }
 }

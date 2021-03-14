@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.buffer;
 
 import io.netty.util.internal.PlatformDependent;
@@ -23,7 +8,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * Creates a new {@link ByteBuf} by allocating new space or by wrapping
@@ -70,6 +54,18 @@ import java.util.List;
  */
 public final class Unpooled {
 
+    /**
+     * 5.5.2 Unpooled 缓冲区
+     *
+     * @see Unpooled
+     * 可能某些情况下，你未能获取一个到 ByteBufAllocator 的引用。
+     * 对于这种情况，Netty 提 供了一个简单的称为 Unpooled 的工具类，
+     * 它提供了静态的辅助方法来创建未池化的 ByteBuf 实例。表 5-8 列举了这些中最重要的方法。
+     *
+     * Unpooled 类还使得 ByteBuf 同样可用于那些并不需要 Netty 的其他组件的非网络项目，
+     * 使得其能得益于高性能的可扩展的缓冲区 API。
+     */
+
     private static final ByteBufAllocator ALLOC = UnpooledByteBufAllocator.DEFAULT;
 
     /**
@@ -88,7 +84,7 @@ public final class Unpooled {
     public static final ByteBuf EMPTY_BUFFER = ALLOC.buffer(0, 0);
 
     static {
-        assert EMPTY_BUFFER instanceof EmptyByteBuf: "EMPTY_BUFFER must be an EmptyByteBuf.";
+        assert EMPTY_BUFFER instanceof EmptyByteBuf : "EMPTY_BUFFER must be an EmptyByteBuf.";
     }
 
     /**
@@ -96,6 +92,8 @@ public final class Unpooled {
      * expands its capacity boundlessly on demand.
      */
     public static ByteBuf buffer() {
+        //返回一个未池化的基于堆内存存储的ByteBuf
+
         return ALLOC.heapBuffer();
     }
 
@@ -104,6 +102,7 @@ public final class Unpooled {
      * expands its capacity boundlessly on demand.
      */
     public static ByteBuf directBuffer() {
+        //返回一个未池化的基于直接内存存储 的 ByteBuf
         return ALLOC.directBuffer();
     }
 
@@ -113,6 +112,8 @@ public final class Unpooled {
      * {@code writerIndex} are {@code 0}.
      */
     public static ByteBuf buffer(int initialCapacity) {
+
+        //返回一个未池化的基于堆内存存储的ByteBuf
         return ALLOC.heapBuffer(initialCapacity);
     }
 
@@ -122,6 +123,8 @@ public final class Unpooled {
      * {@code writerIndex} are {@code 0}.
      */
     public static ByteBuf directBuffer(int initialCapacity) {
+        //返回一个未池化的基于直接内存存储 的 ByteBuf
+
         return ALLOC.directBuffer(initialCapacity);
     }
 
@@ -132,6 +135,8 @@ public final class Unpooled {
      * {@code 0}.
      */
     public static ByteBuf buffer(int initialCapacity, int maxCapacity) {
+        //返回一个未池化的基于堆内存存储的ByteBuf
+
         return ALLOC.heapBuffer(initialCapacity, maxCapacity);
     }
 
@@ -142,6 +147,8 @@ public final class Unpooled {
      * {@code 0}.
      */
     public static ByteBuf directBuffer(int initialCapacity, int maxCapacity) {
+        //返回一个未池化的基于直接内存存储 的 ByteBuf
+
         return ALLOC.directBuffer(initialCapacity, maxCapacity);
     }
 
@@ -149,6 +156,8 @@ public final class Unpooled {
      * Creates a new big-endian buffer which wraps the specified {@code array}.
      * A modification on the specified array's content will be visible to the
      * returned buffer.
+     *
+     * 返回一个包装了给定数据的 ByteBuf
      */
     public static ByteBuf wrappedBuffer(byte[] array) {
         if (array.length == 0) {
@@ -161,6 +170,8 @@ public final class Unpooled {
      * Creates a new big-endian buffer which wraps the sub-region of the
      * specified {@code array}.  A modification on the specified array's
      * content will be visible to the returned buffer.
+     *
+     * 返回一个包装了给定数据的 ByteBuf
      */
     public static ByteBuf wrappedBuffer(byte[] array, int offset, int length) {
         if (length == 0) {
@@ -178,6 +189,8 @@ public final class Unpooled {
      * Creates a new buffer which wraps the specified NIO buffer's current
      * slice.  A modification on the specified buffer's content will be
      * visible to the returned buffer.
+     *
+     * 返回一个包装了给定数据的 ByteBuf
      */
     public static ByteBuf wrappedBuffer(ByteBuffer buffer) {
         if (!buffer.hasRemaining()) {
@@ -201,7 +214,7 @@ public final class Unpooled {
         } else {
             if (buffer.isReadOnly()) {
                 return new ReadOnlyByteBufferBuf(ALLOC, buffer);
-            }  else {
+            } else {
                 return new UnpooledDirectByteBuf(ALLOC, buffer, buffer.remaining());
             }
         }
@@ -212,6 +225,8 @@ public final class Unpooled {
      * memoryAddress will automatically be freed once the reference count of the {@link ByteBuf} reaches {@code 0}.
      */
     public static ByteBuf wrappedBuffer(long memoryAddress, int size, boolean doFree) {
+
+        //返回一个包装了给定数据的 ByteBuf
         return new WrappedUnpooledUnsafeDirectByteBuf(ALLOC, memoryAddress, size, doFree);
     }
 
@@ -219,9 +234,12 @@ public final class Unpooled {
      * Creates a new buffer which wraps the specified buffer's readable bytes.
      * A modification on the specified buffer's content will be visible to the
      * returned buffer.
+     *
      * @param buffer The buffer to wrap. Reference count ownership of this variable is transfered to this method.
      * @return The readable portion of the {@code buffer}, or an empty buffer if there is no readable portion.
      * The caller is responsible for releasing this buffer.
+     *
+     * 返回一个包装了给定数据的 ByteBuf
      */
     public static ByteBuf wrappedBuffer(ByteBuf buffer) {
         if (buffer.isReadable()) {
@@ -245,6 +263,7 @@ public final class Unpooled {
      * Creates a new big-endian composite buffer which wraps the readable bytes of the
      * specified buffers without copying them.  A modification on the content
      * of the specified buffers will be visible to the returned buffer.
+     *
      * @param buffers The buffers to wrap. Reference count ownership of all variables is transfered to this method.
      * @return The readable portion of the {@code buffers}. The caller is responsible for releasing this buffer.
      */
@@ -268,28 +287,28 @@ public final class Unpooled {
      */
     public static ByteBuf wrappedBuffer(int maxNumComponents, byte[]... arrays) {
         switch (arrays.length) {
-        case 0:
-            break;
-        case 1:
-            if (arrays[0].length != 0) {
-                return wrappedBuffer(arrays[0]);
-            }
-            break;
-        default:
-            // Get the list of the component, while guessing the byte order.
-            final List<ByteBuf> components = new ArrayList<ByteBuf>(arrays.length);
-            for (byte[] a: arrays) {
-                if (a == null) {
-                    break;
+            case 0:
+                break;
+            case 1:
+                if (arrays[0].length != 0) {
+                    return wrappedBuffer(arrays[0]);
                 }
-                if (a.length > 0) {
-                    components.add(wrappedBuffer(a));
+                break;
+            default:
+                // Get the list of the component, while guessing the byte order.
+                final List<ByteBuf> components = new ArrayList<ByteBuf>(arrays.length);
+                for (byte[] a : arrays) {
+                    if (a == null) {
+                        break;
+                    }
+                    if (a.length > 0) {
+                        components.add(wrappedBuffer(a));
+                    }
                 }
-            }
 
-            if (!components.isEmpty()) {
-                return new CompositeByteBuf(ALLOC, false, maxNumComponents, components);
-            }
+                if (!components.isEmpty()) {
+                    return new CompositeByteBuf(ALLOC, false, maxNumComponents, components);
+                }
         }
 
         return EMPTY_BUFFER;
@@ -299,6 +318,7 @@ public final class Unpooled {
      * Creates a new big-endian composite buffer which wraps the readable bytes of the
      * specified buffers without copying them.  A modification on the content
      * of the specified buffers will be visible to the returned buffer.
+     *
      * @param maxNumComponents Advisement as to how many independent buffers are allowed to exist before
      * consolidation occurs.
      * @param buffers The buffers to wrap. Reference count ownership of all variables is transfered to this method.
@@ -306,25 +326,25 @@ public final class Unpooled {
      */
     public static ByteBuf wrappedBuffer(int maxNumComponents, ByteBuf... buffers) {
         switch (buffers.length) {
-        case 0:
-            break;
-        case 1:
-            ByteBuf buffer = buffers[0];
-            if (buffer.isReadable()) {
-                return wrappedBuffer(buffer.order(BIG_ENDIAN));
-            } else {
-                buffer.release();
-            }
-            break;
-        default:
-            for (int i = 0; i < buffers.length; i++) {
-                ByteBuf buf = buffers[i];
-                if (buf.isReadable()) {
-                    return new CompositeByteBuf(ALLOC, false, maxNumComponents, buffers, i, buffers.length);
+            case 0:
+                break;
+            case 1:
+                ByteBuf buffer = buffers[0];
+                if (buffer.isReadable()) {
+                    return wrappedBuffer(buffer.order(BIG_ENDIAN));
+                } else {
+                    buffer.release();
                 }
-                buf.release();
-            }
-            break;
+                break;
+            default:
+                for (int i = 0; i < buffers.length; i++) {
+                    ByteBuf buf = buffers[i];
+                    if (buf.isReadable()) {
+                        return new CompositeByteBuf(ALLOC, false, maxNumComponents, buffers, i, buffers.length);
+                    }
+                    buf.release();
+                }
+                break;
         }
         return EMPTY_BUFFER;
     }
@@ -336,28 +356,28 @@ public final class Unpooled {
      */
     public static ByteBuf wrappedBuffer(int maxNumComponents, ByteBuffer... buffers) {
         switch (buffers.length) {
-        case 0:
-            break;
-        case 1:
-            if (buffers[0].hasRemaining()) {
-                return wrappedBuffer(buffers[0].order(BIG_ENDIAN));
-            }
-            break;
-        default:
-            // Get the list of the component, while guessing the byte order.
-            final List<ByteBuf> components = new ArrayList<ByteBuf>(buffers.length);
-            for (ByteBuffer b: buffers) {
-                if (b == null) {
-                    break;
+            case 0:
+                break;
+            case 1:
+                if (buffers[0].hasRemaining()) {
+                    return wrappedBuffer(buffers[0].order(BIG_ENDIAN));
                 }
-                if (b.remaining() > 0) {
-                    components.add(wrappedBuffer(b.order(BIG_ENDIAN)));
+                break;
+            default:
+                // Get the list of the component, while guessing the byte order.
+                final List<ByteBuf> components = new ArrayList<ByteBuf>(buffers.length);
+                for (ByteBuffer b : buffers) {
+                    if (b == null) {
+                        break;
+                    }
+                    if (b.remaining() > 0) {
+                        components.add(wrappedBuffer(b.order(BIG_ENDIAN)));
+                    }
                 }
-            }
 
-            if (!components.isEmpty()) {
-                return new CompositeByteBuf(ALLOC, false, maxNumComponents, components);
-            }
+                if (!components.isEmpty()) {
+                    return new CompositeByteBuf(ALLOC, false, maxNumComponents, components);
+                }
         }
 
         return EMPTY_BUFFER;
@@ -381,6 +401,8 @@ public final class Unpooled {
      * Creates a new big-endian buffer whose content is a copy of the
      * specified {@code array}.  The new buffer's {@code readerIndex} and
      * {@code writerIndex} are {@code 0} and {@code array.length} respectively.
+     *
+     * 返回一个复制了给定数据的 ByteBuf
      */
     public static ByteBuf copiedBuffer(byte[] array) {
         if (array.length == 0) {
@@ -448,19 +470,19 @@ public final class Unpooled {
      */
     public static ByteBuf copiedBuffer(byte[]... arrays) {
         switch (arrays.length) {
-        case 0:
-            return EMPTY_BUFFER;
-        case 1:
-            if (arrays[0].length == 0) {
+            case 0:
                 return EMPTY_BUFFER;
-            } else {
-                return copiedBuffer(arrays[0]);
-            }
+            case 1:
+                if (arrays[0].length == 0) {
+                    return EMPTY_BUFFER;
+                } else {
+                    return copiedBuffer(arrays[0]);
+                }
         }
 
         // Merge the specified arrays into one array.
         int length = 0;
-        for (byte[] a: arrays) {
+        for (byte[] a : arrays) {
             if (Integer.MAX_VALUE - length < a.length) {
                 throw new IllegalArgumentException(
                         "The total length of the specified arrays is too big.");
@@ -473,7 +495,7 @@ public final class Unpooled {
         }
 
         byte[] mergedArray = new byte[length];
-        for (int i = 0, j = 0; i < arrays.length; i ++) {
+        for (int i = 0, j = 0; i < arrays.length; i++) {
             byte[] a = arrays[i];
             System.arraycopy(a, 0, mergedArray, j, a.length);
             j += a.length;
@@ -488,22 +510,21 @@ public final class Unpooled {
      * and {@code writerIndex} are {@code 0} and the sum of all buffers'
      * {@code readableBytes} respectively.
      *
-     * @throws IllegalArgumentException
-     *         if the specified buffers' endianness are different from each
-     *         other
+     * @throws IllegalArgumentException if the specified buffers' endianness are different from each
+     * other
      */
     public static ByteBuf copiedBuffer(ByteBuf... buffers) {
         switch (buffers.length) {
-        case 0:
-            return EMPTY_BUFFER;
-        case 1:
-            return copiedBuffer(buffers[0]);
+            case 0:
+                return EMPTY_BUFFER;
+            case 1:
+                return copiedBuffer(buffers[0]);
         }
 
         // Merge the specified buffers into one buffer.
         ByteOrder order = null;
         int length = 0;
-        for (ByteBuf b: buffers) {
+        for (ByteBuf b : buffers) {
             int bLen = b.readableBytes();
             if (bLen <= 0) {
                 continue;
@@ -527,7 +548,7 @@ public final class Unpooled {
         }
 
         byte[] mergedArray = new byte[length];
-        for (int i = 0, j = 0; i < buffers.length; i ++) {
+        for (int i = 0, j = 0; i < buffers.length; i++) {
             ByteBuf b = buffers[i];
             int bLen = b.readableBytes();
             b.getBytes(b.readerIndex(), mergedArray, j, bLen);
@@ -543,22 +564,21 @@ public final class Unpooled {
      * {@code writerIndex} are {@code 0} and the sum of all buffers'
      * {@code remaining} respectively.
      *
-     * @throws IllegalArgumentException
-     *         if the specified buffers' endianness are different from each
-     *         other
+     * @throws IllegalArgumentException if the specified buffers' endianness are different from each
+     * other
      */
     public static ByteBuf copiedBuffer(ByteBuffer... buffers) {
         switch (buffers.length) {
-        case 0:
-            return EMPTY_BUFFER;
-        case 1:
-            return copiedBuffer(buffers[0]);
+            case 0:
+                return EMPTY_BUFFER;
+            case 1:
+                return copiedBuffer(buffers[0]);
         }
 
         // Merge the specified buffers into one buffer.
         ByteOrder order = null;
         int length = 0;
-        for (ByteBuffer b: buffers) {
+        for (ByteBuffer b : buffers) {
             int bLen = b.remaining();
             if (bLen <= 0) {
                 continue;
@@ -582,7 +602,7 @@ public final class Unpooled {
         }
 
         byte[] mergedArray = new byte[length];
-        for (int i = 0, j = 0; i < buffers.length; i ++) {
+        for (int i = 0, j = 0; i < buffers.length; i++) {
             // Duplicate the buffer so we not adjust the position during our get operation.
             // See https://github.com/netty/netty/issues/3896
             ByteBuffer b = buffers[i].duplicate();
@@ -713,7 +733,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length * 4);
-        for (int v: values) {
+        for (int v : values) {
             buffer.writeInt(v);
         }
         return buffer;
@@ -736,7 +756,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length * 2);
-        for (int v: values) {
+        for (int v : values) {
             buffer.writeShort(v);
         }
         return buffer;
@@ -750,7 +770,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length * 2);
-        for (int v: values) {
+        for (int v : values) {
             buffer.writeShort(v);
         }
         return buffer;
@@ -773,7 +793,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length * 3);
-        for (int v: values) {
+        for (int v : values) {
             buffer.writeMedium(v);
         }
         return buffer;
@@ -796,7 +816,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length * 8);
-        for (long v: values) {
+        for (long v : values) {
             buffer.writeLong(v);
         }
         return buffer;
@@ -819,7 +839,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length);
-        for (boolean v: values) {
+        for (boolean v : values) {
             buffer.writeBoolean(v);
         }
         return buffer;
@@ -842,7 +862,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length * 4);
-        for (float v: values) {
+        for (float v : values) {
             buffer.writeFloat(v);
         }
         return buffer;
@@ -865,7 +885,7 @@ public final class Unpooled {
             return EMPTY_BUFFER;
         }
         ByteBuf buffer = buffer(values.length * 8);
-        for (double v: values) {
+        for (double v : values) {
             buffer.writeDouble(v);
         }
         return buffer;
