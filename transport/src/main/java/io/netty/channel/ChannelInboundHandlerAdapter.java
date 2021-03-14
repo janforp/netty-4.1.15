@@ -55,6 +55,13 @@ public class ChannelInboundHandlerAdapter
      * 这个类实现类{@link ChannelInboundHandler} 的所有方法
      * 但是这个都是啥都不做的实现，只是单纯的通过{@link ChannelHandlerContext}
      * 把事件 fireXXX 到ChannelPipeline的下一个ChannelHandler处理器
+     *
+     * 在 ChannelInboundHandlerAdapter 和 ChannelOutboundHandlerAdapter
+     * 中所 提供的方法体调用了其相关联的 ChannelHandlerContext 上的等效方法，
+     * 从而将事件转发到 了 ChannelPipeline 中的下一个 ChannelHandler 中。
+     *
+     * 你要想在自己的 ChannelHandler 中使用这些适配器类，
+     * 只需要简单地扩展它们，并且重 写那些你想要自定义的方法。
      */
     // ************************************************************************************************************
 

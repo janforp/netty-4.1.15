@@ -188,6 +188,16 @@ public interface ChannelHandler {
      * ChannelOutboundHandler——处理出站数据并且允许拦截所有的操作。
      * @see ChannelInboundHandler -- 处理入站数据以及各种状态变化
      * @see ChannelOutboundHandler -- 处理出站数据并且允许拦截所有的操作
+     *
+     * 6.1.5 ChannelHandler 适配器
+     *
+     * 你可以使用
+     * ChannelInboundHandlerAdapter
+     * 和 ChannelOutboundHandlerAdapter
+     * 类作为自己的 ChannelHandler 的起始点。
+     * 这两个适配器分别提供了 ChannelInboundHandler 和 ChannelOutboundHandler 的基本实现。
+     * 通过扩展抽象类 ChannelHandlerAdapter，
+     * 它们 获得了它们共同的超接口 ChannelHandler 的方法。生成的类的层次结构如图 6-2 所示。
      */
 
     /**

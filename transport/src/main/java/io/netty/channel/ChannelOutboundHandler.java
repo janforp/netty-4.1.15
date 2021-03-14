@@ -5,6 +5,21 @@ import java.net.SocketAddress;
 /**
  * {@link ChannelHandler} which will get notified for IO-outbound-operations.
  * 入站处理器
+ *
+ * 处理出站数据并且允许拦截所有的操作
+ *
+ * 出站操作和数据将由 ChannelOutboundHandler 处理。
+ * 它的方法将被 Channel、Channel- Pipeline 以及 ChannelHandlerContext 调用。
+ *
+ * ChannelOutboundHandler 的一个强大的功能是可以按需推迟操作或者事件，
+ * 这使得可 以通过一些复杂的方法来处理请求。
+ * 例如，如果到远程节点的写入被暂停了，那么你可以推迟冲 刷操作并在稍后继续。
+ *
+ * ChannelPromise与ChannelFuture ：
+ * ChannelOutboundHandler中的大部分方法都需要一个 ChannelPromise参数，
+ * 以便在操作完成时得到通知。
+ * ChannelPromise是ChannelFuture的一个 子类，
+ * 其定义了一些可写的方法，如setSuccess()和setFailure()，从而使ChannelFuture不 可变。
  */
 public interface ChannelOutboundHandler extends ChannelHandler {
 
@@ -15,8 +30,14 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * @param localAddress the {@link SocketAddress} to which it should bound
      * @param promise the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception thrown if an error occurs
+     *
+     * 当请求将 Channel 绑定到本地地址时被调用
      */
-    void bind(ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) throws Exception;
+    void bind(
+            ChannelHandlerContext ctx,
+            SocketAddress localAddress,
+            ChannelPromise promise
+    ) throws Exception;
 
     /**
      * Called once a connect operation is made.
@@ -26,10 +47,15 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * @param localAddress the {@link SocketAddress} which is used as source on connect
      * @param promise the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception thrown if an error occurs
+     *
+     * 当请求将 Channel 连接到远程节点时被调用
      */
     void connect(
-            ChannelHandlerContext ctx, SocketAddress remoteAddress,
-            SocketAddress localAddress, ChannelPromise promise) throws Exception;
+            ChannelHandlerContext ctx,
+            SocketAddress remoteAddress,
+            SocketAddress localAddress,
+            ChannelPromise promise
+    ) throws Exception;
 
     /**
      * Called once a disconnect operation is made.
@@ -37,6 +63,8 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * @param ctx the {@link ChannelHandlerContext} for which the disconnect operation is made
      * @param promise the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception thrown if an error occurs
+     *
+     * 当请求将 Channel 从远程节点断开时被调用
      */
     void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception;
 
@@ -46,6 +74,8 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * @param ctx the {@link ChannelHandlerContext} for which the close operation is made
      * @param promise the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception thrown if an error occurs
+     *
+     * 当请求关闭 Channel 时被调用
      */
     void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception;
 
@@ -55,11 +85,15 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * @param ctx the {@link ChannelHandlerContext} for which the close operation is made
      * @param promise the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception thrown if an error occurs
+     *
+     * 当请求将 Channel 从它的 EventLoop 注销 时被调用
      */
     void deregister(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception;
 
     /**
      * Intercepts {@link ChannelHandlerContext#read()}.
+     *
+     * 当请求从 Channel 读取更多的数据时被调用
      */
     void read(ChannelHandlerContext ctx) throws Exception;
 
@@ -72,6 +106,8 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * @param msg the message to write
      * @param promise the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception thrown if an error occurs
+     *
+     * 当请求通过 Channel 将数据写到远程节点时 被调用
      */
     void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception;
 
@@ -81,6 +117,9 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      *
      * @param ctx the {@link ChannelHandlerContext} for which the flush operation is made
      * @throws Exception thrown if an error occurs
+     *
+     * 当请求通过 Channel 将入队数据冲刷到远程
+     * 节点时被调用
      */
     void flush(ChannelHandlerContext ctx) throws Exception;
 }
