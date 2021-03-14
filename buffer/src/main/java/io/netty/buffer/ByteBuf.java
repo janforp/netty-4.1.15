@@ -242,6 +242,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * @see ByteBuffer
      * @see ByteBufHolder
      * @see CompositeByteBuf
+     * @see ByteProcessor
      *
      * 下面是一些 ByteBuf API 的优点:
      * 它可以被用户自定义的缓冲区类型扩展;
@@ -287,6 +288,26 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * 同样，可以通过调用 markReaderIndex()、markWriterIndex()、resetWriterIndex() 和 resetReaderIndex()来标记和重置 ByteBuf 的 readerIndex 和 writerIndex。这些和 InputStream 上的调用类似，只是没有 readlimit 参数来指定标记什么时候失效。
      * 也可以通过调用 readerIndex(int)或者 writerIndex(int)来将索引移动到指定位置。试 图将任何一个索引设置到一个无效的位置都将导致一个 IndexOutOfBoundsException。
      * 可以通过调用 clear()方法来将 readerIndex 和 writerIndex 都设置为 0。注意，这 并不会清除内存中的内容。图 5-5(重复上面的图 5-3)展示了它是如何工作的。
+     *
+     * 5.3.8 派生缓冲区
+     * 派生缓冲区为 ByteBuf 提供了以专门的方式来呈现其内容的视图。这类视图是通过以下方 法被创建的:
+     * duplicate();
+     * slice();
+     * slice(int, int);
+     * Unpooled.unmodifiableBuffer(...);
+     * order(ByteOrder);
+     * readSlice(int)。
+     * 每个这些方法都将返回一个新的 ByteBuf 实例，它具有自己的读索引、写索引和标记
+     * 索引。其内部存储和 JDK 的 ByteBuffer 一样也是共享的。这使得派生缓冲区的创建成本 是很低廉的，但是这也意味着，如果你修改了它的内容，也同时修改了其对应的源实例，所 以要小心。
+     *
+     * ByteBuf 复制 如果需要一个现有缓冲区的真实副本，请使用 copy()或者 copy(int, int)方 法。不同于派生缓冲区，由这个调用所返回的 ByteBuf 拥有独立的数据副本。
+     *
+     * 5.3.9 读/写操作
+     * 正如我们所提到过的，有两种类别的读/写操作:
+     * get()和 set()操作，从给定的索引开始，并且保持索引不变;
+     * read()和 write()操作，从给定的索引开始，并且会根据已经访问过的字节数对索
+     * 引进行调整。
+     *
      */
 
     /**
@@ -1315,6 +1336,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Gets a boolean at the current {@code readerIndex} and increases
      * the {@code readerIndex} by {@code 1} in this buffer.
      *
+     * 返回当前 readerIndex 处的 Boolean，并将 readerIndex 增加 1
+     *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 1}
      */
     public abstract boolean readBoolean();
@@ -1323,6 +1346,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Gets a byte at the current {@code readerIndex} and increases
      * the {@code readerIndex} by {@code 1} in this buffer.
      *
+     * 返回当前 readerIndex 处的字节，并将 readerIndex 增加 1
+     *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 1}
      */
     public abstract byte readByte();
@@ -1330,6 +1355,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Gets an unsigned byte at the current {@code readerIndex} and increases
      * the {@code readerIndex} by {@code 1} in this buffer.
+     * 将当前 readerIndex 处的无符号字节值作为 short 返回，并将 readerIndex 增加 1
      *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 1}
      */
@@ -1338,6 +1364,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Gets a 16-bit short integer at the current {@code readerIndex}
      * and increases the {@code readerIndex} by {@code 2} in this buffer.
+     *
+     * 返回当前 readerIndex 处的 short 值，并将 readerIndex 增加 2
      *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 2}
      */
@@ -1356,6 +1384,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Gets an unsigned 16-bit short integer at the current {@code readerIndex}
      * and increases the {@code readerIndex} by {@code 2} in this buffer.
      *
+     * 将当前 readerIndex 处的无符号 short 值作为 int 值返回，并将 readerIndex 增加 2
+     *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 2}
      */
     public abstract int readUnsignedShort();
@@ -1372,6 +1402,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Gets a 24-bit medium integer at the current {@code readerIndex}
      * and increases the {@code readerIndex} by {@code 3} in this buffer.
+     *
+     * 返回当前 readerIndex 处的 24 位的中等 int 值，并将 readerIndex 增加3
      *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 3}
      */
@@ -1390,6 +1422,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Gets an unsigned 24-bit medium integer at the current {@code readerIndex}
      * and increases the {@code readerIndex} by {@code 3} in this buffer.
      *
+     * 返回当前 readerIndex 处的 24 位的无符号的中等 int 值，并将 readerIndex 增加 3
+     *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 3}
      */
     public abstract int readUnsignedMedium();
@@ -1406,6 +1440,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Gets a 32-bit integer at the current {@code readerIndex}
      * and increases the {@code readerIndex} by {@code 4} in this buffer.
+     *
+     * 返回当前 readerIndex 的 int 值，并将 readerIndex 增加 4
      *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 4}
      */
@@ -1424,6 +1460,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Gets an unsigned 32-bit integer at the current {@code readerIndex}
      * and increases the {@code readerIndex} by {@code 4} in this buffer.
      *
+     * 将当前 readerIndex 处的无符号的 int 值作为 long 值返回，并将
+     * readerIndex 增加 4
+     *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 4}
      */
     public abstract long readUnsignedInt();
@@ -1440,6 +1479,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Gets a 64-bit integer at the current {@code readerIndex}
      * and increases the {@code readerIndex} by {@code 8} in this buffer.
+     *
+     * 返回当前 readerIndex 处的 long 值，并将 readerIndex 增加 8
      *
      * @throws IndexOutOfBoundsException if {@code this.readableBytes} is less than {@code 8}
      */
@@ -1675,6 +1716,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Sets the specified boolean at the current {@code writerIndex}
      * and increases the {@code writerIndex} by {@code 1} in this buffer.
      *
+     * 在当前writerIndex处写入一个Boolean，并将 writerIndex增加1
+     *
      * @throws IndexOutOfBoundsException if {@code this.writableBytes} is less than {@code 1}
      */
     public abstract ByteBuf writeBoolean(boolean value);
@@ -1684,6 +1727,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * and increases the {@code writerIndex} by {@code 1} in this buffer.
      * The 24 high-order bits of the specified value are ignored.
      *
+     * 在当前 writerIndex 处写入一个字节值，并将 writerIndex 增加 1
+     *
      * @throws IndexOutOfBoundsException if {@code this.writableBytes} is less than {@code 1}
      */
     public abstract ByteBuf writeByte(int value);
@@ -1692,6 +1737,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Sets the specified 16-bit short integer at the current
      * {@code writerIndex} and increases the {@code writerIndex} by {@code 2}
      * in this buffer.  The 16 high-order bits of the specified value are ignored.
+     *
+     * 在当前 writerIndex 处写入一个 short 值，并将 writerIndex 增加 2
      *
      * @throws IndexOutOfBoundsException if {@code this.writableBytes} is less than {@code 2}
      */
@@ -1712,6 +1759,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * {@code writerIndex} and increases the {@code writerIndex} by {@code 3}
      * in this buffer.
      *
+     * 在当前 writerIndex 处写入一个中等的 int 值，并将 writerIndex 增加3
+     *
      * @throws IndexOutOfBoundsException if {@code this.writableBytes} is less than {@code 3}
      */
     public abstract ByteBuf writeMedium(int value);
@@ -1730,6 +1779,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Sets the specified 32-bit integer at the current {@code writerIndex}
      * and increases the {@code writerIndex} by {@code 4} in this buffer.
      *
+     * 在当前 writerIndex 处写入一个 int 值，并将 writerIndex 增加 4
+     *
      * @throws IndexOutOfBoundsException if {@code this.writableBytes} is less than {@code 4}
      */
     public abstract ByteBuf writeInt(int value);
@@ -1747,6 +1798,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Sets the specified 64-bit long integer at the current
      * {@code writerIndex} and increases the {@code writerIndex} by {@code 8}
      * in this buffer.
+     *
+     * 在当前 writerIndex 处写入一个 long 值，并将 writerIndex 增加 8
      *
      * @throws IndexOutOfBoundsException if {@code this.writableBytes} is less than {@code 8}
      */
