@@ -281,6 +281,12 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * 3.复合缓冲区
      * 第三种也是最后一种模式使用的是复合缓冲区，它为多个 ByteBuf 提供一个聚合视图。在 这里你可以根据需要添加或者删除 ByteBuf 实例，这是一个 JDK 的 ByteBuffer 实现完全缺 失的特性。
      * Netty 通过一个 ByteBuf 子类——CompositeByteBuf——实现了这个模式，它提供了一 个将多个缓冲区表示为单个合并缓冲区的虚拟表示
+     *
+     * 5.3.6 索引管理
+     * JDK 的 InputStream 定义了 mark(int readlimit)和 reset()方法，这些方法分别 被用来将流中的当前位置标记为指定的值，以及将流重置到该位置。
+     * 同样，可以通过调用 markReaderIndex()、markWriterIndex()、resetWriterIndex() 和 resetReaderIndex()来标记和重置 ByteBuf 的 readerIndex 和 writerIndex。这些和 InputStream 上的调用类似，只是没有 readlimit 参数来指定标记什么时候失效。
+     * 也可以通过调用 readerIndex(int)或者 writerIndex(int)来将索引移动到指定位置。试 图将任何一个索引设置到一个无效的位置都将导致一个 IndexOutOfBoundsException。
+     * 可以通过调用 clear()方法来将 readerIndex 和 writerIndex 都设置为 0。注意，这 并不会清除内存中的内容。图 5-5(重复上面的图 5-3)展示了它是如何工作的。
      */
 
     /**
@@ -489,6 +495,14 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * the {@code capacity} of the buffer.
      */
     public abstract ByteBuf clear();
+
+    /**
+     * 5.3.6 索引管理
+     * JDK 的 InputStream 定义了 mark(int readlimit)和 reset()方法，这些方法分别 被用来将流中的当前位置标记为指定的值，以及将流重置到该位置。
+     * 同样，可以通过调用 markReaderIndex()、markWriterIndex()、resetWriterIndex() 和 resetReaderIndex()来标记和重置 ByteBuf 的 readerIndex 和 writerIndex。这些和 InputStream 上的调用类似，只是没有 readlimit 参数来指定标记什么时候失效。
+     * 也可以通过调用 readerIndex(int)或者 writerIndex(int)来将索引移动到指定位置。试 图将任何一个索引设置到一个无效的位置都将导致一个 IndexOutOfBoundsException。
+     * 可以通过调用 clear()方法来将 readerIndex 和 writerIndex 都设置为 0。注意，这 并不会清除内存中的内容。图 5-5(重复上面的图 5-3)展示了它是如何工作的。
+     */
 
     /**
      * Marks the current {@code readerIndex} in this buffer.  You can
@@ -1806,6 +1820,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * increases the {@code readerIndex} of the source buffer by the number of
      * the transferred bytes while {@link #writeBytes(ByteBuf, int, int)}
      * does not.
+     *
+     * 如果尝试往目标写入超过目标容量的数据，将会引发一个IndexOutOfBoundException。
      *
      * @throws IndexOutOfBoundsException if {@code src.readableBytes} is greater than
      * {@code this.writableBytes}
