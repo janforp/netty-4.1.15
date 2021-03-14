@@ -12,9 +12,9 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- *     AttributeKey跟@Sharable注释可以配合使用，使一个处理器实例可以添加到不同的Channel
- *     <p></p>
- *     ChannelInboundHandler,ChannelOutboundHandler
+ * AttributeKey跟@Sharable注释可以配合使用，使一个处理器实例可以添加到不同的Channel
+ * <p></p>
+ * ChannelInboundHandler,ChannelOutboundHandler
  * </p>
  * Handles an I/O event or intercepts an I/O operation, and forwards it to its next handler in
  * its {@link ChannelPipeline}.
@@ -176,6 +176,11 @@ import java.lang.annotation.Target;
 public interface ChannelHandler {
 
     //ChannelHandler,它是一个接口族的父接口,它的实现负责接收并响应事件通知。在 Netty 应用程序中，所有的数据处理逻辑都包含在这些核心抽象的实现中。
+    /**
+     * 在下一章(netty in action 第六章)中，我们将专注于 ChannelHandler，它为你的数据处理逻辑提供了载体。因为
+     * ChannelHandler 大量地使用了 ByteBuf，
+     * 你将开始看到 Netty 的整体架构的各个重要部分最 终走到了一起。
+     */
 
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
