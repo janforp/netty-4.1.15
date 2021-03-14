@@ -30,6 +30,18 @@ import static io.netty.util.internal.StringUtil.NEWLINE;
 import static io.netty.util.internal.StringUtil.isSurrogate;
 
 /**
+ * 5.5.3 ByteBufUtil 类
+ * ByteBufUtil 提供了用于操作 ByteBuf 的静态的辅助方法。
+ * 因为这个 API 是通用的，并 且和池化无关，所以这些方法已然在分配类的外部实现。
+ * 这些静态方法中最有价值的可能就是 hexdump()方法，它以十六进制的表示形式打印 ByteBuf 的内容。
+ * 这在各种情况下都很有用，例如，出于调试的目的记录 ByteBuf 的内容。
+ * 十 六进制的表示通常会提供一个比字节值的直接表示形式更加有用的日志条目，
+ * 此外，十六进制的 版本还可以很容易地转换回实际的字节表示。
+ *
+ * 另一个有用的方法是 boolean equals(ByteBuf, ByteBuf)，
+ * 它被用来判断两个 ByteBuf 实例的相等性。
+ * 如果你实现自己的 ByteBuf 子类，你可能会发现 ByteBufUtil 的其他有用方法。
+ *
  * A collection of utility methods that is related with handling {@link ByteBuf},
  * such as the generation of hex dump and swapping an integer's byte order.
  */
