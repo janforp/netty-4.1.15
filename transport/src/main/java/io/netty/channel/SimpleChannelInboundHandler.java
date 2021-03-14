@@ -35,8 +35,19 @@ import io.netty.util.internal.TypeParameterMatcher;
  * {@code messageReceived(ChannelHandlerContext, I)} in 5.0.
  * </p>
  */
-public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandlerAdapter {
+public abstract class SimpleChannelInboundHandler<I>
 
+        /**
+         * {@link ChannelInboundHandlerAdapter}这个类实
+         * 现类{@link ChannelInboundHandler} 的所有方法
+         * 但是这个都是啥都不做的实现，只是单纯的通过{@link ChannelHandlerContext}
+         * 把事件 fireXXX 到ChannelPipeline的下一个ChannelHandler处理器
+         */
+        extends ChannelInboundHandlerAdapter {
+
+    /**
+     * 看看消息（类型）是否匹配
+     */
     private final TypeParameterMatcher matcher;
 
     private final boolean autoRelease;
@@ -87,7 +98,11 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg)
+            throws Exception {
+
+        //对于每个传入的消息都要调用
+
         boolean release = true;
         try {
             if (acceptInboundMessage(msg)) {
@@ -97,10 +112,13 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
                 //该方法推迟到子类执行
                 channelRead0(ctx, imsg);
             } else {
+                //不释放，让下一个处理器处理该消息
                 release = false;
                 ctx.fireChannelRead(msg);
             }
         } finally {
+            //由于 SimpleChannelInboundHandler 会自动释放资源，
+            // 所以你不应该存储指向任何消 息的引用供将来使用，因为这些引用都将会失效。
             if (autoRelease && release) {
                 //对该对象(msg)的引用数 -1
                 //最好不要在用户代码中保持该对象的引用

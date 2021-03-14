@@ -175,21 +175,33 @@ import java.lang.annotation.Target;
  */
 public interface ChannelHandler {
 
-    //ChannelHandler,它是一个接口族的父接口,它的实现负责接收并响应事件通知。在 Netty 应用程序中，所有的数据处理逻辑都包含在这些核心抽象的实现中。
     /**
+     * ChannelHandler,它是一个接口族的父接口,它的实现负责接收并响应事件通知。在 Netty 应用程序中，
+     * 所有的数据处理逻辑都包含在这些核心抽象的实现中。
+     *
      * 在下一章(netty in action 第六章)中，我们将专注于 ChannelHandler，它为你的数据处理逻辑提供了载体。因为
      * ChannelHandler 大量地使用了 ByteBuf，
      * 你将开始看到 Netty 的整体架构的各个重要部分最 终走到了一起。
+     *
+     * Netty 定义了下面两个重要的 ChannelHandler 子接口:
+     * ChannelInboundHandler——处理入站数据以及各种状态变化;
+     * ChannelOutboundHandler——处理出站数据并且允许拦截所有的操作。
+     * @see ChannelInboundHandler -- 处理入站数据以及各种状态变化
+     * @see ChannelOutboundHandler -- 处理出站数据并且允许拦截所有的操作
      */
 
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
+     *
+     * 当把 ChannelHandler 添加到 ChannelPipeline 中时被调用
      */
     void handlerAdded(ChannelHandlerContext ctx) throws Exception;
 
     /**
      * Gets called after the {@link ChannelHandler} was removed from the actual context and it doesn't handle events
      * anymore.
+     *
+     * 当从 ChannelPipeline 中移除 ChannelHandler 时被调用
      */
     void handlerRemoved(ChannelHandlerContext ctx) throws Exception;
 
@@ -197,6 +209,8 @@ public interface ChannelHandler {
      * Gets called if a {@link Throwable} was thrown.
      *
      * @deprecated is part of {@link ChannelInboundHandler}
+     *
+     * 当处理过程中在 ChannelPipeline 中有错误产生时被调用
      */
     @Deprecated
     void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;

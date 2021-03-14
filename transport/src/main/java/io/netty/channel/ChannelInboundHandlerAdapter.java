@@ -39,7 +39,24 @@ package io.netty.channel;
  *  ChannelOutboundHandlerAdapter
  *  ChannelDuplexHandler
  */
-public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
+public class ChannelInboundHandlerAdapter
+
+        /**
+         * 实现了 ChannelHandler 的方法
+         */
+        extends ChannelHandlerAdapter
+
+        /**
+         * 处理入站数据以及各种状态变化
+         */
+        implements ChannelInboundHandler {
+
+    /**
+     * 这个类实现类{@link ChannelInboundHandler} 的所有方法
+     * 但是这个都是啥都不做的实现，只是单纯的通过{@link ChannelHandlerContext}
+     * 把事件 fireXXX 到ChannelPipeline的下一个ChannelHandler处理器
+     */
+    // ************************************************************************************************************
 
     /**
      * Calls {@link ChannelHandlerContext#fireChannelRegistered()} to forward

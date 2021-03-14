@@ -61,6 +61,25 @@ import java.net.SocketAddress;
 public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparable<Channel> {
 
     /**
+     * 表6-1 Channel的生命周期状态
+     * ChannelUnregistered  Channel 已经被创建，但还未注册到 EventLoop
+     * ChannelRegistered    Channel 已经被注册到了 EventLoop
+     * ChannelActive        Channel 处于活动状态(已经连接到它的远程节点)。它现在可以接收和发送数据了
+     * ChannelInactive      Channel没有连接到远程节点
+     *
+     * Channel 的正常生命周期如图 6-1 所示。
+     * 当这些状态发生改变时，将会生成对应的事件。
+     * 这些事件将会被转发给 ChannelPipeline 中的 ChannelHandler，
+     * 其可以随后对它们做出 响应。
+     *
+     * ChannelRegistered  ------->      ChannelActive
+     *                                          |
+     *                                          |
+     *                                          V
+     * ChannelUnregistered <-------       ChannelInactive
+     */
+
+    /**
      * Returns the globally unique identifier of this {@link Channel}.
      */
     ChannelId id();

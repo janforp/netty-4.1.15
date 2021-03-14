@@ -73,7 +73,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        // NOOP
+        // NOOP,实现 ChannelHandler 的方法
     }
 
     /**
@@ -83,7 +83,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        // NOOP
+        // NOOP,实现 ChannelHandler 的方法
     }
 
     /**
@@ -97,6 +97,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        //实现 ChannelHandler 的方法
         ctx.fireExceptionCaught(cause);
     }
 }
