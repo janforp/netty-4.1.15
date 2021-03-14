@@ -56,7 +56,7 @@ public class _2_EchoServer {
                     // 4.使用指定的 端口设置套 接字地址
                     //在此之后，你将本地地址设置为一个具有选定端口的 InetSocketAddress 。服务器将绑定到这个地址以监听新的连接请求。
                     .localAddress(new InetSocketAddress(8888))
-                    // 5. 添加一个 EchoServerHandler 到子 Channel 的 ChannelPipeline
+                    // 5. 添加一个 EchoServerHandler 到子Channel(childHandler) 的 ChannelPipeline
                     .childHandler(new ChannelInitializer<SocketChannel>() {
 
                         /**

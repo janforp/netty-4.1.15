@@ -9,7 +9,9 @@ package com.nettyinaction.codes;
 public class _4_SimpleChannelInboundHandler_And_ChannelInboundHandler {
 
     /**
-     * 你可能会想:为什么我们在客户端{@link _3_EchoClientHandler}使用的是 SimpleChannelInboundHandler，而不是在 {@link _1_EchoServerHandler} 中所使用的 ChannelInboundHandlerAdapter 呢?
+     * 你可能会想:为什么我们在客户端{@link _3_EchoClientHandler}使用的是 SimpleChannelInboundHandler，
+     * 而不是在 {@link _1_EchoServerHandler} 中所使用的 ChannelInboundHandlerAdapter 呢?
+     *
      * 这和两个因素的相互作用有 关:
      *
      * 业务逻辑如何处理消息以及 Netty 如何管理资源。
