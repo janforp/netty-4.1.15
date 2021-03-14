@@ -16,6 +16,9 @@ package io.netty.util;
  */
 public interface ReferenceCounted {
     /**
+     * deallocated:释放
+     * refCnt:reference count
+     *
      * Returns the reference count of this object.  If {@code 0}, it means this object has been deallocated.
      */
     int refCnt();
