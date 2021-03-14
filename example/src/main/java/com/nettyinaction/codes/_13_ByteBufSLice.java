@@ -17,10 +17,15 @@ public class _13_ByteBufSLice {
     public static void main(String[] args) {
         System.out.println("********** slice ************");
         slice();
+
         System.out.println("********** copy ************");
         copy();
+
         System.out.println("********** get ************");
         get();
+
+        System.out.println("********** readWrite ************");
+        readWrite();
     }
 
     private static void slice() {
@@ -57,5 +62,16 @@ public class _13_ByteBufSLice {
         // 并不会修改相应的索引
         System.out.println(readerIndex == buf.readerIndex());//true
         System.out.println(writerIndex == buf.writerIndex());//true
+    }
+
+    private static void readWrite() {
+        Charset utf8 = StandardCharsets.UTF_8;
+        ByteBuf buf = Unpooled.copiedBuffer("Netty in Action rocks", utf8);
+        System.out.println((char) buf.readByte());
+        int readerIndex = buf.readerIndex();
+        int writerIndex = buf.writerIndex();
+        buf.writeByte((byte) '?');
+        System.out.println(readerIndex == buf.readerIndex());//true
+        System.out.println(writerIndex == buf.writerIndex());//false
     }
 }

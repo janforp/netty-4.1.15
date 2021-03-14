@@ -312,6 +312,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
 
     /**
      * Returns the number of bytes (octets) this buffer can contain.
+     *
+     * 返回 ByteBuf 可容纳的字节数。在此之后，它会尝试再次扩展直 到达到 maxCapacity()
      */
     public abstract int capacity();
 
@@ -328,6 +330,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * capacity of this buffer beyond the maximum capacity using {@link #capacity(int)} or
      * {@link #ensureWritable(int)}, those methods will raise an
      * {@link IllegalArgumentException}.
+     *
+     * 返回 ByteBuf 可以容纳的最大字节数
      */
     public abstract int maxCapacity();
 
@@ -466,12 +470,16 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Returns the number of readable bytes which is equal to
      * {@code (this.writerIndex - this.readerIndex)}.
+     *
+     * 返回可被读取的字节数
      */
     public abstract int readableBytes();
 
     /**
      * Returns the number of writable bytes which is equal to
      * {@code (this.capacity - this.writerIndex)}.
+     *
+     * 返回可被写入的字节数
      */
     public abstract int writableBytes();
 
@@ -485,6 +493,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Returns {@code true}
      * if and only if {@code (this.writerIndex - this.readerIndex)} is greater
      * than {@code 0}.
+     *
+     * 如果至少有一个字节可供读取，则返回 true
      */
     public abstract boolean isReadable();
 
@@ -497,6 +507,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Returns {@code true}
      * if and only if {@code (this.capacity - this.writerIndex)} is greater
      * than {@code 0}.
+     *
+     * 如果至少有一个字节可被写入，则返回 true
      */
     public abstract boolean isWritable();
 
@@ -997,6 +1009,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
 
     /**
      * Sets the specified boolean at the specified absolute {@code index} in this
+     *
      * buffer.
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * this buffer.
@@ -2280,6 +2293,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * {@link #arrayOffset()}.
      * -- 注意 当 hasArray()方法返回 false 时，尝试访问支撑数组将触发一个 Unsupported
      * OperationException。这个模式类似于 JDK 的 ByteBuffer 的用法。
+     *
+     * 如果 ByteBuf 由一个字节数组支撑，则返回 true
      */
     public abstract boolean hasArray();
 
@@ -2288,6 +2303,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *
      * -- 注意 当 hasArray()方法返回 false 时，尝试访问支撑数组将触发一个 Unsupported
      * OperationException。这个模式类似于 JDK 的 ByteBuffer 的用法。
+     *
+     * 如果 ByteBuf 由一个字节数组支撑则返回该数组;否则，它将抛出一个 UnsupportedOperationException 异常
      *
      * @throws UnsupportedOperationException if there no accessible backing byte array
      */
