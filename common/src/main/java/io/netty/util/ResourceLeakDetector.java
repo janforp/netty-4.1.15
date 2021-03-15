@@ -77,6 +77,9 @@ public class ResourceLeakDetector<T> {
                     return l;
                 }
             }
+            /**
+             * @see ResourceLeakDetector#DEFAULT_LEVEL
+             */
             return DEFAULT_LEVEL;
         }
     }
