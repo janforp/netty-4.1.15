@@ -23,7 +23,7 @@ public interface ChannelInboundHandler extends ChannelHandler {
      * *     }
      * * }
      *
-     * @see SimpleChannelInboundHandler
+     * * @see SimpleChannelInboundHandler
      */
 
     // ************************************************************************************************************
