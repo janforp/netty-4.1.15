@@ -28,6 +28,10 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
  */
 public class ResourceLeakDetector<T> {
 
+    /**
+     * 泄露检测级别可以通过将下面的 Java 系统属性设置为表中的一个值来定义:
+     * java -Dio.netty.leakDetectionLevel=ADVANCED
+     */
     private static final String PROP_LEVEL_OLD = "io.netty.leakDetectionLevel";
 
     private static final String PROP_LEVEL = "io.netty.leakDetection.level";
@@ -42,25 +46,37 @@ public class ResourceLeakDetector<T> {
 
     /**
      * Represents the level of resource leak detection.
+     *
+     * Netty 目前定义了 4 种泄漏检测级别
      */
     public enum Level {
         /**
          * Disables resource leak detection.
+         *
+         * 禁用泄漏检测。只有在详尽的测试之后才应设置为这个值
          */
         DISABLED,
         /**
          * Enables simplistic sampling resource leak detection which reports there is a leak or not,
          * at the cost of small overhead (default).
+         *
+         * 使用 1%的默认采样率检测并报告任何发现的泄露。这是默认级别，适合绝大部分的情况
          */
         SIMPLE,
         /**
          * Enables advanced sampling resource leak detection which reports where the leaked object was accessed
          * recently at the cost of high overhead.
+         *
+         * 使用默认的采样率，报告所发现的任何的泄露以及对应的消息被访问的位置
          */
         ADVANCED,
         /**
          * Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
          * at the cost of the highest possible overhead (for testing purposes only).
+         *
+         * 类似于ADVANCED，但是其将会对每次(对消息的)访问都进行采样。这对性能将会有很 大的影响，应该只在调试阶段使用
+         *
+         * PARANOID：泛醇类
          */
         PARANOID;
 
@@ -102,6 +118,10 @@ public class ResourceLeakDetector<T> {
 
         Level defaultLevel = disabled ? Level.DISABLED : DEFAULT_LEVEL;
 
+        /**
+         * 泄露检测级别可以通过将下面的 Java 系统属性设置为表中的一个值来定义:
+         * java -Dio.netty.leakDetectionLevel=ADVANCED
+         */
         // First read old property name
         String levelStr = SystemPropertyUtil.get(PROP_LEVEL_OLD, defaultLevel.name());
 
@@ -305,8 +325,7 @@ public class ResourceLeakDetector<T> {
      */
     protected void reportTracedLeak(String resourceType, String records) {
         logger.error(
-                "LEAK: {}.release() was not called before it's garbage-collected. " +
-                        "See http://netty.io/wiki/reference-counted-objects.html for more information.{}",
+                "LEAK: {}.release() was not called before it's garbage-collected. See http://netty.io/wiki/reference-counted-objects.html for more information.{}",
                 resourceType, records);
     }
 

@@ -94,6 +94,11 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * Intercepts {@link ChannelHandlerContext#read()}.
      *
      * 当请求从 Channel 读取更多的数据时被调用
+     *
+     * 每当通过调用 ChannelInboundHandler.channelRead()或者 ChannelOutbound- Handler.write()方法来处理数据时，
+     * 你都需要确保没有任何的资源泄漏。你可能还记得在前面的章节中所提到的，Netty 使用引用计数来处理池化的 ByteBuf。
+     * 所以在完全使用完某个 ByteBuf 后，调整其引用计数是很重要的。
+     * 为了帮助你诊断潜在的(资源泄漏)问题，Netty提供了class ResourceLeakDetector1， 它将对你应用程序的缓冲区分配做大约 1%的采样来检测内存泄露。相关的开销是非常小的。
      */
     void read(ChannelHandlerContext ctx) throws Exception;
 
