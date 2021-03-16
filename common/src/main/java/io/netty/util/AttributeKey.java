@@ -2,6 +2,8 @@ package io.netty.util;
 
 /**
  * 设计方式跟 io.netty.channel.ChannelOption 类似
+ *
+ * @param <T> the type of the {@link Attribute} which can be accessed via this {@link AttributeKey}.
  * @see io.netty.channel.ChannelOption
  * <p></p>
  *
@@ -11,8 +13,6 @@ package io.netty.util;
  *
  * Key which can be used to access {@link Attribute} out of the {@link AttributeMap}. Be aware that it is not be
  * possible to have multiple keys with the same name.
- *
- * @param <T> the type of the {@link Attribute} which can be accessed via this {@link AttributeKey}.
  */
 @SuppressWarnings("UnusedDeclaration") // 'T' is used only at compile time
 public final class AttributeKey<T> extends AbstractConstant<AttributeKey<T>> {

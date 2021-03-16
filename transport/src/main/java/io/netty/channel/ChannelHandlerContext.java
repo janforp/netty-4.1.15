@@ -112,7 +112,13 @@ import java.nio.channels.Channels;
  * what fundamental differences they have, how they flow in a  pipeline,  and how to handle
  * the operation in your application.
  */
-public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvoker, ChannelOutboundInvoker {
+public interface ChannelHandlerContext
+        extends AttributeMap, ChannelInboundInvoker, ChannelOutboundInvoker {
+    /**
+     * ChannelHandlerContext使得ChannelHandler能够和它的ChannelPipeline以及其他的 ChannelHandler 交 互 。
+     * ChannelHandler 可 以 通 知 其 所 属 的 ChannelPipeline 中 的 下 一 个 ChannelHandler，甚至可以动态修改它所属的ChannelPipeline。
+     * ChannelHandlerContext 具有丰富的用于处理事件和执行 I/O 操作的 API。6.3 节将提供有关 ChannelHandlerContext 的更多内容。
+     */
 
     /**
      * Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.

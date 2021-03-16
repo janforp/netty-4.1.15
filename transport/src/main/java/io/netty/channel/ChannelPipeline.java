@@ -242,7 +242,52 @@ import java.util.NoSuchElementException;
  * 使得事件流经 ChannelPipeline 是 ChannelHandler 的工作，它们是在应用程序的初 始化或者引导阶段被安装的。这些对象接收事件、执行它们所实现的处理逻辑，并将数据传递给 链中的下一个 ChannelHandler。它们的执行顺序是由它们被添加的顺序所决定的。实际上， 被我们称为 ChannelPipeline 的是这些 ChannelHandler 的编排顺序。
  */
 public interface ChannelPipeline
-        extends ChannelInboundInvoker, ChannelOutboundInvoker, Iterable<Entry<String, ChannelHandler>> {
+        extends ChannelInboundInvoker,
+        ChannelOutboundInvoker,
+        Iterable<Entry<String, ChannelHandler>> {
+
+    /**
+     *
+     * 总结一下:
+     * ChannelPipeline 保存了与 Channel 相关联的 ChannelHandler;
+     * ChannelPipeline 可以根据需要，通过添加或者删除 ChannelHandler 来动态地修改;
+     * ChannelPipeline 有着丰富的 API 用以被调用，以响应入站和出站事件。
+     *
+     *
+     * ============================================================================================================
+     *
+     *
+     * 每一个新创建的 Channel 都将会被分配一个新的 ChannelPipeline。这项关联是永久性 的;
+     * Channel 既不能附加另外一个 ChannelPipeline，也不能分离其当前的。
+     * 在 Netty 组件 的生命周期中，这是一项固定的操作，不需要开发人员的任何干预。
+     *
+     * 如果你认为 ChannelPipeline 是一个拦截流经 Channel 的入站和出站事件的 ChannelHandler 实例链，
+     * 那么就很容易看出这些 ChannelHandler 之间的交互是如何组成一个应用 程序数据和事件处理逻辑的核心的。
+     *
+     *
+     * 根据事件的起源，事件将会被 ChannelInboundHandler 或者 ChannelOutboundHandler
+     * 处理。随后，通过调用 ChannelHandlerContext 实现，它将被转发给同一超类型的下一个
+     * ChannelHandler。
+     *
+     *
+     * <------------- ChannelPipeline ------ 出站处理器 <----------- 出站处理器
+     *                                                                  ^
+     *                                                                  |
+     *                                                                  |
+     * --------------> 入站处理器 ------------> 入站处理器 ----------> 入站处理器
+     *
+     * ChannelPipeline 相对论
+     * 你可能会说，从事件途经 ChannelPipeline 的角度来看，ChannelPipeline 的头部和尾端取
+     * 决于该事件是入站的还是出站的。然而 Netty 总是将 ChannelPipeline 的入站口(图 6-3 中的左侧) 作为头部，而将出站口(该图的右侧)作为尾端。
+     * 当你完成了通过调用 ChannelPipeline.add*()方法将入站处理器(ChannelInboundHandler) 和出站处理器(ChannelOutboundHandler)混合添加到 ChannelPipeline 之后，
+     * 每一个 ChannelHandler 从头部到尾端的顺序位置正如同我们方才所定义它们的一样。因此，如果你将图 6-3 中 的处理器(ChannelHandler)从左到右进行编号，
+     * 那么第一个被入站事件看到的 ChannelHandler 将是 1，而第一个被出站事件看到的 ChannelHandler 将是 5。
+     *
+     *
+     * 在 ChannelPipeline 传播事件时，它会测试 ChannelPipeline 中的下一个 ChannelHandler 的类型是否和事件的运动方向相匹配。
+     * 如果不匹配，ChannelPipeline 将跳过该 ChannelHandler 并前进到下一个，直到它找到和该事件所期望的方向相匹配的为止。
+     * ChannelHandler 也可以同时实现 ChannelInboundHandler 接口和 ChannelOutboundHandler 接口。)
+     */
 
     /**
      * Inserts a {@link ChannelHandler} at the first position of this pipeline.
@@ -255,6 +300,14 @@ public interface ChannelPipeline
     ChannelPipeline addFirst(String name, ChannelHandler handler);
 
     /**
+     * ChannelHandler 的执行和阻塞
+     * 通常 ChannelPipeline 中的每一个 ChannelHandler 都是通过它的 EventLoop(I/O 线程)来处
+     * 理传递给它的事件的。所以至关重要的是不要阻塞这个线程，因为这会对整体的 I/O 处理产生负面的影响。
+     * 但有时可能需要与那些使用阻塞 API 的遗留代码进行交互。对于这种情况，ChannelPipeline 有一些 接受一个 EventExecutorGroup 的 add()方法。
+     * 如果一个事件被传递给一个自定义的 EventExecutorGroup，它将被包含在这个 EventExecutorGroup 中的某个 EventExecutor 所处理，
+     * 从而被从该 Channel 本身的 EventLoop 中移除。对于这种用例，Netty 提供了一个叫 DefaultEventExecutor- Group 的默认实现。
+     *
+     *
      * Inserts a {@link ChannelHandler} at the first position of this pipeline.
      *
      * @param group the {@link EventExecutorGroup} which will be used to execute the {@link ChannelHandler}
@@ -531,6 +584,8 @@ public interface ChannelPipeline
     ChannelHandlerContext context(ChannelHandler handler);
 
     /**
+     * 返回和 ChannelHandler 绑定的 ChannelHandlerContext
+     *
      * Returns the context object of the {@link ChannelHandler} with the
      * specified name in this pipeline.
      *
@@ -540,6 +595,8 @@ public interface ChannelPipeline
     ChannelHandlerContext context(String name);
 
     /**
+     * 返回和 ChannelHandler 绑定的 ChannelHandlerContext
+     *
      * Returns the context object of the {@link ChannelHandler} of the
      * specified type in this pipeline.
      *
@@ -556,6 +613,8 @@ public interface ChannelPipeline
     Channel channel();
 
     /**
+     * 返回 ChannelPipeline 中所有 ChannelHandler 的名称
+     *
      * Returns the {@link List} of the handler names.
      */
     List<String> names();
@@ -566,31 +625,45 @@ public interface ChannelPipeline
      */
     Map<String, ChannelHandler> toMap();
 
+    /**
+     * 调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelRegistered(ChannelHandlerContext)方法
+     *
+     * @return
+     */
     @Override
     ChannelPipeline fireChannelRegistered();
 
+    //调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelUnregistered(ChannelHandlerContext)方法
     @Override
     ChannelPipeline fireChannelUnregistered();
 
+    //调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelActive(ChannelHandlerContext)方法
     @Override
     ChannelPipeline fireChannelActive();
 
+    //调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelInactive(ChannelHandlerContext)方法
     @Override
     ChannelPipeline fireChannelInactive();
 
+    //调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 exceptionCaught(ChannelHandlerContext, Throwable)方法
     @Override
     ChannelPipeline fireExceptionCaught(Throwable cause);
 
+    //调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 userEventTriggered(ChannelHandlerContext, Object)方法
     @Override
     ChannelPipeline fireUserEventTriggered(Object event);
 
+    //调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelRead(ChannelHandlerContext, Object msg)方法
     @Override
     ChannelPipeline fireChannelRead(Object msg);
 
+    //调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelReadComplete(ChannelHandlerContext)方法
     @Override
     ChannelPipeline fireChannelReadComplete();
 
     /**
+     * 调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelWritabilityChanged(ChannelHandlerContext)方法
+     *
      * @return
      * @see ChannelOutboundBuffer#setUnwritable(boolean)
      * @see ChannelOutboundBuffer#decrementPendingOutboundBytes(long, boolean, boolean)
@@ -598,6 +671,7 @@ public interface ChannelPipeline
     @Override
     ChannelPipeline fireChannelWritabilityChanged();
 
+    //冲刷 Channel 所有挂起的写入。这将调用 ChannelPipeline 中的下一个 ChannelOutboundHandler 的 flush(ChannelHandlerContext)方法
     @Override
     ChannelPipeline flush();
 }

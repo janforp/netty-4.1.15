@@ -13,6 +13,8 @@ public interface ChannelInboundInvoker {
      * This will result in having the  {@link ChannelInboundHandler#channelRegistered(ChannelHandlerContext)} method
      * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
      * {@link Channel}.
+     *
+     * 调用 ChannelPipeline 中下一个 ChannelInboundHandler 的 channelRegistered(ChannelHandlerContext)方法
      */
     ChannelInboundInvoker fireChannelRegistered();
 
