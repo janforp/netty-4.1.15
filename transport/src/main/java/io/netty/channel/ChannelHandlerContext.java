@@ -121,16 +121,36 @@ public interface ChannelHandlerContext
      */
 
     /**
+     * ChannelHandlerContext 代表了 ChannelHandler 和 ChannelPipeline 之间的关 联，
+     * 每当有 ChannelHandler 添加到 ChannelPipeline 中时，都会创建 ChannelHandlerContext。
+     * ChannelHandlerContext 的主要功能是管理它所关联的 ChannelHandler 和在 同一个 ChannelPipeline 中的其他 ChannelHandler 之间的交互。
+     *
+     * ChannelHandlerContext 有很多的方法，其中一些方法也存在于 Channel 和 ChannelPipeline 本身上，但是有一点重要的不同。
+     * 如果调用 Channel 或者 ChannelPipeline 上的这 些方法，它们将沿着整个 ChannelPipeline 进行传播。
+     * 而调用位于 ChannelHandlerContext 上的相同方法，则将从当前所关联的 ChannelHandler 开始，并且只会传播给位于该 ChannelPipeline 中的下一个能够处理该事件的 ChannelHandler。
+     *
+     * 当使用 ChannelHandlerContext 的 API 的时候，请牢记以下两点:
+     * ChannelHandlerContext 和 ChannelHandler 之间的关联(绑定)是永远不会改变的，所以缓存对它的引用是安全的;
+     * 如同我们在本节开头所解释的一样，相对于其他类的同名方法，ChannelHandlerContext的方法将产生更短的事件流，应该尽可能地利用这个特性来获得最大的性能。
+     */
+
+    /**
      * Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
+     *
+     * 返回绑定到这个实例的 Channel
      */
     Channel channel();
 
     /**
      * Returns the {@link EventExecutor} which is used to execute an arbitrary task.
+     *
+     * 返回调度事件的 EventExecutor
      */
     EventExecutor executor();
 
     /**
+     * 返回这个实例的唯一名称
+     *
      * The unique name of the {@link ChannelHandlerContext}.The name was used when then {@link ChannelHandler}
      * was added to the {@link ChannelPipeline}. This name can also be used to access the registered
      * {@link ChannelHandler} from the {@link ChannelPipeline}.
@@ -143,39 +163,53 @@ public interface ChannelHandlerContext
     ChannelHandler handler();
 
     /**
+     * 如果所关联的 ChannelHandler 已经被从 ChannelPipeline 中移除则返回 true
+     *
      * Return {@code true} if the {@link ChannelHandler} which belongs to this context was removed
      * from the {@link ChannelPipeline}. Note that this method is only meant to be called from with in the
      * {@link EventLoop}.
      */
     boolean isRemoved();
 
+    //触发对下一个 ChannelInboundHandler 上的 fireChannelRegistered()方法的调用
     @Override
     ChannelHandlerContext fireChannelRegistered();
 
+    //触发对下一个 ChannelInboundHandler 上的 fireChannelUnregistered()方法的调用
     @Override
     ChannelHandlerContext fireChannelUnregistered();
 
+    //触发对下一个 ChannelInboundHandler 上的 channelActive()方法(已连接)的调用
     @Override
     ChannelHandlerContext fireChannelActive();
 
+    //触发对下一个 ChannelInboundHandler 上的 channelInactive()方法(已关闭)的调用
     @Override
     ChannelHandlerContext fireChannelInactive();
 
     @Override
     ChannelHandlerContext fireExceptionCaught(Throwable cause);
 
+    //触发对下一个 ChannelInboundHandler 上的 fireUserEventTriggered(Object evt)方法的调用
     @Override
     ChannelHandlerContext fireUserEventTriggered(Object evt);
 
+    //触发对下一个 ChannelInboundHandler 上的 channelRead()方法(已接收的消息)的调用
     @Override
     ChannelHandlerContext fireChannelRead(Object msg);
 
+    //触发对下一个 ChannelInboundHandler 上的 channelReadComplete()方法的调用
     @Override
     ChannelHandlerContext fireChannelReadComplete();
 
+    //触发对下一个ChannelInboundHandler上的
+    //  fireExceptionCaught fireUserEventTriggered
+    //fireChannelWritabilityChanged()方法的调用
     @Override
     ChannelHandlerContext fireChannelWritabilityChanged();
 
+    //将数据从Channel读取到第一个入站缓冲区;如果读取成功则触
+    //发 一个channelRead事件，并(在最后一个消息被读取完成后) 通 知 ChannelInboundHandler 的 channelReadComplete (ChannelHandlerContext)方法
     @Override
     ChannelHandlerContext read();
 
@@ -183,12 +217,16 @@ public interface ChannelHandlerContext
     ChannelHandlerContext flush();
 
     /**
+     * 返回这个实例所关联的 ChannelPipeline
+     *
      * Return the assigned {@link ChannelPipeline}
      */
     ChannelPipeline pipeline();
 
     /**
      * Return the assigned {@link ByteBufAllocator} which will be used to allocate {@link ByteBuf}s.
+     *
+     * 返回和这个实例相关联的 Channel 所配置的 ByteBufAllocator
      */
     ByteBufAllocator alloc();
 
