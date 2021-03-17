@@ -151,6 +151,17 @@ import java.util.concurrent.TimeUnit;
  * 3.使用监听器(addListener)而不是同步等待(await),这样会造成死锁
  */
 public interface ChannelFuture extends Future<Void> {
+    /**
+     *      * ChannelFuture future = channel.write(someMessage);
+     *      * future.addListener(new ChannelFutureListener() {
+     *      * @Override
+     *      * public void operationComplete(ChannelFuture f) {
+     *      * if (!f.isSuccess()) { f.cause().printStackTrace();
+     *      *                 f.channel().close();
+     *      *             }
+     *      * });
+     *      *}
+     */
 
     /**
      * Returns a channel where the I/O operation associated with this future takes place.

@@ -221,6 +221,13 @@ public interface ChannelHandler {
      * @deprecated is part of {@link ChannelInboundHandler}
      *
      * 当处理过程中在 ChannelPipeline 中有错误产生时被调用
+     *
+     * 总结一下:
+     * ChannelHandler.exceptionCaught()的默认实现是简单地将当前异常转发给
+     * ChannelPipeline 中的下一个 ChannelHandler;
+     * 如果异常到达了 ChannelPipeline 的尾端，它将会被记录为未被处理;
+     * 要想定义自定义的处理逻辑，你需要重写 exceptionCaught()方法。然后你需要决定
+     *     是否需要将该异常传播出去。
      */
     @Deprecated
     void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;
@@ -243,5 +250,9 @@ public interface ChannelHandler {
     @Retention(RetentionPolicy.RUNTIME)
     @interface Sharable {
         // no value
+        /**
+         * 为何要共享同一个ChannelHandler 在多个ChannelPipeline中安装同一个ChannelHandler
+         * 的一个常见的原因是用于收集跨越多个 Channel 的统计信息。
+         */
     }
 }

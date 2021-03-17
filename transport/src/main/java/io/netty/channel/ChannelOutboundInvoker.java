@@ -6,6 +6,14 @@ import io.netty.util.concurrent.FutureListener;
 import java.net.ConnectException;
 import java.net.SocketAddress;
 
+/**
+ * 6.4.2 处理出站异常
+ * 用于处理出站操作中的正常完成以及异常的选项，都基于以下的通知机制。
+ * 每个出站操作都将返回一个ChannelFuture。注册到ChannelFuture的ChannelFutureListener 将在操作完成时被通知该操作是成功了还是出错了。
+ * 几乎所有的 ChannelOutboundHandler 上的方法都会传入一个 ChannelPromise 的实例。作为 ChannelFuture 的子类，ChannelPromise 也可以被分配用于异步通
+ * 知的监听器。但是，ChannelPromise 还具有提供立即通知的可写方法: ChannelPromise setSuccess();
+ * ChannelPromise setFailure(Throwable cause);
+ */
 public interface ChannelOutboundInvoker {
 
     /**

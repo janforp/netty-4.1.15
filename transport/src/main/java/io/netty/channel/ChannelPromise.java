@@ -15,6 +15,11 @@ public interface ChannelPromise extends ChannelFuture, Promise<Void> {
     @Override
     Channel channel();
 
+    /**
+     * ChannelPromise 的可写方法
+     * 通过调用 ChannelPromise 上的 setSuccess()和 setFailure()方法，可以使一个操作的状
+     * 态在 ChannelHandler 的方法返回给其调用者时便即刻被感知到。
+     */
     @Override
     ChannelPromise setSuccess(Void result);
 

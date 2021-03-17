@@ -109,6 +109,10 @@ public interface ChannelInboundHandler extends ChannelHandler {
 
     /**
      * Gets called if a {@link Throwable} was thrown.
+     *
+     * 6.4.1 处理入站异常
+     * 如果在处理入站事件的过程中有异常被抛出，那么它将从它在 ChannelInboundHandler 里被触发的那一点开始流经 ChannelPipeline。要想处理这种类型的入站异常，你需要在你 的 ChannelInboundHandler 实现中重写下面的方法。
+     * public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
      */
     @Override
     @SuppressWarnings("deprecation")

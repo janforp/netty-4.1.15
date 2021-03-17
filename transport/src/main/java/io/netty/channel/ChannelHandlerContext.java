@@ -132,12 +132,23 @@ public interface ChannelHandlerContext
      * 当使用 ChannelHandlerContext 的 API 的时候，请牢记以下两点:
      * ChannelHandlerContext 和 ChannelHandler 之间的关联(绑定)是永远不会改变的，所以缓存对它的引用是安全的;
      * 如同我们在本节开头所解释的一样，相对于其他类的同名方法，ChannelHandlerContext的方法将产生更短的事件流，应该尽可能地利用这个特性来获得最大的性能。
+     *
+     * 当把 ChannelHandler 添加到 ChannelPipeline 时，
+     * ChannelHandlerContext 将会被创建
+     *
+     *
+     * 然被调用的 Channel 或 ChannelPipeline 上的 write()方法将一直传播事件通 过整个 ChannelPipeline，
+     * 但是在 ChannelHandler 的级别上，事件从一个 ChannelHandler 到下一个 ChannelHandler 的移动是由 ChannelHandlerContext 上的调用完成的。
      */
 
     /**
      * Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
      *
      * 返回绑定到这个实例的 Channel
+     * 通过该方法可以获取到与该 ChannelHandlerContext 相关联的 {@link Channel} 引用
+     *
+     * 因为一个 ChannelHandler 可以从属于多个 ChannelPipeline，
+     * 所以它也可以绑定到多 个 ChannelHandlerContext 实例。
      */
     Channel channel();
 
