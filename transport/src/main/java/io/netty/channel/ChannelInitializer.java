@@ -46,10 +46,15 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
      * This method will be called once the {@link Channel} was registered. After the method returns this instance
      * will be removed from the {@link ChannelPipeline} of the {@link Channel}.
      *
-     * @param ch            the {@link Channel} which was registered.
-     * @throws Exception    is thrown if an error occurs. In that case it will be handled by
-     *                      {@link #exceptionCaught(ChannelHandlerContext, Throwable)} which will by default close
-     *                      the {@link Channel}.
+     * 这个方法提供了一种将多个 ChannelHandler 添加到一个 ChannelPipeline 中的简便 方法。
+     * 你只需要简单地向 Bootstrap 或 ServerBootstrap 的实例提供你的 ChannelInitializer 实现即可，
+     * 并且一旦 Channel 被注册到了它的 EventLoop 之后，就会调用你的 initChannel()版本。
+     * 在该方法返回之后，ChannelInitializer 的实例将会从 ChannelPipeline 中移除它自己。
+     *
+     * @param ch the {@link Channel} which was registered.
+     * @throws Exception is thrown if an error occurs. In that case it will be handled by
+     * {@link #exceptionCaught(ChannelHandlerContext, Throwable)} which will by default close
+     * the {@link Channel}.
      */
     protected abstract void initChannel(C ch) throws Exception;
 

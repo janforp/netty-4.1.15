@@ -70,7 +70,6 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
     /**
      * Returns one of the {@link EventExecutor}s managed by this {@link EventExecutorGroup}.
      * 获取下一个事件执行器
-     *
      */
     EventExecutor next();
 
@@ -100,6 +99,22 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
     @Override
     <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit);
 
+    /**
+     * * Channel ch = ...
+     * * ScheduledFuture<?> future = ch.eventLoop().scheduleAtFixedRate(
+     * *           new Runnable() {
+     * *              @Override
+     * *              public void run() {
+     * *                  System.out.println("Run every 60 seconds");
+     * *              }
+     * *           }, 60, 60, TimeUnit.Seconds);
+     *
+     * 调度在 60 秒之后，并且 以后每间隔 60 秒运行
+     * 将一直运行，直到 future 被取消
+     *
+     * 如果要调度任
+     * 务以每隔 60 秒执行一次，请使用 scheduleAtFixedRate()方法
+     */
     @Override
     ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit);
 
