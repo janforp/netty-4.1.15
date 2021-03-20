@@ -31,6 +31,11 @@ import java.util.Queue;
 /**
  * Base class for {@link Channel} implementations that are used in an embedded fashion.
  *
+ * 入站数据由 ChannelInboundHandler 处理，代表从远程节点读取的数据。
+ * 出站数据由 ChannelOutboundHandler 处理，代表将要写到远程节点的数据。
+ *
+ * 根据你要测试的 Channel- Handler，你将使用*Inbound()或者*Outbound()方法对，或者兼而有之。
+ *
  * Embedded:嵌入式的
  */
 public class EmbeddedChannel extends AbstractChannel {
@@ -57,7 +62,7 @@ public class EmbeddedChannel extends AbstractChannel {
 
     private final ChannelFutureListener recordExceptionListener = new ChannelFutureListener() {
         @Override
-        public void operationComplete(ChannelFuture future) throws Exception {
+        public void operationComplete(ChannelFuture future) {
             recordException(future);
         }
     };
@@ -284,6 +289,9 @@ public class EmbeddedChannel extends AbstractChannel {
 
     /**
      * Return received data from this {@link Channel}
+     *
+     * 从 EmbeddedChannel 中读取一个入站消息。
+     * 任何返回的东西都穿越了整 个 ChannelPipeline。如果没有任何可供读取的，则返回 null
      */
     @SuppressWarnings("unchecked")
     public <T> T readInbound() {
@@ -300,6 +308,9 @@ public class EmbeddedChannel extends AbstractChannel {
 
     /**
      * Write messages to the inbound of this {@link Channel}.
+     *
+     * 将入站消息写到 EmbeddedChannel 中。
+     * 如果可以通过 readInbound() 方法从EmbeddedChannel中读取数据，则返回true
      *
      * @param msgs the messages to be written
      * @return {@code true} if the write operation did add something to the inbound buffer

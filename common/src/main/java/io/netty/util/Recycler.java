@@ -1,19 +1,3 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.util;
 
 import io.netty.util.concurrent.FastThreadLocal;
@@ -47,14 +31,23 @@ public abstract class Recycler<T> {
             // NOOP
         }
     };
+
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger(Integer.MIN_VALUE);
+
     private static final int OWN_THREAD_ID = ID_GENERATOR.getAndIncrement();
+
     private static final int DEFAULT_INITIAL_MAX_CAPACITY_PER_THREAD = 32768; // Use 32k instances as default.
+
     private static final int DEFAULT_MAX_CAPACITY_PER_THREAD;
+
     private static final int INITIAL_CAPACITY;
+
     private static final int MAX_SHARED_CAPACITY_FACTOR;
+
     private static final int MAX_DELAYED_QUEUES_PER_THREAD;
+
     private static final int LINK_CAPACITY;
+
     private static final int RATIO;
 
     static {
@@ -104,8 +97,11 @@ public abstract class Recycler<T> {
     }
 
     private final int maxCapacityPerThread;
+
     private final int maxSharedCapacityFactor;
+
     private final int ratioMask;
+
     private final int maxDelayedQueuesPerThread;
 
     private final FastThreadLocal<Stack<T>> threadLocal = new FastThreadLocal<Stack<T>>() {
@@ -129,7 +125,7 @@ public abstract class Recycler<T> {
     }
 
     protected Recycler(int maxCapacityPerThread, int maxSharedCapacityFactor,
-                       int ratio, int maxDelayedQueuesPerThread) {
+            int ratio, int maxDelayedQueuesPerThread) {
         ratioMask = safeFindNextPositivePowerOfTwo(ratio) - 1;
         if (maxCapacityPerThread <= 0) {
             this.maxCapacityPerThread = 0;
@@ -185,16 +181,20 @@ public abstract class Recycler<T> {
     protected abstract T newObject(Handle<T> handle);
 
     public interface Handle<T> {
+
         void recycle(T object);
     }
 
     static final class DefaultHandle<T> implements Handle<T> {
+
         private int lastRecycledId;
+
         private int recycleId;
 
         boolean hasBeenRecycled;
 
         private Stack<?> stack;
+
         private Object value;
 
         DefaultHandle(Stack<?> stack) {
@@ -212,11 +212,11 @@ public abstract class Recycler<T> {
 
     private static final FastThreadLocal<Map<Stack<?>, WeakOrderQueue>> DELAYED_RECYCLED =
             new FastThreadLocal<Map<Stack<?>, WeakOrderQueue>>() {
-        @Override
-        protected Map<Stack<?>, WeakOrderQueue> initialValue() {
-            return new WeakHashMap<Stack<?>, WeakOrderQueue>();
-        }
-    };
+                @Override
+                protected Map<Stack<?>, WeakOrderQueue> initialValue() {
+                    return new WeakHashMap<Stack<?>, WeakOrderQueue>();
+                }
+            };
 
     // a queue that makes only moderate guarantees about visibility: items are seen in the correct order,
     // but we aren't absolutely guaranteed to ever see anything at all, thereby keeping the queue cheap to maintain
@@ -227,18 +227,24 @@ public abstract class Recycler<T> {
         // Let Link extend AtomicInteger for intrinsics. The Link itself will be used as writerIndex.
         @SuppressWarnings("serial")
         private static final class Link extends AtomicInteger {
+
             private final DefaultHandle<?>[] elements = new DefaultHandle[LINK_CAPACITY];
 
             private int readIndex;
+
             private Link next;
         }
 
         // chain of data items
         private Link head, tail;
+
         // pointer to another queue of delayed items for the same stack
         private WeakOrderQueue next;
+
         private final WeakReference<Thread> owner;
+
         private final int id = ID_GENERATOR.getAndIncrement();
+
         private final AtomicInteger availableSharedCapacity;
 
         private WeakOrderQueue() {
@@ -280,7 +286,7 @@ public abstract class Recycler<T> {
 
         private static boolean reserveSpace(AtomicInteger availableSharedCapacity, int space) {
             assert space >= 0;
-            for (;;) {
+            for (; ; ) {
                 int available = availableSharedCapacity.get();
                 if (available < space) {
                     return false;
@@ -370,7 +376,7 @@ public abstract class Recycler<T> {
                         continue;
                     }
                     element.stack = dst;
-                    dstElems[newDstSize ++] = element;
+                    dstElems[newDstSize++] = element;
                 }
 
                 if (srcEnd == LINK_CAPACITY && head.next != null) {
@@ -416,20 +422,29 @@ public abstract class Recycler<T> {
         // to scavenge those that can be reused. this permits us to incur minimal thread synchronisation whilst
         // still recycling all items.
         final Recycler<T> parent;
+
         final Thread thread;
+
         final AtomicInteger availableSharedCapacity;
+
         final int maxDelayedQueues;
 
         private final int maxCapacity;
+
         private final int ratioMask;
+
         private DefaultHandle<?>[] elements;
+
         private int size;
+
         private int handleRecycleCount = -1; // Start with -1 so the first one will be recycled.
+
         private WeakOrderQueue cursor, prev;
+
         private volatile WeakOrderQueue head;
 
         Stack(Recycler<T> parent, Thread thread, int maxCapacity, int maxSharedCapacityFactor,
-              int ratioMask, int maxDelayedQueues) {
+                int ratioMask, int maxDelayedQueues) {
             this.parent = parent;
             this.thread = thread;
             this.maxCapacity = maxCapacity;
@@ -469,7 +484,7 @@ public abstract class Recycler<T> {
                 }
                 size = this.size;
             }
-            size --;
+            size--;
             DefaultHandle ret = elements[size];
             elements[size] = null;
             if (ret.lastRecycledId != ret.recycleId) {
@@ -518,7 +533,7 @@ public abstract class Recycler<T> {
                     // performing a volatile read to confirm there is no data left to collect.
                     // We never unlink the first queue, as we don't want to synchronize on updating the head.
                     if (cursor.hasFinalData()) {
-                        for (;;) {
+                        for (; ; ) {
                             if (cursor.transfer(this)) {
                                 success = true;
                             } else {

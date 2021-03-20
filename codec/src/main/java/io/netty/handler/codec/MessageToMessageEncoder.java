@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -62,7 +47,7 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
     /**
      * Create a new instance
      *
-     * @param outboundMessageType   The type of messages to match and so encode
+     * @param outboundMessageType The type of messages to match and so encode
      */
     protected MessageToMessageEncoder(Class<? extends I> outboundMessageType) {
         matcher = TypeParameterMatcher.get(outboundMessageType);
@@ -114,7 +99,7 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
                     // See https://github.com/netty/netty/issues/2525
                     ChannelPromise voidPromise = ctx.voidPromise();
                     boolean isVoidPromise = promise == voidPromise;
-                    for (int i = 0; i < sizeMinusOne; i ++) {
+                    for (int i = 0; i < sizeMinusOne; i++) {
                         ChannelPromise p;
                         if (isVoidPromise) {
                             p = voidPromise;
@@ -134,11 +119,11 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
      * Encode from one message to an other. This method will be called for each written message that can be handled
      * by this encoder.
      *
-     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToMessageEncoder} belongs to
-     * @param msg           the message to encode to an other one
-     * @param out           the {@link List} into which the encoded msg should be added
-     *                      needs to do some kind of aggregation
-     * @throws Exception    is thrown if an error occurs
+     * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToMessageEncoder} belongs to
+     * @param msg the message to encode to an other one
+     * @param out the {@link List} into which the encoded msg should be added
+     * needs to do some kind of aggregation
+     * @throws Exception is thrown if an error occurs
      */
     protected abstract void encode(ChannelHandlerContext ctx, I msg, List<Object> out) throws Exception;
 }

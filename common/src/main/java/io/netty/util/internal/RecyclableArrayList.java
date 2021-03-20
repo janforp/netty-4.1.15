@@ -1,19 +1,3 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.util.internal;
 
 import io.netty.util.Recycler;
@@ -26,6 +10,8 @@ import java.util.RandomAccess;
 
 /**
  * A simple list which is recyclable. This implementation does not allow {@code null} elements to be added.
+ *
+ * Recyclable:可回收
  */
 public final class RecyclableArrayList extends ArrayList<Object> {
 
@@ -94,13 +80,13 @@ public final class RecyclableArrayList extends ArrayList<Object> {
             // produce less garbage
             List<?> list = (List<?>) c;
             int size = list.size();
-            for (int i = 0; i  < size; i++) {
+            for (int i = 0; i < size; i++) {
                 if (list.get(i) == null) {
                     throw new IllegalArgumentException("c contains null values");
                 }
             }
         } else {
-            for (Object element: c) {
+            for (Object element : c) {
                 if (element == null) {
                     throw new IllegalArgumentException("c contains null values");
                 }
@@ -148,6 +134,7 @@ public final class RecyclableArrayList extends ArrayList<Object> {
 
     /**
      * Clear and recycle this instance.
+     * -- 清除并回收该实例
      */
     public boolean recycle() {
         clear();
