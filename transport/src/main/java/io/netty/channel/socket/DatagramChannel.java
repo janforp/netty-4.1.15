@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel.socket;
 
 import io.netty.channel.Channel;
@@ -25,12 +10,19 @@ import java.net.NetworkInterface;
 
 /**
  * A UDP/IP {@link Channel}.
+ *
+ * 前面的引导代码示例使用的都是基于 TCP 协议的 SocketChannel，但是 Bootstrap 类 也可以被用于无连接的协议。
+ * 为此，Netty 提供了各种 DatagramChannel 的实现。
+ * 唯一区别就 是，不再调用 connect()方法，而是只调用 bind()方法，如代码清单 8-8 所示
  */
 public interface DatagramChannel extends Channel {
+
     @Override
     DatagramChannelConfig config();
+
     @Override
     InetSocketAddress localAddress();
+
     @Override
     InetSocketAddress remoteAddress();
 
@@ -111,7 +103,6 @@ public interface DatagramChannel extends Channel {
     /**
      * Leave the specified multicast group at the specified interface using the specified source and notifies
      * the {@link ChannelFuture} once the operation completes.
-     *
      */
     ChannelFuture leaveGroup(
             InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source);
