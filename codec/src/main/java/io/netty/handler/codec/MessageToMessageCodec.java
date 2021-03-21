@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -52,7 +37,10 @@ import java.util.List;
  * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageCodec} will call
  * {@link ReferenceCounted#release()} on encoded / decoded messages.
  */
-public abstract class MessageToMessageCodec<INBOUND_IN, OUTBOUND_IN> extends ChannelDuplexHandler {
+public abstract class MessageToMessageCodec<
+        INBOUND_IN, //入站类型
+        OUTBOUND_IN //出站类型
+        > extends ChannelDuplexHandler {
 
     private final MessageToMessageEncoder<Object> encoder = new MessageToMessageEncoder<Object>() {
 
@@ -83,6 +71,7 @@ public abstract class MessageToMessageCodec<INBOUND_IN, OUTBOUND_IN> extends Cha
     };
 
     private final TypeParameterMatcher inboundMsgMatcher;
+
     private final TypeParameterMatcher outboundMsgMatcher;
 
     /**
@@ -97,8 +86,8 @@ public abstract class MessageToMessageCodec<INBOUND_IN, OUTBOUND_IN> extends Cha
     /**
      * Create a new instance.
      *
-     * @param inboundMessageType    The type of messages to decode
-     * @param outboundMessageType   The type of messages to encode
+     * @param inboundMessageType The type of messages to decode
+     * @param outboundMessageType The type of messages to encode
      */
     protected MessageToMessageCodec(
             Class<? extends INBOUND_IN> inboundMessageType, Class<? extends OUTBOUND_IN> outboundMessageType) {
@@ -135,13 +124,25 @@ public abstract class MessageToMessageCodec<INBOUND_IN, OUTBOUND_IN> extends Cha
     }
 
     /**
+     * decode()方法是将INBOUND_IN类型的消息转换为OUTBOUND_IN类型的消息，而 encode()方法则进行它的逆向操作。
+     *
+     * 将INBOUND_IN类型的消息看作是通过网络发送的类型， 而将OUTBOUND_IN类型的消息看作是应用程序所处理的类型，将可能有所裨益。
+     */
+
+    /**
      * @see MessageToMessageEncoder#encode(ChannelHandlerContext, Object, List)
+     *
+     * 这个方法被调用时会 被传入 INBOUND_IN 类型的消息。
+     * 它将把它们解码为 OUTBOUND_IN 类型的消息，这些消息 将被转发给 ChannelPipeline 中的下一个 ChannelInboundHandler
      */
     protected abstract void encode(ChannelHandlerContext ctx, OUTBOUND_IN msg, List<Object> out)
             throws Exception;
 
     /**
      * @see MessageToMessageDecoder#decode(ChannelHandlerContext, Object, List)
+     *
+     * 对于每个 OUTBOUND_IN 类型的消息，这个方法都将会 被调用。
+     * 这些消息将会被编码为 INBOUND_IN 类型的消 息，然后被转发给 ChannelPipeline 中的下一个 ChannelOutboundHandler
      */
     protected abstract void decode(ChannelHandlerContext ctx, INBOUND_IN msg, List<Object> out)
             throws Exception;
