@@ -15,6 +15,9 @@ import java.util.List;
  * For a more general delimiter-based decoder, see {@link DelimiterBasedFrameDecoder}.
  */
 public class LineBasedFrameDecoder extends ByteToMessageDecoder {
+    /**
+     * 提取由行尾符(\n 或者\r\n)(回车符+换行符)分隔的帧的解码器。这个解码器比 DelimiterBasedFrameDecoder 更快
+     */
 
     /**
      * Maximum length of a frame we're willing to decode.
