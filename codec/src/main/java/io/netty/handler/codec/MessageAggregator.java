@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.buffer.ByteBuf;
@@ -51,23 +36,30 @@ import static io.netty.buffer.Unpooled.EMPTY_BUFFER;
 public abstract class MessageAggregator<I, S, C extends ByteBufHolder, O extends ByteBufHolder>
         extends MessageToMessageDecoder<I> {
 
+    /**
+     * Aggregator:聚合器
+     */
+
     private static final int DEFAULT_MAX_COMPOSITEBUFFER_COMPONENTS = 1024;
 
     private final int maxContentLength;
+
     private O currentMessage;
+
     private boolean handlingOversizedMessage;
 
     private int maxCumulationBufferComponents = DEFAULT_MAX_COMPOSITEBUFFER_COMPONENTS;
+
     private ChannelHandlerContext ctx;
+
     private ChannelFutureListener continueResponseWriteListener;
 
     /**
      * Creates a new instance.
      *
-     * @param maxContentLength
-     *        the maximum length of the aggregated content.
-     *        If the length of the aggregated content exceeds this value,
-     *        {@link #handleOversizedMessage(ChannelHandlerContext, Object)} will be called.
+     * @param maxContentLength the maximum length of the aggregated content.
+     * If the length of the aggregated content exceeds this value,
+     * {@link #handleOversizedMessage(ChannelHandlerContext, Object)} will be called.
      */
     protected MessageAggregator(int maxContentLength) {
         validateMaxContentLength(maxContentLength);
@@ -164,7 +156,7 @@ public abstract class MessageAggregator<I, S, C extends ByteBufHolder, O extends
         if (maxCumulationBufferComponents < 2) {
             throw new IllegalArgumentException(
                     "maxCumulationBufferComponents: " + maxCumulationBufferComponents +
-                    " (expected: >= 2)");
+                            " (expected: >= 2)");
         }
 
         if (ctx == null) {
@@ -321,6 +313,7 @@ public abstract class MessageAggregator<I, S, C extends ByteBufHolder, O extends
     /**
      * Determine if the message {@code start}'s content length is known, and if it greater than
      * {@code maxContentLength}.
+     *
      * @param start The message which may indicate the content length.
      * @param maxContentLength The maximum allowed content length.
      * @return {@code true} if the message {@code start}'s content length is known, and if it greater than
@@ -340,6 +333,7 @@ public abstract class MessageAggregator<I, S, C extends ByteBufHolder, O extends
     /**
      * Determine if the channel should be closed after the result of
      * {@link #newContinueResponse(Object, int, ChannelPipeline)} is written.
+     *
      * @param msg The return value from {@link #newContinueResponse(Object, int, ChannelPipeline)}.
      * @return {@code true} if the channel should be closed after the result of
      * {@link #newContinueResponse(Object, int, ChannelPipeline)} is written. {@code false} otherwise.
@@ -369,12 +363,14 @@ public abstract class MessageAggregator<I, S, C extends ByteBufHolder, O extends
      * aggregated message already, so that you don't need to.  Use this method to transfer the additional information
      * that the content message provides to {@code aggregated}.
      */
-    protected void aggregate(O aggregated, C content) throws Exception { }
+    protected void aggregate(O aggregated, C content) throws Exception {
+    }
 
     /**
      * Invoked when the specified {@code aggregated} message is about to be passed to the next handler in the pipeline.
      */
-    protected void finishAggregation(O aggregated) throws Exception { }
+    protected void finishAggregation(O aggregated) throws Exception {
+    }
 
     private void invokeHandleOversizedMessage(ChannelHandlerContext ctx, S oversized) throws Exception {
         handlingOversizedMessage = true;

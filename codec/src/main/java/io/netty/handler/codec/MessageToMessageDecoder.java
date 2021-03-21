@@ -32,6 +32,8 @@ import java.util.List;
  * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
  * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageDecoder} will call
  * {@link ReferenceCounted#release()} on decoded messages.
+ *
+ * @param <I> 类型参数 I 指定了 decode()方法的输入参数 msg 的类型，它是你必须实现的唯一方法。
  */
 public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAdapter {
 
@@ -45,6 +47,8 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
 
     /**
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
+     *
+     * -- 创建一个新实例，该实例将尝试检测与类的type参数匹配的类型。
      */
     protected MessageToMessageDecoder() {
         matcher = TypeParameterMatcher.find(this, MessageToMessageDecoder.class, "I");
@@ -96,13 +100,18 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
     }
 
     /**
-     * Decode from one message to an other. This method will be called for each written message that can be handled
-     * by this encoder.
+     * Decode from one message to an other. This method will be called for each written message that can be handled by this encoder.
+     *
+     * 从一条消息解码为另一条消息。对于此编码器可以处理的每条书面消息，将调用此方法。
      *
      * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToMessageDecoder} belongs to
      * @param msg the message to decode to an other one
      * @param out the {@link List} to which decoded messages should be added
+     * @param <I> 类型参数 I 指定了 decode()方法的输入参数 msg 的类型，它是你必须实现的唯一方法。
      * @throws Exception is thrown if an error occurs
+     *
+     * 对于每个需要被解码为另一种格式的入站消息来说，该方法都 将会被调用。
+     * 解码消息随后会被传递给 ChannelPipeline 中的下一个 ChannelInboundHandler
      */
     protected abstract void decode(ChannelHandlerContext ctx, I msg, List<Object> out) throws Exception;
 }

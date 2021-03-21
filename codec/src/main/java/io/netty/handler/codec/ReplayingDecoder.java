@@ -256,6 +256,12 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
      * 解码器处理入站数据\
      *
      * 该类的作用：将字节解码为消息
+     *
+     * 请注意 ReplayingDecoderByteBuf 的下面这些方面:
+     * 并不是所有的 ByteBuf 操作都被支持，如果调用了一个不被支持的方法，将会抛出一个 UnsupportedOperationException;
+     * ReplayingDecoder 稍慢于 ByteToMessageDecoder。
+     *
+     * 这里有一个简单的准则:如果使用 ByteToMessageDecoder 不会引入太多的复杂 性，那么请使用它;否则，请使用 ReplayingDecoder。
      */
 
     static final Signal REPLAY = Signal.valueOf(ReplayingDecoder.class, "REPLAY");

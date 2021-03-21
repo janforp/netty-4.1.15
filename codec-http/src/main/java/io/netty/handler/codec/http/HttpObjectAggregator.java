@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec.http;
 
 import io.netty.buffer.ByteBuf;
@@ -43,7 +28,7 @@ import static io.netty.handler.codec.http.HttpUtil.getContentLength;
  * responses, or after {@link HttpRequestDecoder} and {@link HttpResponseEncoder} in the
  * {@link ChannelPipeline} if being used to handle requests.
  * <blockquote>
- *  <pre>
+ * <pre>
  *  {@link ChannelPipeline} p = ...;
  *  ...
  *  p.addLast("decoder", <b>new {@link HttpRequestDecoder}()</b>);
@@ -59,24 +44,24 @@ import static io.netty.handler.codec.http.HttpUtil.getContentLength;
  * </p>
  * Be aware that {@link HttpObjectAggregator} may end up sending a {@link HttpResponse}:
  * <table border summary="Possible Responses">
- *   <tbody>
- *     <tr>
- *       <th>Response Status</th>
- *       <th>Condition When Sent</th>
- *     </tr>
- *     <tr>
- *       <td>100 Continue</td>
- *       <td>A '100-continue' expectation is received and the 'content-length' doesn't exceed maxContentLength</td>
- *     </tr>
- *     <tr>
- *       <td>417 Expectation Failed</td>
- *       <td>A '100-continue' expectation is received and the 'content-length' exceeds maxContentLength</td>
- *     </tr>
- *     <tr>
- *       <td>413 Request Entity Too Large</td>
- *       <td>Either the 'content-length' or the bytes received so far exceed maxContentLength</td>
- *     </tr>
- *   </tbody>
+ * <tbody>
+ * <tr>
+ * <th>Response Status</th>
+ * <th>Condition When Sent</th>
+ * </tr>
+ * <tr>
+ * <td>100 Continue</td>
+ * <td>A '100-continue' expectation is received and the 'content-length' doesn't exceed maxContentLength</td>
+ * </tr>
+ * <tr>
+ * <td>417 Expectation Failed</td>
+ * <td>A '100-continue' expectation is received and the 'content-length' exceeds maxContentLength</td>
+ * </tr>
+ * <tr>
+ * <td>413 Request Entity Too Large</td>
+ * <td>Either the 'content-length' or the bytes received so far exceed maxContentLength</td>
+ * </tr>
+ * </tbody>
  * </table>
  *
  * @see FullHttpRequest
@@ -86,15 +71,20 @@ import static io.netty.handler.codec.http.HttpUtil.getContentLength;
  */
 public class HttpObjectAggregator
         extends MessageAggregator<HttpObject, HttpMessage, HttpContent, FullHttpMessage> {
+
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(HttpObjectAggregator.class);
+
     private static final FullHttpResponse CONTINUE =
             new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+
     private static final FullHttpResponse EXPECTATION_FAILED = new DefaultFullHttpResponse(
             HttpVersion.HTTP_1_1, HttpResponseStatus.EXPECTATION_FAILED, Unpooled.EMPTY_BUFFER);
+
     private static final FullHttpResponse TOO_LARGE_CLOSE = new DefaultFullHttpResponse(
             HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, Unpooled.EMPTY_BUFFER);
+
     private static final FullHttpResponse TOO_LARGE = new DefaultFullHttpResponse(
-        HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, Unpooled.EMPTY_BUFFER);
+            HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, Unpooled.EMPTY_BUFFER);
 
     static {
         EXPECTATION_FAILED.headers().set(CONTENT_LENGTH, 0);
@@ -108,6 +98,7 @@ public class HttpObjectAggregator
 
     /**
      * Creates a new instance.
+     *
      * @param maxContentLength the maximum length of the aggregated content in bytes.
      * If the length of the aggregated content exceeds this value,
      * {@link #handleOversizedMessage(ChannelHandlerContext, HttpMessage)} will be called.
@@ -118,6 +109,7 @@ public class HttpObjectAggregator
 
     /**
      * Creates a new instance.
+     *
      * @param maxContentLength the maximum length of the aggregated content in bytes.
      * If the length of the aggregated content exceeds this value,
      * {@link #handleOversizedMessage(ChannelHandlerContext, HttpMessage)} will be called.
@@ -249,7 +241,7 @@ public class HttpObjectAggregator
             // If the client started to send data already, close because it's impossible to recover.
             // If keep-alive is off and 'Expect: 100-continue' is missing, no need to leave the connection open.
             if (oversized instanceof FullHttpMessage ||
-                !HttpUtil.is100ContinueExpected(oversized) && !HttpUtil.isKeepAlive(oversized)) {
+                    !HttpUtil.is100ContinueExpected(oversized) && !HttpUtil.isKeepAlive(oversized)) {
                 ChannelFuture future = ctx.writeAndFlush(TOO_LARGE_CLOSE.retainedDuplicate());
                 future.addListener(new ChannelFutureListener() {
                     @Override
@@ -287,8 +279,11 @@ public class HttpObjectAggregator
     }
 
     private abstract static class AggregatedFullHttpMessage implements FullHttpMessage {
+
         protected final HttpMessage message;
+
         private final ByteBuf content;
+
         private HttpHeaders trailingHeaders;
 
         AggregatedFullHttpMessage(HttpMessage message, ByteBuf content, HttpHeaders trailingHeaders) {
