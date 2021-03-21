@@ -1,18 +1,3 @@
-/*
- * Copyright 2014 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.ssl;
 
 import io.netty.buffer.ByteBufAllocator;
@@ -27,8 +12,19 @@ import javax.net.ssl.SSLEngine;
  * and manually release the native memory see {@link ReferenceCountedOpenSslEngine}.
  */
 public final class OpenSslEngine extends ReferenceCountedOpenSslEngine {
+
+    /**
+     * Netty 的 OpenSSL/SSLEngine 实现
+     * Netty 还提供了使用 OpenSSL 工具包(www.openssl.org)的 SSLEngine 实现。这个 OpenSsl-
+     * Engine 类提供了比 JDK 提供的 SSLEngine 实现更好的性能。
+     * 如果 OpenSSL 库可用，可以将 Netty 应用程序(客户端和服务器)配置为默认使用 OpenSslEngine。
+     * 如果不可用，Netty 将会回退到 JDK 实现。有关配置 OpenSSL 支持的详细说明，
+     * 参见 Netty 文档: http://netty.io/wiki/forked-tomcat-native.html#wikih2-1。
+     * 注意，无论你使用 JDK 的 SSLEngine 还是使用 Netty 的 OpenSslEngine，SSL API 和数据流都 是一致的。
+     */
+
     OpenSslEngine(OpenSslContext context, ByteBufAllocator alloc, String peerHost, int peerPort,
-                  boolean jdkCompatibilityMode) {
+            boolean jdkCompatibilityMode) {
         super(context, alloc, peerHost, peerPort, jdkCompatibilityMode, false);
     }
 
