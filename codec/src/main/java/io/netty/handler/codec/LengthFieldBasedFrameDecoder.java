@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.buffer.ByteBuf;
@@ -74,7 +59,7 @@ import java.util.List;
  * </pre>
  *
  * <h3>2 bytes length field at offset 0, do not strip header, the length field
- *     represents the length of the whole message</h3>
+ * represents the length of the whole message</h3>
  *
  * In most cases, the length field represents the length of the message body
  * only, as shown in the previous examples.  However, in some protocols, the
@@ -135,7 +120,7 @@ import java.util.List;
  * </pre>
  *
  * <h3>2 bytes length field at offset 1 in the middle of 4 bytes header,
- *     strip the first header field and the length field</h3>
+ * strip the first header field and the length field</h3>
  *
  * This is a combination of all the examples above.  There are the prepended
  * header before the length field and the extra header after the length field.
@@ -158,8 +143,8 @@ import java.util.List;
  * </pre>
  *
  * <h3>2 bytes length field at offset 1 in the middle of 4 bytes header,
- *     strip the first header field and the length field, the length field
- *     represents the length of the whole message</h3>
+ * strip the first header field and the length field, the length field
+ * represents the length of the whole message</h3>
  *
  * Let's give another twist to the previous example.  The only difference from
  * the previous example is that the length field represents the length of the
@@ -179,55 +164,76 @@ import java.util.List;
  * | 0xCA | 0x0010 | 0xFE | "HELLO, WORLD" |      | 0xFE | "HELLO, WORLD" |
  * +------+--------+------+----------------+      +------+----------------+
  * </pre>
+ *
  * @see LengthFieldPrepender
  */
 public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
 
+    /**
+     * 11.4.2 基于长度的协议
+     * 基于长度的协议通过将它的长度编码到帧的头部来定义帧，而不是使用特殊的分隔符来标记 它的结束。
+     * 表 11-6 列出了Netty提供的用于处理这种类型的协议的两种解码器。
+     *
+     * {@link FixedLengthFrameDecoder}      --- 提取在调用构造函数时指定的定长帧
+     * LengthFieldBasedFrameDecoder         --- 根据编码进帧头部中的长度值提取帧;该字段的偏移量以及 长度在构造函数中指定
+     *
+     * 你会遇到被编码到消息头部的帧大小不是固定值的协议。
+     * 为了处理这种变长帧，你可 以使用 LengthFieldBasedFrameDecoder，
+     * 它将从头部字段确定帧长，然后从数据流中提取 指定的字节数。
+     */
+
     private final ByteOrder byteOrder;
+
+    //*******
+
     private final int maxFrameLength;
+
     private final int lengthFieldOffset;
+
     private final int lengthFieldLength;
+
+    //*******
+
     private final int lengthFieldEndOffset;
+
     private final int lengthAdjustment;
+
     private final int initialBytesToStrip;
+
     private final boolean failFast;
+
     private boolean discardingTooLongFrame;
+
     private long tooLongFrameLength;
+
     private long bytesToDiscard;
 
     /**
      * Creates a new instance.
      *
-     * @param maxFrameLength
-     *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link TooLongFrameException} will be
-     *        thrown.
-     * @param lengthFieldOffset
-     *        the offset of the length field
-     * @param lengthFieldLength
-     *        the length of the length field
+     * @param maxFrameLength the maximum length of the frame.  If the length of the frame is
+     * greater than this value, {@link TooLongFrameException} will be
+     * thrown.
+     * @param lengthFieldOffset the offset of the length field
+     * @param lengthFieldLength the length of the length field
      */
     public LengthFieldBasedFrameDecoder(
             int maxFrameLength,
-            int lengthFieldOffset, int lengthFieldLength) {
+            int lengthFieldOffset,
+            int lengthFieldLength) {
         this(maxFrameLength, lengthFieldOffset, lengthFieldLength, 0, 0);
     }
 
     /**
      * Creates a new instance.
      *
-     * @param maxFrameLength
-     *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link TooLongFrameException} will be
-     *        thrown.
-     * @param lengthFieldOffset
-     *        the offset of the length field
-     * @param lengthFieldLength
-     *        the length of the length field
-     * @param lengthAdjustment
-     *        the compensation value to add to the value of the length field
-     * @param initialBytesToStrip
-     *        the number of first bytes to strip out from the decoded frame
+     * @param maxFrameLength the maximum length of the frame.  If the length of the frame is
+     * greater than this value, {@link TooLongFrameException} will be
+     * thrown.
+     * @param lengthFieldOffset the offset of the length field
+     * @param lengthFieldLength the length of the length field
+     * @param lengthAdjustment the compensation value to add to the value of the length field
+     * @param initialBytesToStrip the number of first bytes to strip out from the decoded frame
      */
     public LengthFieldBasedFrameDecoder(
             int maxFrameLength,
@@ -242,25 +248,19 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Creates a new instance.
      *
-     * @param maxFrameLength
-     *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link TooLongFrameException} will be
-     *        thrown.
-     * @param lengthFieldOffset
-     *        the offset of the length field
-     * @param lengthFieldLength
-     *        the length of the length field
-     * @param lengthAdjustment
-     *        the compensation value to add to the value of the length field
-     * @param initialBytesToStrip
-     *        the number of first bytes to strip out from the decoded frame
-     * @param failFast
-     *        If <tt>true</tt>, a {@link TooLongFrameException} is thrown as
-     *        soon as the decoder notices the length of the frame will exceed
-     *        <tt>maxFrameLength</tt> regardless of whether the entire frame
-     *        has been read.  If <tt>false</tt>, a {@link TooLongFrameException}
-     *        is thrown after the entire frame that exceeds <tt>maxFrameLength</tt>
-     *        has been read.
+     * @param maxFrameLength the maximum length of the frame.  If the length of the frame is
+     * greater than this value, {@link TooLongFrameException} will be
+     * thrown.
+     * @param lengthFieldOffset the offset of the length field
+     * @param lengthFieldLength the length of the length field
+     * @param lengthAdjustment the compensation value to add to the value of the length field
+     * @param initialBytesToStrip the number of first bytes to strip out from the decoded frame
+     * @param failFast If <tt>true</tt>, a {@link TooLongFrameException} is thrown as
+     * soon as the decoder notices the length of the frame will exceed
+     * <tt>maxFrameLength</tt> regardless of whether the entire frame
+     * has been read.  If <tt>false</tt>, a {@link TooLongFrameException}
+     * is thrown after the entire frame that exceeds <tt>maxFrameLength</tt>
+     * has been read.
      */
     public LengthFieldBasedFrameDecoder(
             int maxFrameLength, int lengthFieldOffset, int lengthFieldLength,
@@ -273,27 +273,20 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Creates a new instance.
      *
-     * @param byteOrder
-     *        the {@link ByteOrder} of the length field
-     * @param maxFrameLength
-     *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link TooLongFrameException} will be
-     *        thrown.
-     * @param lengthFieldOffset
-     *        the offset of the length field
-     * @param lengthFieldLength
-     *        the length of the length field
-     * @param lengthAdjustment
-     *        the compensation value to add to the value of the length field
-     * @param initialBytesToStrip
-     *        the number of first bytes to strip out from the decoded frame
-     * @param failFast
-     *        If <tt>true</tt>, a {@link TooLongFrameException} is thrown as
-     *        soon as the decoder notices the length of the frame will exceed
-     *        <tt>maxFrameLength</tt> regardless of whether the entire frame
-     *        has been read.  If <tt>false</tt>, a {@link TooLongFrameException}
-     *        is thrown after the entire frame that exceeds <tt>maxFrameLength</tt>
-     *        has been read.
+     * @param byteOrder the {@link ByteOrder} of the length field
+     * @param maxFrameLength the maximum length of the frame.  If the length of the frame is
+     * greater than this value, {@link TooLongFrameException} will be
+     * thrown.
+     * @param lengthFieldOffset the offset of the length field
+     * @param lengthFieldLength the length of the length field
+     * @param lengthAdjustment the compensation value to add to the value of the length field
+     * @param initialBytesToStrip the number of first bytes to strip out from the decoded frame
+     * @param failFast If <tt>true</tt>, a {@link TooLongFrameException} is thrown as
+     * soon as the decoder notices the length of the frame will exceed
+     * <tt>maxFrameLength</tt> regardless of whether the entire frame
+     * has been read.  If <tt>false</tt>, a {@link TooLongFrameException}
+     * is thrown after the entire frame that exceeds <tt>maxFrameLength</tt>
+     * has been read.
      */
     public LengthFieldBasedFrameDecoder(
             ByteOrder byteOrder, int maxFrameLength, int lengthFieldOffset, int lengthFieldLength,
@@ -305,27 +298,27 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
         if (maxFrameLength <= 0) {
             throw new IllegalArgumentException(
                     "maxFrameLength must be a positive integer: " +
-                    maxFrameLength);
+                            maxFrameLength);
         }
 
         if (lengthFieldOffset < 0) {
             throw new IllegalArgumentException(
                     "lengthFieldOffset must be a non-negative integer: " +
-                    lengthFieldOffset);
+                            lengthFieldOffset);
         }
 
         if (initialBytesToStrip < 0) {
             throw new IllegalArgumentException(
                     "initialBytesToStrip must be a non-negative integer: " +
-                    initialBytesToStrip);
+                            initialBytesToStrip);
         }
 
         if (lengthFieldOffset > maxFrameLength - lengthFieldLength) {
             throw new IllegalArgumentException(
                     "maxFrameLength (" + maxFrameLength + ") " +
-                    "must be equal to or greater than " +
-                    "lengthFieldOffset (" + lengthFieldOffset + ") + " +
-                    "lengthFieldLength (" + lengthFieldLength + ").");
+                            "must be equal to or greater than " +
+                            "lengthFieldOffset (" + lengthFieldOffset + ") + " +
+                            "lengthFieldLength (" + lengthFieldLength + ").");
         }
 
         this.byteOrder = byteOrder;
@@ -349,10 +342,10 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
-     * @param   in              the {@link ByteBuf} from which to read data
-     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
-     *                          be created.
+     * @param ctx the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param in the {@link ByteBuf} from which to read data
+     * @return frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
+     * be created.
      */
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
         if (discardingTooLongFrame) {
@@ -384,7 +377,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
             in.skipBytes(lengthFieldEndOffset);
             throw new CorruptedFrameException(
                     "Adjusted frame length (" + frameLength + ") is less " +
-                    "than lengthFieldEndOffset: " + lengthFieldEndOffset);
+                            "than lengthFieldEndOffset: " + lengthFieldEndOffset);
         }
 
         if (frameLength > maxFrameLength) {
@@ -414,7 +407,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
             in.skipBytes(frameLengthInt);
             throw new CorruptedFrameException(
                     "Adjusted frame length (" + frameLength + ") is less " +
-                    "than initialBytesToStrip: " + initialBytesToStrip);
+                            "than initialBytesToStrip: " + initialBytesToStrip);
         }
         in.skipBytes(initialBytesToStrip);
 
@@ -438,24 +431,24 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
         buf = buf.order(order);
         long frameLength;
         switch (length) {
-        case 1:
-            frameLength = buf.getUnsignedByte(offset);
-            break;
-        case 2:
-            frameLength = buf.getUnsignedShort(offset);
-            break;
-        case 3:
-            frameLength = buf.getUnsignedMedium(offset);
-            break;
-        case 4:
-            frameLength = buf.getUnsignedInt(offset);
-            break;
-        case 8:
-            frameLength = buf.getLong(offset);
-            break;
-        default:
-            throw new DecoderException(
-                    "unsupported lengthFieldLength: " + lengthFieldLength + " (expected: 1, 2, 3, 4, or 8)");
+            case 1:
+                frameLength = buf.getUnsignedByte(offset);
+                break;
+            case 2:
+                frameLength = buf.getUnsignedShort(offset);
+                break;
+            case 3:
+                frameLength = buf.getUnsignedMedium(offset);
+                break;
+            case 4:
+                frameLength = buf.getUnsignedInt(offset);
+                break;
+            case 8:
+                frameLength = buf.getLong(offset);
+                break;
+            default:
+                throw new DecoderException(
+                        "unsupported lengthFieldLength: " + lengthFieldLength + " (expected: 1, 2, 3, 4, or 8)");
         }
         return frameLength;
     }
@@ -496,11 +489,11 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
     private void fail(long frameLength) {
         if (frameLength > 0) {
             throw new TooLongFrameException(
-                            "Adjusted frame length exceeds " + maxFrameLength +
+                    "Adjusted frame length exceeds " + maxFrameLength +
                             ": " + frameLength + " - discarded");
         } else {
             throw new TooLongFrameException(
-                            "Adjusted frame length exceeds " + maxFrameLength +
+                    "Adjusted frame length exceeds " + maxFrameLength +
                             " - discarding");
         }
     }

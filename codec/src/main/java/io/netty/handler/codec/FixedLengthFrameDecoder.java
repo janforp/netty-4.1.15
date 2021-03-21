@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.buffer.ByteBuf;
@@ -37,6 +22,15 @@ import java.util.List;
  * </pre>
  */
 public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
+
+    /**
+     * 11.4.2 基于长度的协议
+     * 基于长度的协议通过将它的长度编码到帧的头部来定义帧，而不是使用特殊的分隔符来标记 它的结束。
+     * 表 11-6 列出了Netty提供的用于处理这种类型的协议的两种解码器。
+     *
+     * FixedLengthFrameDecoder                      --- 提取在调用构造函数时指定的定长帧
+     * {@link LengthFieldBasedFrameDecoder}         --- 根据编码进帧头部中的长度值提取帧;该字段的偏移量以及 长度在构造函数中指定
+     */
 
     private final int frameLength;
 
@@ -64,10 +58,10 @@ public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
-     * @param   in              the {@link ByteBuf} from which to read data
-     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
-     *                          be created.
+     * @param ctx the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param in the {@link ByteBuf} from which to read data
+     * @return frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
+     * be created.
      */
     protected Object decode(
             @SuppressWarnings("UnusedParameters") ChannelHandlerContext ctx, ByteBuf in) throws Exception {
