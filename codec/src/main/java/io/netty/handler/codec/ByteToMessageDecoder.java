@@ -547,6 +547,11 @@ public abstract class ByteToMessageDecoder
             // See https://github.com/netty/netty/issues/4386
             decodeRemovalReentryProtection(ctx, in, out);
         }
+
+        /**
+         * 你可能已经注意到了，这个类（MessageToByteEncoder）只有一个方法，而解码器有两个。
+         * 原因是解码器通常需要在 Channel 关闭之后产生最后一个消息(因此也就有了 decodeLast()方法)。
+         */
     }
 
     static ByteBuf expandCumulation(ByteBufAllocator alloc, ByteBuf cumulation, int readable) {

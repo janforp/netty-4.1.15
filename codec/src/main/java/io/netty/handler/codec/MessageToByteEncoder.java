@@ -82,8 +82,14 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     }
 
     /**
-     * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
+     * Returns {@code true} if the given message should be handled.
+     * If {@code false} it will be passed to the next
      * {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     *
+     * -- 如果应处理给定的消息，则返回{@code true}。
+     * 如果{@code false}，它将被传递到{@link ChannelPipeline}中的下一个{@link ChannelOutboundHandler}。
+     *
+     * @see MessageToByteEncoder#write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise)
      */
     public boolean acceptOutboundMessage(Object msg) throws Exception {
         return matcher.match(msg);
@@ -146,13 +152,31 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     /**
      * Encode a message into a {@link ByteBuf}. This method will be called for each written message that can be handled
      * by this encoder.
+     * -- 将消息编码到{@link ByteBuf}中。对于此编码器可以处理的每条书面消息，将调用此方法。
      *
      * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
-     * @param msg the message to encode
-     * @param out the {@link ByteBuf} into which the encoded message will be written
+     * -- {@link MessageToByteEncoder}所属的{@link ChannelHandlerContext}
+     * --
+     * @param msg the message to encode -- 要编码的信息
+     * @param out the {@link ByteBuf} into which the encoded message will be written -- 编码后的消息将写入的{@link ByteBuf}
      * @throws Exception is thrown if an error occurs
+     *
+     *
+     * encode()方法是你需要实现的唯一抽象方法。
+     * 它被调用时 将会传入要被该类编码为 ByteBuf 的(类型为 I 的)出站 消息。
+     * 该 ByteBuf 随后将会被转发给 ChannelPipeline 中的下一个 ChannelOutboundHandler
      */
-    protected abstract void encode(ChannelHandlerContext ctx, I msg, ByteBuf out) throws Exception;
+    protected abstract void encode(
+            ChannelHandlerContext ctx, //{@link MessageToByteEncoder}所属的{@link ChannelHandlerContext}
+            I msg, //   要编码的信息
+            ByteBuf out // 编码后的消息将写入的{@link ByteBuf}
+    ) throws Exception;
+
+    /**
+     * 你可能已经注意到了，这个类只有一个方法，而解码器有两个。
+     * 原因是解码器通常需要在 Channel 关闭之后产生最后一个消息(因此也就有了 decodeLast()方法)。
+     * 这显然不适用于 编码器的场景——在连接被关闭之后仍然产生一个消息是毫无意义的。
+     */
 
     protected boolean isPreferDirect() {
         return preferDirect;

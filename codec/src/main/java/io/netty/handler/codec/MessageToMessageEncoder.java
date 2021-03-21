@@ -70,6 +70,9 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
                 @SuppressWarnings("unchecked")
                 I cast = (I) msg;
                 try {
+                    /**
+                     * 模版方法
+                     */
                     encode(ctx, cast, out);
                 } finally {
                     ReferenceCountUtil.release(cast);
@@ -96,6 +99,7 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
                     ctx.write(out.get(0), promise);
                 } else if (sizeMinusOne > 0) {
                     // Check if we can use a voidPromise for our extra writes to reduce GC-Pressure
+                    // 检查我们是否可以使用voidPromise进行额外的写操作以减少GC压力
                     // See https://github.com/netty/netty/issues/2525
                     ChannelPromise voidPromise = ctx.voidPromise();
                     boolean isVoidPromise = promise == voidPromise;

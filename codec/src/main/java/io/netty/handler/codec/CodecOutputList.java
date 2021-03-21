@@ -1,18 +1,3 @@
-/*
- * Copyright 2016 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.util.Recycler;
@@ -39,9 +24,12 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
     }
 
     private final Recycler.Handle<CodecOutputList> handle;
+
     private int size;
+
     // Size of 16 should be good enough for 99 % of all users.
     private Object[] array = new Object[16];
+
     private boolean insertSinceRecycled;
 
     private CodecOutputList(Recycler.Handle<CodecOutputList> handle) {
@@ -69,7 +57,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
             expandArray();
             insert(size, element);
         }
-        ++ size;
+        ++size;
         return true;
     }
 
@@ -97,7 +85,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
         }
 
         insert(index, element);
-        ++ size;
+        ++size;
     }
 
     @Override
@@ -109,7 +97,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
         if (len > 0) {
             System.arraycopy(array, index + 1, array, index, len);
         }
-        array[-- size] = null;
+        array[--size] = null;
 
         return old;
     }
@@ -132,7 +120,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
      * Recycle the array which will clear it and null out all entries in the internal storage.
      */
     void recycle() {
-        for (int i = 0 ; i < size; i ++) {
+        for (int i = 0; i < size; i++) {
             array[i] = null;
         }
         clear();
