@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.stream;
 
 import io.netty.buffer.ByteBuf;
@@ -37,8 +22,11 @@ public class ChunkedStream implements ChunkedInput<ByteBuf> {
     static final int DEFAULT_CHUNK_SIZE = 8192;
 
     private final PushbackInputStream in;
+
     private final int chunkSize;
+
     private long offset;
+
     private boolean closed;
 
     /**
@@ -52,7 +40,7 @@ public class ChunkedStream implements ChunkedInput<ByteBuf> {
      * Creates a new instance that fetches data from the specified stream.
      *
      * @param chunkSize the number of bytes to fetch on each
-     *                  {@link #readChunk(ChannelHandlerContext)} call
+     * {@link #readChunk(ChannelHandlerContext)} call
      */
     public ChunkedStream(InputStream in, int chunkSize) {
         if (in == null) {
@@ -61,7 +49,7 @@ public class ChunkedStream implements ChunkedInput<ByteBuf> {
         if (chunkSize <= 0) {
             throw new IllegalArgumentException(
                     "chunkSize: " + chunkSize +
-                    " (expected: a positive integer)");
+                            " (expected: a positive integer)");
         }
 
         if (in instanceof PushbackInputStream) {

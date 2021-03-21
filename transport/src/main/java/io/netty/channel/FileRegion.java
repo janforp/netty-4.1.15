@@ -36,6 +36,7 @@ import java.nio.channels.WritableByteChannel;
  * <h3>Not all transports support it</h3>
  */
 public interface FileRegion extends ReferenceCounted {
+    //通过支持零拷贝的文件传输的 Channel 来发送的文件区域
 
     /**
      * Returns the offset in the file where the transfer began.
