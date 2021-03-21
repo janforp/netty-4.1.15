@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec.http;
 
 import io.netty.buffer.ByteBuf;
@@ -26,9 +11,17 @@ import static io.netty.handler.codec.http.HttpConstants.SP;
  * a {@link ByteBuf}.
  */
 public class HttpRequestEncoder extends HttpObjectEncoder<HttpRequest> {
+
+    /**
+     * 将 HttpRequest、HttpContent 和 LastHttpContent 消息编码为字节
+     */
+
     private static final char SLASH = '/';
+
     private static final char QUESTION_MARK = '?';
+
     private static final int SLASH_AND_SPACE_SHORT = (SLASH << 8) | SP;
+
     private static final int SPACE_SLASH_AND_SPACE_MEDIUM = (SP << 16) | SLASH_AND_SPACE_SHORT;
 
     @Override
