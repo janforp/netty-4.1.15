@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.buffer.ByteBuf;
@@ -24,7 +9,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.TypeParameterMatcher;
-
 
 /**
  * {@link ChannelOutboundHandlerAdapter} which encodes message in a stream-like fashion from one message to an
@@ -45,7 +29,17 @@ import io.netty.util.internal.TypeParameterMatcher;
  */
 public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdapter {
 
+    /**
+     * 编码器实现了 ChannelOutboundHandler，并将出站数据从 一种格式转换为另一种格式，和我们方才学习的解码器的功能正好相反。
+     */
+
     private final TypeParameterMatcher matcher;
+
+    /**
+     * 如果应尝试将直接{@link ByteBuf}用作编码消息的目标，则{@code true}。如果使用{@code false}，它将分配一个堆{@link ByteBuf}，该堆由字节数组支持。
+     *
+     * @see MessageToByteEncoder#allocateBuffer(io.netty.channel.ChannelHandlerContext, java.lang.Object, boolean) 看这个方法就能理解了
+     */
     private final boolean preferDirect;
 
     /**
@@ -65,9 +59,9 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     /**
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
      *
-     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
-     *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link ByteBuf}, which is backed by an byte array.
+     * @param preferDirect {@code true} if a direct {@link ByteBuf} should be tried to be used as target for the encoded messages. If {@code false} is used it will allocate a heap {@link ByteBuf}, which is backed by an byte array.
+     *
+     * 如果应尝试将直接{@link ByteBuf}用作编码消息的目标，则{@code true}。如果使用{@code false}，它将分配一个堆{@link ByteBuf}，该堆由字节数组支持。
      */
     protected MessageToByteEncoder(boolean preferDirect) {
         matcher = TypeParameterMatcher.find(this, MessageToByteEncoder.class, "I");
@@ -77,10 +71,10 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     /**
      * Create a new instance
      *
-     * @param outboundMessageType   The type of messages to match
-     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
-     *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link ByteBuf}, which is backed by an byte array.
+     * @param outboundMessageType The type of messages to match
+     * @param preferDirect {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
+     * the encoded messages. If {@code false} is used it will allocate a heap
+     * {@link ByteBuf}, which is backed by an byte array.
      */
     protected MessageToByteEncoder(Class<? extends I> outboundMessageType, boolean preferDirect) {
         matcher = TypeParameterMatcher.get(outboundMessageType);
@@ -104,12 +98,16 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
                 I cast = (I) msg;
                 buf = allocateBuffer(ctx, cast, preferDirect);
                 try {
+                    /**
+                     * 由子类实现，模版方法设计模式
+                     */
                     encode(ctx, cast, buf);
                 } finally {
                     ReferenceCountUtil.release(cast);
                 }
 
                 if (buf.isReadable()) {
+                    //触发 pipeline 中的下一个处理器
                     ctx.write(buf, promise);
                 } else {
                     buf.release();
@@ -117,6 +115,9 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
                 }
                 buf = null;
             } else {
+                /**
+                 * 如果该处理器无法处理该消息，则往下传递
+                 */
                 ctx.write(msg, promise);
             }
         } catch (EncoderException e) {
@@ -134,8 +135,7 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
      * Allocate a {@link ByteBuf} which will be used as argument of {@link #encode(ChannelHandlerContext, I, ByteBuf)}.
      * Sub-classes may override this method to return {@link ByteBuf} with a perfect matching {@code initialCapacity}.
      */
-    protected ByteBuf allocateBuffer(ChannelHandlerContext ctx, @SuppressWarnings("unused") I msg,
-                               boolean preferDirect) throws Exception {
+    protected ByteBuf allocateBuffer(ChannelHandlerContext ctx, I msg, boolean preferDirect) throws Exception {
         if (preferDirect) {
             return ctx.alloc().ioBuffer();
         } else {
@@ -147,10 +147,10 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
      * Encode a message into a {@link ByteBuf}. This method will be called for each written message that can be handled
      * by this encoder.
      *
-     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
-     * @param msg           the message to encode
-     * @param out           the {@link ByteBuf} into which the encoded message will be written
-     * @throws Exception    is thrown if an error occurs
+     * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
+     * @param msg the message to encode
+     * @param out the {@link ByteBuf} into which the encoded message will be written
+     * @throws Exception is thrown if an error occurs
      */
     protected abstract void encode(ChannelHandlerContext ctx, I msg, ByteBuf out) throws Exception;
 

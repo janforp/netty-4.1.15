@@ -13,27 +13,42 @@ public abstract class TypeParameterMatcher {
     private static final TypeParameterMatcher NOOP = new TypeParameterMatcher() {
         @Override
         public boolean match(Object msg) {
+            /**
+             * 匹配一切
+             */
             return true;
         }
     };
 
     public static TypeParameterMatcher get(final Class<?> parameterType) {
-        final Map<Class<?>, TypeParameterMatcher> getCache =
-                InternalThreadLocalMap.get().typeParameterMatcherGetCache();
+        final Map<Class<?>, TypeParameterMatcher> getCache = InternalThreadLocalMap.get().typeParameterMatcherGetCache();
 
         TypeParameterMatcher matcher = getCache.get(parameterType);
         if (matcher == null) {
             if (parameterType == Object.class) {
+                /**
+                 * 如果参数类型是这个，那就匹配一切
+                 */
                 matcher = NOOP;
             } else {
+                /**
+                 * 否则就通过反射匹配
+                 */
                 matcher = new ReflectiveMatcher(parameterType);
             }
+
+            /**
+             * 缓存起来
+             */
             getCache.put(parameterType, matcher);
         }
 
         return matcher;
     }
 
+    /**
+     * @see io.netty.handler.codec.MessageToByteEncoder#MessageToByteEncoder(boolean) 用例
+     */
     public static TypeParameterMatcher find(
             final Object object,
             final Class<?> parametrizedSuperclass,
@@ -58,7 +73,9 @@ public abstract class TypeParameterMatcher {
     }
 
     private static Class<?> find0(
-            final Object object, Class<?> parametrizedSuperclass, String typeParamName) {
+            final Object object,
+            Class<?> parametrizedSuperclass,
+            String typeParamName) {
 
         final Class<?> thisClass = object.getClass();
         Class<?> currentClass = thisClass;
@@ -134,6 +151,9 @@ public abstract class TypeParameterMatcher {
 
     public abstract boolean match(Object msg);
 
+    /**
+     * 通过返回的方式匹配
+     */
     private static final class ReflectiveMatcher extends TypeParameterMatcher {
 
         private final Class<?> type;
@@ -144,6 +164,9 @@ public abstract class TypeParameterMatcher {
 
         @Override
         public boolean match(Object msg) {
+            /**
+             * 看看消息是不是该类型的实例
+             */
             return type.isInstance(msg);
         }
     }
