@@ -52,17 +52,49 @@ import java.util.List;
  * is not released or added to the <tt>out</tt> {@link List}. Use derived buffers like {@link ByteBuf#readSlice(int)}
  * to avoid leaking memory.
  */
-public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter {
+public abstract class ByteToMessageDecoder
+
+        /**
+         * 因为解码器是负责将入站数据从一种格式转换到另一种格式的，所以知道 Netty 的解码器实
+         * 现了 ChannelInboundHandler 也不会让你感到意外。
+         */
+        extends ChannelInboundHandlerAdapter {
+
+    /**
+     * 解码器处理入站数据
+     *
+     * 该类的作用：将字节解码为消息
+     *
+     * 什么时候会用到解码器呢?很简单:每当需要为 ChannelPipeline 中的下一个
+     * ChannelInboundHandler 转换入站数据时会用到。
+     *
+     * 此外，得益于 ChannelPipeline 的设计，可以将 多个解码器链接在一起，以实现任意复杂的转换逻辑，
+     * 这也是 Netty 是如何支持代码的模块化以及 复用的一个很好的例子。
+     *
+     * 由于你不可能知道远程节点是否会一次性地发送一个完整 的消息，所以这个类会对入站数据进行缓冲，直到它准备好处理。
+     *
+     * 编解码器中的引用计数
+     * 正如我们在第 5 章和第 6 章中所提到的，引用计数需要特别的注意。对于编码器和解码器来说，
+     * 其过程 也是相当的简单:一旦消息被编码或者解码，它就会被 ReferenceCountUtil.release(message)调用 自动释放。
+     * 如果你需要保留引用以便稍后使用，那么你可以调用 ReferenceCountUtil.retain(message) 方法。
+     * 这将会增加该引用计数，从而防止该消息被释放。
+     */
 
     /**
      * Cumulate {@link ByteBuf}s by merge them into one {@link ByteBuf}'s, using memory copies.
+     *
+     * 通过使用存储副本将{@link ByteBuf}合并为一个{@link ByteBuf}来累积{@link ByteBuf}。
      */
     public static final Cumulator MERGE_CUMULATOR = new Cumulator() {
+
         @Override
         public ByteBuf cumulate(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf in) {
             final ByteBuf buffer;
             if (cumulation.writerIndex() > cumulation.maxCapacity() - in.readableBytes()
-                    || cumulation.refCnt() > 1 || cumulation.isReadOnly()) {
+                    || cumulation.refCnt() > 1
+                    || cumulation.isReadOnly()) {
+
+                // Expand：扩张
                 // Expand cumulation (by replace it) when either there is not more room in the buffer
                 // or if the refCnt is greater then 1 which may happen when the user use slice().retain() or
                 // duplicate().retain() or if its read-only.
@@ -460,10 +492,17 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
      * {@link ByteBuf} has nothing to read when return from this method or till nothing was read from the input
      * {@link ByteBuf}.
      *
+     * 从一个{@link ByteBuf}解码到另一个。
+     * 直到从该方法返回时输入{@link ByteBuf}没有要读取的内容，或者直到从输入{@link ByteBuf}没有读取任何内容为止，都将调用此方法。
+     *
      * @param ctx the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param in the {@link ByteBuf} from which to read data
      * @param out the {@link List} to which decoded messages should be added
      * @throws Exception is thrown if an error occurs
+     *
+     * 这是你必须实现的唯一抽象方法。decode()方法被调用时将会传 入一个包含了传入数据的ByteBuf，以及一个用来添加解码消息 的 List。
+     * 对这个方法的调用将会重复进行，直到确定没有新的元 素被添加到该 List，或者该 ByteBuf 中没有更多可读取的字节 时为止。
+     * 然后，如果该 List 不为空，那么它的内容将会被传递给 ChannelPipeline 中的下一个 ChannelInboundHandler
      */
     protected abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;
 
@@ -499,6 +538,10 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
      * override this for some special cleanup operation.
      */
     protected void decodeLast(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        /**
+         * Netty提供的这个默认实现只是简单地调用了decode()方法。
+         * 当Channel的状态变为非活动时，这个方法将会被调用一次。 可以重写该方法以提供特殊的处理
+         */
         if (in.isReadable()) {
             // Only call decode() if there is something left in the buffer to decode.
             // See https://github.com/netty/netty/issues/4386
@@ -516,6 +559,8 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     /**
      * Cumulate {@link ByteBuf}s.
+     *
+     * Cumulator：累加器
      */
     public interface Cumulator {
 

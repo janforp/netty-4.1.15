@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec;
 
 import io.netty.buffer.ByteBuf;
@@ -261,16 +246,24 @@ import java.util.List;
  *         ctx.pipeline().remove(this);
  *     }
  * </pre>
- * @param <S>
- *        the state type which is usually an {@link Enum}; use {@link Void} if state management is
- *        unused
+ *
+ * @param <S> the state type which is usually an {@link Enum}; use {@link Void} if state management is
+ * unused
  */
 public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
+
+    /**
+     * 解码器处理入站数据\
+     *
+     * 该类的作用：将字节解码为消息
+     */
 
     static final Signal REPLAY = Signal.valueOf(ReplayingDecoder.class, "REPLAY");
 
     private final ReplayingDecoderByteBuf replayable = new ReplayingDecoderByteBuf();
+
     private S state;
+
     private int checkpoint = -1;
 
     /**
@@ -305,6 +298,7 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
 
     /**
      * Returns the current state of this decoder.
+     *
      * @return the current state of this decoder
      */
     protected S state() {
@@ -313,6 +307,7 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
 
     /**
      * Sets the current state of this decoder.
+     *
      * @return the old state of this decoder
      */
     protected S state(S newState) {
@@ -378,7 +373,7 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
                         if (oldInputLength == in.readableBytes() && oldState == state) {
                             throw new DecoderException(
                                     StringUtil.simpleClassName(getClass()) + ".decode() must consume the inbound " +
-                                    "data or change its state if it did not decode anything.");
+                                            "data or change its state if it did not decode anything.");
                         } else {
                             // Previous data has been discarded or caused state transition.
                             // Probably it is reading on.
@@ -409,8 +404,8 @@ public abstract class ReplayingDecoder<S> extends ByteToMessageDecoder {
 
                 if (oldReaderIndex == in.readerIndex() && oldState == state) {
                     throw new DecoderException(
-                           StringUtil.simpleClassName(getClass()) + ".decode() method must consume the inbound data " +
-                           "or change its state if it decoded something.");
+                            StringUtil.simpleClassName(getClass()) + ".decode() method must consume the inbound data " +
+                                    "or change its state if it decoded something.");
                 }
                 if (isSingleDecode()) {
                     break;
