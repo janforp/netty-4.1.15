@@ -1,18 +1,3 @@
-/*
- * Copyright 2013 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel.group;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -128,7 +113,7 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * {@link Channel#write(Object)} is.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroupFuture write(Object message, ChannelMatcher matcher);
 
@@ -144,7 +129,7 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * restrictions to the returned {@link ChannelGroupFuture} apply as to a void promise.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroupFuture write(Object message, ChannelMatcher matcher, boolean voidPromise);
 
@@ -157,7 +142,7 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * {@link Channel#write(Object)} is.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroup flush();
 
@@ -170,7 +155,7 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * {@link Channel#write(Object)} is.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroup flush(ChannelMatcher matcher);
 
@@ -207,7 +192,7 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * Disconnects all {@link Channel}s in this group from their remote peers.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroupFuture disconnect();
 
@@ -216,7 +201,7 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * that are matched by the given {@link ChannelMatcher}.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroupFuture disconnect(ChannelMatcher matcher);
 
@@ -226,7 +211,7 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * automatically disconnected and unbound.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroupFuture close();
 
@@ -236,30 +221,28 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
      * automatically disconnected and unbound.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
+     * the operation is done for all channels
      */
     ChannelGroupFuture close(ChannelMatcher matcher);
 
     /**
+     * @return the {@link ChannelGroupFuture} instance that notifies when
+     * the operation is done for all channels
      * @deprecated This method will be removed in the next major feature release.
      *
      * Deregister all {@link Channel}s in this group from their {@link EventLoop}.
      * Please note that this operation is asynchronous as {@link Channel#deregister()} is.
-     *
-     * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
      */
     @Deprecated
     ChannelGroupFuture deregister();
 
     /**
+     * @return the {@link ChannelGroupFuture} instance that notifies when
+     * the operation is done for all channels
      * @deprecated This method will be removed in the next major feature release.
      *
      * Deregister all {@link Channel}s in this group from their {@link EventLoop} that are matched by the given
      * {@link ChannelMatcher}. Please note that this operation is asynchronous as {@link Channel#deregister()} is.
-     *
-     * @return the {@link ChannelGroupFuture} instance that notifies when
-     *         the operation is done for all channels
      */
     @Deprecated
     ChannelGroupFuture deregister(ChannelMatcher matcher);

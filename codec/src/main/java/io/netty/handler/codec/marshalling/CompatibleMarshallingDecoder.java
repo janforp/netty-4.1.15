@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec.marshalling;
 
 import io.netty.buffer.ByteBuf;
@@ -32,22 +17,28 @@ import java.util.List;
  * If you can you should use {@link MarshallingDecoder}.
  */
 public class CompatibleMarshallingDecoder extends ReplayingDecoder<Void> {
+
+    /**
+     * CompatibleMarshallingDecoder 与只使用 JDK 序列化的远程节点兼容
+     * CompatibleMarshallingEncoder 与只使用 JDK 序列化的远程节点兼容
+     */
+
     protected final UnmarshallerProvider provider;
+
     protected final int maxObjectSize;
+
     private boolean discardingTooLongFrame;
 
     /**
      * Create a new instance of {@link CompatibleMarshallingDecoder}.
      *
-     * @param provider
-     *        the {@link UnmarshallerProvider} which is used to obtain the {@link Unmarshaller}
-     *        for the {@link Channel}
-     * @param maxObjectSize
-     *        the maximal size (in bytes) of the {@link Object} to unmarshal. Once the size is
-     *        exceeded the {@link Channel} will get closed. Use a a maxObjectSize of
-     *        {@link Integer#MAX_VALUE} to disable this.  You should only do this if you are sure
-     *        that the received Objects will never be big and the sending side are trusted, as this
-     *        opens the possibility for a DOS-Attack due an {@link OutOfMemoryError}.
+     * @param provider the {@link UnmarshallerProvider} which is used to obtain the {@link Unmarshaller}
+     * for the {@link Channel}
+     * @param maxObjectSize the maximal size (in bytes) of the {@link Object} to unmarshal. Once the size is
+     * exceeded the {@link Channel} will get closed. Use a a maxObjectSize of
+     * {@link Integer#MAX_VALUE} to disable this.  You should only do this if you are sure
+     * that the received Objects will never be big and the sending side are trusted, as this
+     * opens the possibility for a DOS-Attack due an {@link OutOfMemoryError}.
      */
     public CompatibleMarshallingDecoder(UnmarshallerProvider provider, int maxObjectSize) {
         this.provider = provider;
@@ -85,14 +76,14 @@ public class CompatibleMarshallingDecoder extends ReplayingDecoder<Void> {
     @Override
     protected void decodeLast(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
         switch (buffer.readableBytes()) {
-        case 0:
-            return;
-        case 1:
-            // Ignore the last TC_RESET
-            if (buffer.getByte(buffer.readerIndex()) == ObjectStreamConstants.TC_RESET) {
-                buffer.skipBytes(1);
+            case 0:
                 return;
-            }
+            case 1:
+                // Ignore the last TC_RESET
+                if (buffer.getByte(buffer.readerIndex()) == ObjectStreamConstants.TC_RESET) {
+                    buffer.skipBytes(1);
+                    return;
+                }
         }
 
         decode(ctx, buffer, out);

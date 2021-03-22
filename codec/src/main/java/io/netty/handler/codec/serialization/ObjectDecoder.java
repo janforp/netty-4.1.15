@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec.serialization;
 
 import io.netty.buffer.ByteBuf;
@@ -35,6 +20,10 @@ import java.io.StreamCorruptedException;
  */
 public class ObjectDecoder extends LengthFieldBasedFrameDecoder {
 
+    /**
+     * 构建于 JDK 序列化之上的使用自定义的序列化来解码的解码器;当 没有其他的外部依赖时，它提供了速度上的改进。否则其他的序列化 实现更加可取
+     */
+
     private final ClassResolver classResolver;
 
     /**
@@ -43,7 +32,7 @@ public class ObjectDecoder extends LengthFieldBasedFrameDecoder {
      * {@code 1048576} bytes, a {@link StreamCorruptedException} will be
      * raised.
      *
-     * @param classResolver  the {@link ClassResolver} to use for this decoder
+     * @param classResolver the {@link ClassResolver} to use for this decoder
      */
     public ObjectDecoder(ClassResolver classResolver) {
         this(1048576, classResolver);
@@ -52,12 +41,12 @@ public class ObjectDecoder extends LengthFieldBasedFrameDecoder {
     /**
      * Creates a new decoder with the specified maximum object size.
      *
-     * @param maxObjectSize  the maximum byte length of the serialized object.
-     *                       if the length of the received object is greater
-     *                       than this value, {@link StreamCorruptedException}
-     *                       will be raised.
-     * @param classResolver    the {@link ClassResolver} which will load the class
-     *                       of the serialized object
+     * @param maxObjectSize the maximum byte length of the serialized object.
+     * if the length of the received object is greater
+     * than this value, {@link StreamCorruptedException}
+     * will be raised.
+     * @param classResolver the {@link ClassResolver} which will load the class
+     * of the serialized object
      */
     public ObjectDecoder(int maxObjectSize, ClassResolver classResolver) {
         super(maxObjectSize, 0, 4, 0, 4);
