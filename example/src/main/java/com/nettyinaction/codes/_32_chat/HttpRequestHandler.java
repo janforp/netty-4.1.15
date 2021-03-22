@@ -72,6 +72,11 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             // 将 HttpResponse 写到客户端
             ctx.write(response);
 
+            /**
+             * 如果不需要加密和压缩，那么可以通过将 index.html 的内容存储到 DefaultFile- Region 中来达到最佳效率。
+             * 这将会利用零拷贝特性来进行内容的传输。为此，你可以检查一下， 是否有 SslHandler 存在于在 ChannelPipeline 中。
+             * 否则，你可以使用 ChunkedNioFile。
+             */
             if (ctx.pipeline().get(SslHandler.class) == null) {
                 // 将 index.html 写到客户端
                 ctx.write(new DefaultFileRegion(file.getChannel(), 0, file.length()));
@@ -80,6 +85,11 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             }
 
             //写 LastHttpContent 并冲刷至客户端
+            /**
+             * HttpRequestHandler将写一个LastHttpContent 来标记响应的结束。
+             * 如果没有请 求keep-alive ，那么HttpRequestHandler将会添加一个ChannelFutureListener
+             * 到最后一次写出动作的 ChannelFuture，并关闭该连接。在这里，你将调用 writeAndFlush() 方法以冲刷所有之前写入的消息。
+             */
             ChannelFuture future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
             if (!keepAlive) {
                 // 如果没有请求 keep-alive， 则在写操作完成后关闭 Channel
