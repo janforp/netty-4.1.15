@@ -65,7 +65,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             boolean keepAlive = HttpHeaders.isKeepAlive(request);
             if (keepAlive) {
                 //如果请求了 keep-alive， 则添加所需要的 HTTP 头信息
-                response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length() + 3000);
+                response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length());
                 response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
             }
 
