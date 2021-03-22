@@ -37,7 +37,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         try {
             String path = location.toURI() + "index.html";
             path = !path.contains("file") ? path : path.substring(5);
-            INDEX = new File(path);
+            INDEX = new File("/Users/janita/code/sourceCodeLearn/netty/netty-4.1.15.Final/example/src/main/java/com/nettyinaction/codes/_32_chat/index.html");
         } catch (URISyntaxException e) {
             throw new RuntimeException("报错了!!!!!");
         }
@@ -65,7 +65,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             boolean keepAlive = HttpHeaders.isKeepAlive(request);
             if (keepAlive) {
                 //如果请求了 keep-alive， 则添加所需要的 HTTP 头信息
-                response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length());
+                response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length() + 3000);
                 response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
             }
 

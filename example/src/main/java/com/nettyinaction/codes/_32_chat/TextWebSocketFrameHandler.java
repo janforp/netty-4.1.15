@@ -28,7 +28,6 @@ public class TextWebSocketFrameHandler
     //重写 userEventTriggered() 方法以处理自定义事件
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-
         //如果该事件 表示握手成 功，则从该 ChannelPipeline 中移除 HttpRequestHandler 因为将不会 接收到任何 HTTP 消息了
         if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
             ctx.pipeline().remove(HttpRequestHandler.class);
