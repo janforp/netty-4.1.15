@@ -47,12 +47,35 @@ public class LogEventBroadcaster {
                 raf.seek(pointer);//设置当前文件的指针，以确保没有任何的日志被发送
                 String line;
                 while ((line = raf.readLine()) != null) {
-                    //
+                    //对于每个日志条目， 写入一个 LogEvent 到 Channel 中
                     ch.writeAndFlush(new LogEvent(null, -1, file.getAbsolutePath(), line));
                 }
                 pointer = raf.getFilePointer();
                 raf.close();
             }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // 休眠 1 秒，如果被中断，则退 出循环;否则重新处理它
+                Thread.interrupted();
+                break;
+            }
+        }
+    }
+
+    public void stop() {
+        group.shutdownGracefully();
+    }
+
+    public static void main(String[] args) throws Exception {
+        LogEventBroadcaster broadcaster = new LogEventBroadcaster(
+                new InetSocketAddress("127.0.0.1", 9999),
+                new File("/Users/janita/code/sourceCodeLearn/netty/netty-4.1.15.Final/example/src/main/java/com/nettyinaction/codes/_32_chat/index.html")
+        );
+        try {
+            broadcaster.run();
+        } finally {
+            broadcaster.stop();
         }
     }
 }
