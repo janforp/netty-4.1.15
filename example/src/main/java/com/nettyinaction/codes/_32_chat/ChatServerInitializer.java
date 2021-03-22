@@ -48,7 +48,17 @@ public class ChatServerInitializer extends ChannelInitializer<Channel> {
         pipeline.addLast(new HttpRequestHandler("/ws"));
 
         //按照 WebSocket 规范的要求，处理 WebSocket 升级握手、 PingWebSocketFrame 、 PongWebSocketFrame 和 CloseWebSocketFrame
-        pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
+        pipeline.addLast(
+
+                /**
+                 * 当 WebSocket 协议升级完成之后，WebSocketServerProtocolHandler
+                 * 将会把 HttpRequestDecoder 替换为 WebSocketFrameDecoder，
+                 * 把 HttpResponseEncoder 替换为 WebSocketFrameEncoder。为了性能最大化，
+                 * 它将移除任何不再被 WebSocket 连接所需要的 ChannelHandler。
+                 * 这也包括了图 12-3 所示的 HttpObjectAggregator 和 HttpRequestHandler。
+                 */
+                new WebSocketServerProtocolHandler("/ws")
+        );
 
         //处理 TextWebSocketFrame 和握手完成事件
         pipeline.addLast(new TextWebSocketFrameHandler(group));
