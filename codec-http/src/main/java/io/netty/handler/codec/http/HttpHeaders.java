@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.handler.codec.http;
 
 import io.netty.buffer.ByteBuf;
@@ -38,6 +23,7 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * commonly used utility methods that accesses an {@link HttpMessage}.
  */
 public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>> {
+
     /**
      * @deprecated Use {@link EmptyHttpHeaders#INSTANCE}.
      * <p>
@@ -55,294 +41,367 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      */
     @Deprecated
     public static final class Names {
+
         /**
          * {@code "Accept"}
          */
         public static final String ACCEPT = "Accept";
+
         /**
          * {@code "Accept-Charset"}
          */
         public static final String ACCEPT_CHARSET = "Accept-Charset";
+
         /**
          * {@code "Accept-Encoding"}
          */
         public static final String ACCEPT_ENCODING = "Accept-Encoding";
+
         /**
          * {@code "Accept-Language"}
          */
         public static final String ACCEPT_LANGUAGE = "Accept-Language";
+
         /**
          * {@code "Accept-Ranges"}
          */
         public static final String ACCEPT_RANGES = "Accept-Ranges";
+
         /**
          * {@code "Accept-Patch"}
          */
         public static final String ACCEPT_PATCH = "Accept-Patch";
+
         /**
          * {@code "Access-Control-Allow-Credentials"}
          */
         public static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+
         /**
          * {@code "Access-Control-Allow-Headers"}
          */
         public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+
         /**
          * {@code "Access-Control-Allow-Methods"}
          */
         public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+
         /**
          * {@code "Access-Control-Allow-Origin"}
          */
         public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+
         /**
          * {@code "Access-Control-Expose-Headers"}
          */
         public static final String ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
+
         /**
          * {@code "Access-Control-Max-Age"}
          */
         public static final String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
+
         /**
          * {@code "Access-Control-Request-Headers"}
          */
         public static final String ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
+
         /**
          * {@code "Access-Control-Request-Method"}
          */
         public static final String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";
+
         /**
          * {@code "Age"}
          */
         public static final String AGE = "Age";
+
         /**
          * {@code "Allow"}
          */
         public static final String ALLOW = "Allow";
+
         /**
          * {@code "Authorization"}
          */
         public static final String AUTHORIZATION = "Authorization";
+
         /**
          * {@code "Cache-Control"}
          */
         public static final String CACHE_CONTROL = "Cache-Control";
+
         /**
          * {@code "Connection"}
          */
         public static final String CONNECTION = "Connection";
+
         /**
          * {@code "Content-Base"}
          */
         public static final String CONTENT_BASE = "Content-Base";
+
         /**
          * {@code "Content-Encoding"}
          */
         public static final String CONTENT_ENCODING = "Content-Encoding";
+
         /**
          * {@code "Content-Language"}
          */
         public static final String CONTENT_LANGUAGE = "Content-Language";
+
         /**
          * {@code "Content-Length"}
          */
         public static final String CONTENT_LENGTH = "Content-Length";
+
         /**
          * {@code "Content-Location"}
          */
         public static final String CONTENT_LOCATION = "Content-Location";
+
         /**
          * {@code "Content-Transfer-Encoding"}
          */
         public static final String CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
+
         /**
          * {@code "Content-MD5"}
          */
         public static final String CONTENT_MD5 = "Content-MD5";
+
         /**
          * {@code "Content-Range"}
          */
         public static final String CONTENT_RANGE = "Content-Range";
+
         /**
          * {@code "Content-Type"}
          */
         public static final String CONTENT_TYPE = "Content-Type";
+
         /**
          * {@code "Cookie"}
          */
         public static final String COOKIE = "Cookie";
+
         /**
          * {@code "Date"}
          */
         public static final String DATE = "Date";
+
         /**
          * {@code "ETag"}
          */
         public static final String ETAG = "ETag";
+
         /**
          * {@code "Expect"}
          */
         public static final String EXPECT = "Expect";
+
         /**
          * {@code "Expires"}
          */
         public static final String EXPIRES = "Expires";
+
         /**
          * {@code "From"}
          */
         public static final String FROM = "From";
+
         /**
          * {@code "Host"}
          */
         public static final String HOST = "Host";
+
         /**
          * {@code "If-Match"}
          */
         public static final String IF_MATCH = "If-Match";
+
         /**
          * {@code "If-Modified-Since"}
          */
         public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
+
         /**
          * {@code "If-None-Match"}
          */
         public static final String IF_NONE_MATCH = "If-None-Match";
+
         /**
          * {@code "If-Range"}
          */
         public static final String IF_RANGE = "If-Range";
+
         /**
          * {@code "If-Unmodified-Since"}
          */
         public static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
+
         /**
          * {@code "Last-Modified"}
          */
         public static final String LAST_MODIFIED = "Last-Modified";
+
         /**
          * {@code "Location"}
          */
         public static final String LOCATION = "Location";
+
         /**
          * {@code "Max-Forwards"}
          */
         public static final String MAX_FORWARDS = "Max-Forwards";
+
         /**
          * {@code "Origin"}
          */
         public static final String ORIGIN = "Origin";
+
         /**
          * {@code "Pragma"}
          */
         public static final String PRAGMA = "Pragma";
+
         /**
          * {@code "Proxy-Authenticate"}
          */
         public static final String PROXY_AUTHENTICATE = "Proxy-Authenticate";
+
         /**
          * {@code "Proxy-Authorization"}
          */
         public static final String PROXY_AUTHORIZATION = "Proxy-Authorization";
+
         /**
          * {@code "Range"}
          */
         public static final String RANGE = "Range";
+
         /**
          * {@code "Referer"}
          */
         public static final String REFERER = "Referer";
+
         /**
          * {@code "Retry-After"}
          */
         public static final String RETRY_AFTER = "Retry-After";
+
         /**
          * {@code "Sec-WebSocket-Key1"}
          */
         public static final String SEC_WEBSOCKET_KEY1 = "Sec-WebSocket-Key1";
+
         /**
          * {@code "Sec-WebSocket-Key2"}
          */
         public static final String SEC_WEBSOCKET_KEY2 = "Sec-WebSocket-Key2";
+
         /**
          * {@code "Sec-WebSocket-Location"}
          */
         public static final String SEC_WEBSOCKET_LOCATION = "Sec-WebSocket-Location";
+
         /**
          * {@code "Sec-WebSocket-Origin"}
          */
         public static final String SEC_WEBSOCKET_ORIGIN = "Sec-WebSocket-Origin";
+
         /**
          * {@code "Sec-WebSocket-Protocol"}
          */
         public static final String SEC_WEBSOCKET_PROTOCOL = "Sec-WebSocket-Protocol";
+
         /**
          * {@code "Sec-WebSocket-Version"}
          */
         public static final String SEC_WEBSOCKET_VERSION = "Sec-WebSocket-Version";
+
         /**
          * {@code "Sec-WebSocket-Key"}
          */
         public static final String SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
+
         /**
          * {@code "Sec-WebSocket-Accept"}
          */
         public static final String SEC_WEBSOCKET_ACCEPT = "Sec-WebSocket-Accept";
+
         /**
          * {@code "Server"}
          */
         public static final String SERVER = "Server";
+
         /**
          * {@code "Set-Cookie"}
          */
         public static final String SET_COOKIE = "Set-Cookie";
+
         /**
          * {@code "Set-Cookie2"}
          */
         public static final String SET_COOKIE2 = "Set-Cookie2";
+
         /**
          * {@code "TE"}
          */
         public static final String TE = "TE";
+
         /**
          * {@code "Trailer"}
          */
         public static final String TRAILER = "Trailer";
+
         /**
          * {@code "Transfer-Encoding"}
          */
         public static final String TRANSFER_ENCODING = "Transfer-Encoding";
+
         /**
          * {@code "Upgrade"}
          */
         public static final String UPGRADE = "Upgrade";
+
         /**
          * {@code "User-Agent"}
          */
         public static final String USER_AGENT = "User-Agent";
+
         /**
          * {@code "Vary"}
          */
         public static final String VARY = "Vary";
+
         /**
          * {@code "Via"}
          */
         public static final String VIA = "Via";
+
         /**
          * {@code "Warning"}
          */
         public static final String WARNING = "Warning";
+
         /**
          * {@code "WebSocket-Location"}
          */
         public static final String WEBSOCKET_LOCATION = "WebSocket-Location";
+
         /**
          * {@code "WebSocket-Origin"}
          */
         public static final String WEBSOCKET_ORIGIN = "WebSocket-Origin";
+
         /**
          * {@code "WebSocket-Protocol"}
          */
         public static final String WEBSOCKET_PROTOCOL = "WebSocket-Protocol";
+
         /**
          * {@code "WWW-Authenticate"}
          */
@@ -359,139 +418,173 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      */
     @Deprecated
     public static final class Values {
+
         /**
          * {@code "application/json"}
          */
         public static final String APPLICATION_JSON = "application/json";
+
         /**
          * {@code "application/x-www-form-urlencoded"}
          */
         public static final String APPLICATION_X_WWW_FORM_URLENCODED =
-            "application/x-www-form-urlencoded";
+                "application/x-www-form-urlencoded";
+
         /**
          * {@code "base64"}
          */
         public static final String BASE64 = "base64";
+
         /**
          * {@code "binary"}
          */
         public static final String BINARY = "binary";
+
         /**
          * {@code "boundary"}
          */
         public static final String BOUNDARY = "boundary";
+
         /**
          * {@code "bytes"}
          */
         public static final String BYTES = "bytes";
+
         /**
          * {@code "charset"}
          */
         public static final String CHARSET = "charset";
+
         /**
          * {@code "chunked"}
          */
         public static final String CHUNKED = "chunked";
+
         /**
          * {@code "close"}
          */
         public static final String CLOSE = "close";
+
         /**
          * {@code "compress"}
          */
         public static final String COMPRESS = "compress";
+
         /**
          * {@code "100-continue"}
          */
-        public static final String CONTINUE =  "100-continue";
+        public static final String CONTINUE = "100-continue";
+
         /**
          * {@code "deflate"}
          */
         public static final String DEFLATE = "deflate";
+
         /**
          * {@code "gzip"}
          */
         public static final String GZIP = "gzip";
+
         /**
          * {@code "gzip,deflate"}
          */
         public static final String GZIP_DEFLATE = "gzip,deflate";
+
         /**
          * {@code "identity"}
          */
         public static final String IDENTITY = "identity";
+
         /**
          * {@code "keep-alive"}
          */
         public static final String KEEP_ALIVE = "keep-alive";
+
         /**
          * {@code "max-age"}
          */
         public static final String MAX_AGE = "max-age";
+
         /**
          * {@code "max-stale"}
          */
         public static final String MAX_STALE = "max-stale";
+
         /**
          * {@code "min-fresh"}
          */
         public static final String MIN_FRESH = "min-fresh";
+
         /**
          * {@code "multipart/form-data"}
          */
         public static final String MULTIPART_FORM_DATA = "multipart/form-data";
+
         /**
          * {@code "must-revalidate"}
          */
         public static final String MUST_REVALIDATE = "must-revalidate";
+
         /**
          * {@code "no-cache"}
          */
         public static final String NO_CACHE = "no-cache";
+
         /**
          * {@code "no-store"}
          */
         public static final String NO_STORE = "no-store";
+
         /**
          * {@code "no-transform"}
          */
         public static final String NO_TRANSFORM = "no-transform";
+
         /**
          * {@code "none"}
          */
         public static final String NONE = "none";
+
         /**
          * {@code "only-if-cached"}
          */
         public static final String ONLY_IF_CACHED = "only-if-cached";
+
         /**
          * {@code "private"}
          */
         public static final String PRIVATE = "private";
+
         /**
          * {@code "proxy-revalidate"}
          */
         public static final String PROXY_REVALIDATE = "proxy-revalidate";
+
         /**
          * {@code "public"}
          */
         public static final String PUBLIC = "public";
+
         /**
          * {@code "quoted-printable"}
          */
         public static final String QUOTED_PRINTABLE = "quoted-printable";
+
         /**
          * {@code "s-maxage"}
          */
         public static final String S_MAXAGE = "s-maxage";
+
         /**
          * {@code "trailers"}
          */
         public static final String TRAILERS = "trailers";
+
         /**
          * {@code "Upgrade"}
          */
         public static final String UPGRADE = "Upgrade";
+
         /**
          * {@code "WebSocket"}
          */
@@ -549,13 +642,12 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the header value or {@code null} if there is no such header
      * @deprecated Use {@link #get(CharSequence)} instead.
      *
      * Returns the header value with the specified header name.  If there are
      * more than one header value for the specified header name, the first
      * value is returned.
-     *
-     * @return the header value or {@code null} if there is no such header
      */
     @Deprecated
     public static String getHeader(HttpMessage message, CharSequence name) {
@@ -563,9 +655,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #get(CharSequence, String)} instead.
-     *
      * @see #getHeader(HttpMessage, CharSequence, String)
+     * @deprecated Use {@link #get(CharSequence, String)} instead.
      */
     @Deprecated
     public static String getHeader(HttpMessage message, String name, String defaultValue) {
@@ -573,14 +664,13 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the header value or the {@code defaultValue} if there is no such
+     * header
      * @deprecated Use {@link #get(CharSequence, String)} instead.
      *
      * Returns the header value with the specified header name.  If there are
      * more than one header value for the specified header name, the first
      * value is returned.
-     *
-     * @return the header value or the {@code defaultValue} if there is no such
-     *         header
      */
     @Deprecated
     public static String getHeader(HttpMessage message, CharSequence name, String defaultValue) {
@@ -588,9 +678,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #set(CharSequence, Object)} instead.
-     *
      * @see #setHeader(HttpMessage, CharSequence, Object)
+     * @deprecated Use {@link #set(CharSequence, Object)} instead.
      */
     @Deprecated
     public static void setHeader(HttpMessage message, String name, Object value) {
@@ -613,9 +702,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #set(CharSequence, Iterable)} instead.
-     *
      * @see #setHeader(HttpMessage, CharSequence, Iterable)
+     * @deprecated Use {@link #set(CharSequence, Iterable)} instead.
      */
     @Deprecated
     public static void setHeader(HttpMessage message, String name, Iterable<?> values) {
@@ -644,9 +732,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #add(CharSequence, Object)} instead.
-     *
      * @see #addHeader(HttpMessage, CharSequence, Object)
+     * @deprecated Use {@link #add(CharSequence, Object)} instead.
      */
     @Deprecated
     public static void addHeader(HttpMessage message, String name, Object value) {
@@ -668,9 +755,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #remove(CharSequence)} instead.
-     *
      * @see #removeHeader(HttpMessage, CharSequence)
+     * @deprecated Use {@link #remove(CharSequence)} instead.
      */
     @Deprecated
     public static void removeHeader(HttpMessage message, String name) {
@@ -698,9 +784,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #getInt(CharSequence)} instead.
-     *
      * @see #getIntHeader(HttpMessage, CharSequence)
+     * @deprecated Use {@link #getInt(CharSequence)} instead.
      */
     @Deprecated
     public static int getIntHeader(HttpMessage message, String name) {
@@ -708,15 +793,13 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the header value
+     * @throws NumberFormatException if there is no such header or the header value is not a number
      * @deprecated Use {@link #getInt(CharSequence)} instead.
      *
      * Returns the integer header value with the specified header name.  If
      * there are more than one header value for the specified header name, the
      * first value is returned.
-     *
-     * @return the header value
-     * @throws NumberFormatException
-     *         if there is no such header or the header value is not a number
      */
     @Deprecated
     public static int getIntHeader(HttpMessage message, CharSequence name) {
@@ -728,9 +811,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #getInt(CharSequence, int)} instead.
-     *
      * @see #getIntHeader(HttpMessage, CharSequence, int)
+     * @deprecated Use {@link #getInt(CharSequence, int)} instead.
      */
     @Deprecated
     public static int getIntHeader(HttpMessage message, String name, int defaultValue) {
@@ -738,14 +820,13 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the header value or the {@code defaultValue} if there is no such
+     * header or the header value is not a number
      * @deprecated Use {@link #getInt(CharSequence, int)} instead.
      *
      * Returns the integer header value with the specified header name.  If
      * there are more than one header value for the specified header name, the
      * first value is returned.
-     *
-     * @return the header value or the {@code defaultValue} if there is no such
-     *         header or the header value is not a number
      */
     @Deprecated
     public static int getIntHeader(HttpMessage message, CharSequence name, int defaultValue) {
@@ -753,9 +834,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #setInt(CharSequence, int)} instead.
-     *
      * @see #setIntHeader(HttpMessage, CharSequence, int)
+     * @deprecated Use {@link #setInt(CharSequence, int)} instead.
      */
     @Deprecated
     public static void setIntHeader(HttpMessage message, String name, int value) {
@@ -774,9 +854,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #set(CharSequence, Iterable)} instead.
-     *
      * @see #setIntHeader(HttpMessage, CharSequence, Iterable)
+     * @deprecated Use {@link #set(CharSequence, Iterable)} instead.
      */
     @Deprecated
     public static void setIntHeader(HttpMessage message, String name, Iterable<Integer> values) {
@@ -795,9 +874,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #add(CharSequence, Iterable)} instead.
-     *
      * @see #addIntHeader(HttpMessage, CharSequence, int)
+     * @deprecated Use {@link #add(CharSequence, Iterable)} instead.
      */
     @Deprecated
     public static void addIntHeader(HttpMessage message, String name, int value) {
@@ -815,9 +893,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #getTimeMillis(CharSequence)} instead.
-     *
      * @see #getDateHeader(HttpMessage, CharSequence)
+     * @deprecated Use {@link #getTimeMillis(CharSequence)} instead.
      */
     @Deprecated
     public static Date getDateHeader(HttpMessage message, String name) throws ParseException {
@@ -825,15 +902,13 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the header value
+     * @throws ParseException if there is no such header or the header value is not a formatted date
      * @deprecated Use {@link #getTimeMillis(CharSequence)} instead.
      *
      * Returns the date header value with the specified header name.  If
      * there are more than one header value for the specified header name, the
      * first value is returned.
-     *
-     * @return the header value
-     * @throws ParseException
-     *         if there is no such header or the header value is not a formatted date
      */
     @Deprecated
     public static Date getDateHeader(HttpMessage message, CharSequence name) throws ParseException {
@@ -849,9 +924,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #getTimeMillis(CharSequence, long)} instead.
-     *
      * @see #getDateHeader(HttpMessage, CharSequence, Date)
+     * @deprecated Use {@link #getTimeMillis(CharSequence, long)} instead.
      */
     @Deprecated
     public static Date getDateHeader(HttpMessage message, String name, Date defaultValue) {
@@ -859,14 +933,13 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the header value or the {@code defaultValue} if there is no such
+     * header or the header value is not a formatted date
      * @deprecated Use {@link #getTimeMillis(CharSequence, long)} instead.
      *
      * Returns the date header value with the specified header name.  If
      * there are more than one header value for the specified header name, the
      * first value is returned.
-     *
-     * @return the header value or the {@code defaultValue} if there is no such
-     *         header or the header value is not a formatted date
      */
     @Deprecated
     public static Date getDateHeader(HttpMessage message, CharSequence name, Date defaultValue) {
@@ -876,9 +949,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #set(CharSequence, Object)} instead.
-     *
      * @see #setDateHeader(HttpMessage, CharSequence, Date)
+     * @deprecated Use {@link #set(CharSequence, Object)} instead.
      */
     @Deprecated
     public static void setDateHeader(HttpMessage message, String name, Date value) {
@@ -903,9 +975,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #set(CharSequence, Iterable)} instead.
-     *
      * @see #setDateHeader(HttpMessage, CharSequence, Iterable)
+     * @deprecated Use {@link #set(CharSequence, Iterable)} instead.
      */
     @Deprecated
     public static void setDateHeader(HttpMessage message, String name, Iterable<Date> values) {
@@ -926,9 +997,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #add(CharSequence, Object)} instead.
-     *
      * @see #addDateHeader(HttpMessage, CharSequence, Date)
+     * @deprecated Use {@link #add(CharSequence, Object)} instead.
      */
     @Deprecated
     public static void addDateHeader(HttpMessage message, String name, Date value) {
@@ -948,18 +1018,15 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the content length
+     * @throws NumberFormatException if the message does not have the {@code "Content-Length"} header
+     * or its value is not a number
      * @deprecated Use {@link HttpUtil#getContentLength(HttpMessage)} instead.
      *
      * Returns the length of the content.  Please note that this value is
      * not retrieved from {@link HttpContent#content()} but from the
      * {@code "Content-Length"} header, and thus they are independent from each
      * other.
-     *
-     * @return the content length
-     *
-     * @throws NumberFormatException
-     *         if the message does not have the {@code "Content-Length"} header
-     *         or its value is not a number
      */
     @Deprecated
     public static long getContentLength(HttpMessage message) {
@@ -967,16 +1034,15 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @return the content length or {@code defaultValue} if this message does
+     * not have the {@code "Content-Length"} header or its value is not
+     * a number
      * @deprecated Use {@link HttpUtil#getContentLength(HttpMessage, long)} instead.
      *
      * Returns the length of the content.  Please note that this value is
      * not retrieved from {@link HttpContent#content()} but from the
      * {@code "Content-Length"} header, and thus they are independent from each
      * other.
-     *
-     * @return the content length or {@code defaultValue} if this message does
-     *         not have the {@code "Content-Length"} header or its value is not
-     *         a number
      */
     @Deprecated
     public static long getContentLength(HttpMessage message, long defaultValue) {
@@ -1013,9 +1079,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
-     * @deprecated Use {@link #set(CharSequence, Object)} instead.
-     *
      * @see #setHost(HttpMessage, CharSequence)
+     * @deprecated Use {@link #set(CharSequence, Object)} instead.
      */
     @Deprecated
     public static void setHost(HttpMessage message, String value) {
@@ -1033,12 +1098,10 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @throws ParseException if there is no such header or the header value is not a formatted date
      * @deprecated Use {@link #getTimeMillis(CharSequence)} instead.
      *
      * Returns the value of the {@code "Date"} header.
-     *
-     * @throws ParseException
-     *         if there is no such header or the header value is not a formatted date
      */
     @Deprecated
     public static Date getDate(HttpMessage message) throws ParseException {
@@ -1105,12 +1168,11 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     }
 
     /**
+     * @param message The message to check
+     * @return True if transfer encoding is chunked, otherwise false
      * @deprecated Use {@link HttpUtil#isTransferEncodingChunked(HttpMessage)} instead.
      *
      * Checks to see if the transfer encoding in a specified {@link HttpMessage} is chunked
-     *
-     * @param message The message to check
-     * @return True if transfer encoding is chunked, otherwise false
      */
     @Deprecated
     public static boolean isTransferEncodingChunked(HttpMessage message) {
@@ -1169,7 +1231,8 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
         return new AsciiString(name);
     }
 
-    protected HttpHeaders() { }
+    protected HttpHeaders() {
+    }
 
     /**
      * @see #get(CharSequence)
@@ -1209,7 +1272,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      *
      * @param name the name of the header to search
      * @return the first header value if the header is found and its value is an integer. {@code null} if there's no
-     *         such header or its value is not an integer.
+     * such header or its value is not an integer.
      */
     public abstract Integer getInt(CharSequence name);
 
@@ -1220,7 +1283,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      * @param name the name of the header to search
      * @param defaultValue the default value
      * @return the first header value if the header is found and its value is an integer. {@code defaultValue} if
-     *         there's no such header or its value is not an integer.
+     * there's no such header or its value is not an integer.
      */
     public abstract int getInt(CharSequence name, int defaultValue);
 
@@ -1230,7 +1293,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      *
      * @param name the name of the header to search
      * @return the first header value if the header is found and its value is a short. {@code null} if there's no
-     *         such header or its value is not a short.
+     * such header or its value is not a short.
      */
     public abstract Short getShort(CharSequence name);
 
@@ -1241,7 +1304,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      * @param name the name of the header to search
      * @param defaultValue the default value
      * @return the first header value if the header is found and its value is a short. {@code defaultValue} if
-     *         there's no such header or its value is not a short.
+     * there's no such header or its value is not a short.
      */
     public abstract short getShort(CharSequence name, short defaultValue);
 
@@ -1251,7 +1314,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      *
      * @param name the name of the header to search
      * @return the first header value if the header is found and its value is a date. {@code null} if there's no
-     *         such header or its value is not a date.
+     * such header or its value is not a date.
      */
     public abstract Long getTimeMillis(CharSequence name);
 
@@ -1262,7 +1325,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      * @param name the name of the header to search
      * @param defaultValue the default value
      * @return the first header value if the header is found and its value is a date. {@code defaultValue} if
-     *         there's no such header or its value is not a date.
+     * there's no such header or its value is not a date.
      */
     public abstract long getTimeMillis(CharSequence name, long defaultValue);
 
@@ -1276,7 +1339,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      *
      * @param name The name of the headers to search
      * @return A {@link List} of header values which will be empty if no values
-     *         are found
+     * are found
      * @see #getAllAsString(CharSequence)
      */
     public List<String> getAll(CharSequence name) {
@@ -1287,6 +1350,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      * Returns a new {@link List} that contains all headers in this object.  Note that modifying the
      * returned {@link List} will not affect the state of this object.  If you intend to enumerate over the header
      * entries only, use {@link #iterator()} instead, which has much less overhead.
+     *
      * @see #iteratorCharSequence()
      */
     public abstract List<Map.Entry<String, String>> entries();
@@ -1351,7 +1415,6 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      *
      * @param name The name of the header being added
      * @param value The value of the header being added
-     *
      * @return {@code this}
      */
     public HttpHeaders add(CharSequence name, Object value) {
@@ -1393,7 +1456,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
         if (headers == null) {
             throw new NullPointerException("headers");
         }
-        for (Map.Entry<String, String> e: headers) {
+        for (Map.Entry<String, String> e : headers) {
             add(e.getKey(), e.getValue());
         }
         return this;
@@ -1401,6 +1464,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
 
     /**
      * Add the {@code name} to {@code value}.
+     *
      * @param name The name to modify
      * @param value The value
      * @return {@code this}
@@ -1409,6 +1473,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
 
     /**
      * Add the {@code name} to {@code value}.
+     *
      * @param name The name to modify
      * @param value The value
      * @return {@code this}
@@ -1506,6 +1571,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
 
     /**
      * Set the {@code name} to {@code value}. This will remove all previous values associated with {@code name}.
+     *
      * @param name The name to modify
      * @param value The value
      * @return {@code this}
@@ -1514,6 +1580,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
 
     /**
      * Set the {@code name} to {@code value}. This will remove all previous values associated with {@code name}.
+     *
      * @param name The name to modify
      * @param value The value
      * @return {@code this}
@@ -1551,7 +1618,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
             return false;
         }
 
-        for (String v: values) {
+        for (String v : values) {
             if (ignoreCase) {
                 if (v.equalsIgnoreCase(value)) {
                     return true;
@@ -1570,6 +1637,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      * This also handles multiple values that are separated with a {@code ,}.
      * <p>
      * If {@code ignoreCase} is {@code true} then a case insensitive compare is done on the value.
+     *
      * @param name the name of the header to find
      * @param value the value of the header to find
      * @param ignoreCase {@code true} then a case insensitive compare is run to compare values.
@@ -1581,7 +1649,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
             return false;
         }
 
-        for (String v: values) {
+        for (String v : values) {
             if (contains(v, value, ignoreCase)) {
                 return true;
             }
@@ -1592,13 +1660,13 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
     private static boolean contains(String value, CharSequence expected, boolean ignoreCase) {
         String[] parts = value.split(",");
         if (ignoreCase) {
-            for (String s: parts) {
+            for (String s : parts) {
                 if (AsciiString.contentEqualsIgnoreCase(expected, s.trim())) {
                     return true;
                 }
             }
         } else {
-            for (String s: parts) {
+            for (String s : parts) {
                 if (AsciiString.contentEquals(expected, s.trim())) {
                     return true;
                 }
@@ -1609,6 +1677,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
 
     /**
      * {@link Headers#get(Object)} and convert the result to a {@link String}.
+     *
      * @param name the name of the header to retrieve
      * @return the first header value if the header is found. {@code null} if there's no such header.
      */
@@ -1618,6 +1687,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
 
     /**
      * {@link Headers#getAll(Object)} and convert each element of {@link List} to a {@link String}.
+     *
      * @param name the name of the header to retrieve
      * @return a {@link List} of header values or an empty {@link List} if no values are found.
      */
@@ -1636,6 +1706,7 @@ public abstract class HttpHeaders implements Iterable<Map.Entry<String, String>>
      * Returns {@code true} if a header with the {@code name} and {@code value} exists, {@code false} otherwise.
      * <p>
      * If {@code ignoreCase} is {@code true} then a case insensitive compare is done on the value.
+     *
      * @param name the name of the header to find
      * @param value the value of the header to find
      * @param ignoreCase {@code true} then a case insensitive compare is run to compare values.
