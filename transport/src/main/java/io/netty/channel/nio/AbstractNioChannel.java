@@ -433,7 +433,21 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
         readPending = true;
 
+        //当前channel关心的网络事件
         final int interestOps = selectionKey.interestOps();
+
+        /**
+         * 在某些场景下，当前监听的操作类型和Channel关心的网络事件是一致的，
+         * 不需要重复注册，所以增加了 & 操作的判断，只有两者不一致，才需要
+         * 重新注册操作位！！！！！
+         *
+         * JDK SelectionKey 有4种操作类型，分别为：
+         * OP_READ: 1 << 0      (0001)
+         * OP_WRITE:1 << 2      (0010)
+         * OP_CONNECT:1 << 3    (0100)
+         * OP_ACCEPT:1 << 4     (1000)
+         * 这样设计就可以非常方便的通过位操作来进行网络操作位的状态判断和状态修改！！！
+         */
         if ((interestOps & readInterestOp) == 0) {
             selectionKey.interestOps(interestOps | readInterestOp);
         }
