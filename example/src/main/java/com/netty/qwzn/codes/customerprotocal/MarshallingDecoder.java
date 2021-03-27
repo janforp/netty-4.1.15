@@ -17,7 +17,7 @@ public class MarshallingDecoder {
     private final Unmarshaller unmarshaller;
 
     public MarshallingDecoder() throws IOException {
-        unmarshaller = MarshallingCodecFactory.buildUnmarshalling();
+        unmarshaller = MarshallingCodecFactory.buildUnMarshalling();
     }
 
     public Object decode(ByteBuf in) throws IOException, ClassNotFoundException {

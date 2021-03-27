@@ -9,24 +9,37 @@ import org.jboss.marshalling.Unmarshaller;
 import java.io.IOException;
 
 /**
- * MarshallingCodecFactory
- *
- * @author zhucj
- * @since 20210325
+ * @author Administrator
+ * @version 1.0
+ * @date 2014年3月15日
  */
-public class MarshallingCodecFactory {
+public final class MarshallingCodecFactory {
 
+    /**
+     * 创建Jboss Marshaller
+     *
+     * @return
+     * @throws IOException
+     */
     protected static Marshaller buildMarshalling() throws IOException {
         final MarshallerFactory marshallerFactory = Marshalling.getProvidedMarshallerFactory("serial");
         final MarshallingConfiguration configuration = new MarshallingConfiguration();
         configuration.setVersion(5);
-        return marshallerFactory.createMarshaller(configuration);
+        Marshaller marshaller = marshallerFactory.createMarshaller(configuration);
+        return marshaller;
     }
 
-    public static Unmarshaller buildUnmarshalling() throws IOException {
+    /**
+     * 创建Jboss Unmarshaller
+     *
+     * @return
+     * @throws IOException
+     */
+    protected static Unmarshaller buildUnMarshalling() throws IOException {
         final MarshallerFactory marshallerFactory = Marshalling.getProvidedMarshallerFactory("serial");
-        MarshallingConfiguration configuration = new MarshallingConfiguration();
+        final MarshallingConfiguration configuration = new MarshallingConfiguration();
         configuration.setVersion(5);
-        return marshallerFactory.createUnmarshaller(configuration);
+        final Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(configuration);
+        return unmarshaller;
     }
 }
