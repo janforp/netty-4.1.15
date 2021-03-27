@@ -37,6 +37,7 @@ public class LoginAuthReqHandler extends SimpleChannelInboundHandler<NettyMessag
                 ctx.close();
             } else {
                 System.out.println("Login is ok : " + message);
+                //登陆成功之后该消息继续往下传递
                 ctx.fireChannelRead(message);
             }
         } else {

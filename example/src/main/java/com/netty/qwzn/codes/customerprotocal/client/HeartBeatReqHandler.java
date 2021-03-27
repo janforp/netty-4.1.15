@@ -24,6 +24,7 @@ public class HeartBeatReqHandler extends SimpleChannelInboundHandler<NettyMessag
         if (message.getHeader() != null && message.getHeader().getType() == MessageType.LOGIN_RESP.value()) {
             heartBeat = ctx.executor().scheduleAtFixedRate(new HeartBeatTask(ctx), 0, 5000, TimeUnit.MILLISECONDS);
         } else if (message.getHeader() != null && message.getHeader().getType() == MessageType.HEARTBEAT_RESP.value()) {
+            //应答
             System.out.println("Client receive server heart beat message : ---> " + message);
         } else {
             ctx.fireChannelRead(message);
