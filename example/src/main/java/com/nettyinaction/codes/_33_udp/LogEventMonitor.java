@@ -29,7 +29,7 @@ public class LogEventMonitor {
                 .option(ChannelOption.SO_BROADCAST, true)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
-                    protected void initChannel(Channel channel) throws Exception {
+                    protected void initChannel(Channel channel) {
                         ChannelPipeline pipeline = channel.pipeline();
                         pipeline.addLast(new LogEventDecoder());
                         pipeline.addLast(new LogEventHandler());
