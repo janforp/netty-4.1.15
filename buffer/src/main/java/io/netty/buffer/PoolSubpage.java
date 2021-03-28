@@ -7,6 +7,8 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
      * 对于一个4字节的Page来说，如果和这个Page用来分配1个字节的存储区域，那么long数组中就只有一个元素，这个数值的低4位用来表示各个存储区域的占用情况。
      *
      * 对于一个128字节的Page来说，如果page也用来分配1个直接的存储区域，那么long数组中就会包含2个元素，总共128位，每一位代表一个区域的占用情况！！！
+     *
+     * 可以查阅 《Netty 权威指南》 第 328 页左右
      */
 
     final PoolChunk<T> chunk;
