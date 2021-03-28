@@ -404,14 +404,26 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                 clearOpWrite();
                 break;
             }
+
+            //总共写入的字节数量
             long writtenBytes = 0;
+
+            //是否发送完成标识为false
             boolean done = false;
+
+            //将是否有写半包标识设置为 false
             boolean setOpWrite = false;
 
             // Ensure the pending writes are made of ByteBufs only.
             ByteBuffer[] nioBuffers = in.nioBuffers();
+
+            //需要发送的 ByteBuffer 的个数
             int nioBufferCnt = in.nioBufferCount();
+
+            //需要发送的总字节数
             long expectedWrittenBytes = in.nioBufferSize();
+
+            //拿到客户端 socket
             SocketChannel ch = javaChannel();
 
             // Always us nioBuffers() to workaround data-corruption.
@@ -419,25 +431,47 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             switch (nioBufferCnt) {
                 case 0:
                     // We have something else beside ByteBuffers to write so fallback to normal writes.
+                    // 除了ByteBuffers之外，我们还有其他要写的东西，因此可以回退到普通写操作。
                     super.doWrite(in);
                     return;
+
                 case 1:
                     // Only one ByteBuf so use non-gathering write
                     ByteBuffer nioBuffer = nioBuffers[0];
+
+                    //循环发送
                     for (int i = config().getWriteSpinCount() - 1; i >= 0; i--) {
+
+                        //返回值为写入 SocketChannel 的字节个数
                         final int localWrittenBytes = ch.write(nioBuffer);
                         if (localWrittenBytes == 0) {
+
+                            /**
+                             * 如果本次写入的字节数量为0，则说明TCP发送缓冲区已经满了，从循环跳出，同时
+                             * 将半包设置为true，后面会根据该值决定是否在此注册写操作位
+                             */
                             setOpWrite = true;
                             break;
                         }
+
+                        //本次写入的数据不为0
+
+                        //expectedWrittenBytes = expectedWrittenBytes - localWrittenBytes：还要发送的数量递减
                         expectedWrittenBytes -= localWrittenBytes;
+
+                        //总共写入的字节数量递增
                         writtenBytes += localWrittenBytes;
                         if (expectedWrittenBytes == 0) {
+
+                            //如果需要发送的字节数量已经为0说明已经全部发送完毕，完成标识设置为 true
                             done = true;
                             break;
                         }
                     }
+
+                    //退出循环
                     break;
+
                 default:
                     for (int i = config().getWriteSpinCount() - 1; i >= 0; i--) {
                         final long localWrittenBytes = ch.write(nioBuffers, 0, nioBufferCnt);
@@ -452,6 +486,8 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                             break;
                         }
                     }
+
+                    //退出循环
                     break;
             }
 
@@ -459,7 +495,10 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             in.removeBytes(writtenBytes);
 
             if (!done) {
+
+                //进入这里说明还有字节没有发送完毕，继续注册写操作位
                 // Did not write all buffers completely.
+                // 没有完全写入所有缓冲区
                 incompleteWrite(setOpWrite);
                 break;
             }
