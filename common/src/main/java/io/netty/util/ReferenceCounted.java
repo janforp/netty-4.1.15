@@ -57,6 +57,8 @@ public interface ReferenceCounted {
 
     /**
      * Records the current access location of this object for debugging purposes.
+     * -- 记录此对象的当前访问位置以进行调试
+     *
      * If this object is determined to be leaked, the information recorded by this operation will be provided to you
      * via {@link ResourceLeakDetector}.  This method is a shortcut to {@link #touch(Object) touch(null)}.
      */
