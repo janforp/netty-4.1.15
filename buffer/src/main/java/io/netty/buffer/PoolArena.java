@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.max;
 
+//netty 内存池
 abstract class PoolArena<T> implements PoolArenaMetric {
 
     static final boolean HAS_UNSAFE = PlatformDependent.hasUnsafe();
