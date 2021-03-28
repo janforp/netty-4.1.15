@@ -2294,7 +2294,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * -- 注意 当 hasArray()方法返回 false 时，尝试访问支撑数组将触发一个 Unsupported
      * OperationException。这个模式类似于 JDK 的 ByteBuffer 的用法。
      *
-     * 如果 ByteBuf 由一个字节数组支撑，则返回 true
+     * 如果 ByteBuf 由一个字节数组支撑，则返回 true {@link UnpooledHeapByteBuf#hasArray()}
      */
     public abstract boolean hasArray();
 
@@ -2321,6 +2321,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Returns {@code true} if and only if this buffer has a reference to the low-level memory address that points
      * to the backing data.
+     *
+     * 内存地址相关的接口主要由 {@link UnsafeByteBuf} 实现
      */
     public abstract boolean hasMemoryAddress();
 
