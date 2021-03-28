@@ -11,6 +11,9 @@ import static io.netty.util.internal.ObjectUtil.checkPositive;
  */
 public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
+    /**
+     * @see AbstractReferenceCountedByteBuf#refCnt 该字段用于修改 refCnt 字段
+     */
     private static final AtomicIntegerFieldUpdater<AbstractReferenceCountedByteBuf> refCntUpdater =
             AtomicIntegerFieldUpdater.newUpdater(AbstractReferenceCountedByteBuf.class, "refCnt");
 
@@ -34,24 +37,32 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
     @Override
     public ByteBuf retain() {
+        //每调用一次该方法，引用计数就会增加1
         return retain0(1);
     }
 
+    //retain ： 保持
     @Override
     public ByteBuf retain(int increment) {
         return retain0(checkPositive(increment, "increment"));
     }
 
     private ByteBuf retain0(int increment) {
+        //每调用一次该方法，引用计数就会增加 increment
         for (; ; ) {
+            //保证线程安全，使用 cas 直到成功
+
             int refCnt = this.refCnt;
             final int nextCnt = refCnt + increment;
 
             // Ensure we not resurrect (which means the refCnt was 0) and also that we encountered an overflow.
+            // 确保我们不复活（这意味着refCnt为0），并且我们也遇到溢出。
             if (nextCnt <= increment) {
+                // 只有 this.refCnt == 0 的时候才发生
                 throw new IllegalReferenceCountException(refCnt, increment);
             }
             if (refCntUpdater.compareAndSet(this, refCnt, nextCnt)) {
+                //如果 cas 修改成功，则退出循环，否则一直 cas 修改
                 break;
             }
         }
@@ -70,6 +81,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
     @Override
     public boolean release() {
+        //与 retain 相反
         return release0(1);
     }
 
@@ -86,10 +98,13 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
             }
 
             if (refCntUpdater.compareAndSet(this, refCnt, refCnt - decrement)) {
-                if (refCnt == decrement) {
+                if (refCnt == decrement) {//如果该条件成立，则 cas 成功之后就会失去引用，也就是引用计数 = 0
+                    //调用回收方法，模版方法
                     deallocate();
                     return true;
                 }
+
+                //释放部分引用之后还没有完全释放完成，则说明还有其他地方在使用当前对象
                 return false;
             }
         }
