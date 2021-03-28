@@ -3,11 +3,12 @@ package io.netty.channel.socket.nio;
 import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelMetadata;
 import io.netty.channel.ChannelOutboundBuffer;
-import io.netty.util.internal.SocketUtils;
+import io.netty.channel.nio.AbstractNioChannel;
 import io.netty.channel.nio.AbstractNioMessageChannel;
 import io.netty.channel.socket.DefaultServerSocketChannelConfig;
 import io.netty.channel.socket.ServerSocketChannelConfig;
 import io.netty.util.internal.PlatformDependent;
+import io.netty.util.internal.SocketUtils;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -40,9 +41,12 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
     /**
      * 获取java原生的服务端的：ServerSocketChannel
      *
+     * 通过该方法在每次建立连接的时候创建 ServerSocketChannel ！！！
+     *
      * @param provider 系统的提供器
      * @return
      * @see ServerSocketChannel#open() 如果使用java.nio写，则使用该方法
+     * @see AbstractNioChannel#ch 每次生成java原生的socket之后都会保存到该字段
      */
     private static ServerSocketChannel newSocket(SelectorProvider provider) {
         try {
@@ -61,7 +65,11 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     /**
      * config = new NioServerSocketChannelConfig(this, serverSocket);
+     *
+     * 用于配置 TCP 连接的 参数！！！！！
+     *
      * @see NioServerSocketChannel#NioServerSocketChannel(java.nio.channels.ServerSocketChannel)
+     * @see NioServerSocketChannelConfig#NioServerSocketChannelConfig(io.netty.channel.socket.nio.NioServerSocketChannel, java.net.ServerSocket)
      */
     private final ServerSocketChannelConfig config;
 
@@ -112,8 +120,13 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     public boolean isActive() {
+
+        //拿到java原生的 socket
         ServerSocket serverSocket = javaChannel().socket();
         boolean bound = serverSocket.isBound();
+        /**
+         * 如果还在绑定中就表示还是激活状态
+         */
         return bound;
     }
 
@@ -134,9 +147,15 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     protected void doBind(SocketAddress localAddress) throws Exception {
+        /**
+         * localAddress:本地发起的可以指定端口也可以不指定端口
+         */
+
         if (PlatformDependent.javaVersion() >= 7) {
+            //如果是1.7则使用新的api绑定
             javaChannel().bind(localAddress, config.getBacklog());
         } else {
+            //否则就通过socket的api进行绑定
             javaChannel().socket().bind(localAddress, config.getBacklog());
         }
     }
@@ -146,12 +165,28 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         javaChannel().close();
     }
 
+    /**
+     * 对于NioServerSocketChannel，他的读取操作就是接收客户端的连接，创建 NioSocketChannel 对象！！！！！
+     *
+     * @param buf
+     * @return
+     * @throws Exception
+     */
     @Override
     protected int doReadMessages(List<Object> buf) throws Exception {
+        /**
+         * 将消息读取到给定的数组中，并返回已读取的数量。
+         *
+         * serverSocketChannel.accept() 其实就是调用原生的 accept() 进行连接的建立
+         *
+         * 接收新的客户端连接
+         */
         SocketChannel ch = SocketUtils.accept(javaChannel());
 
         try {
             if (ch != null) {
+
+                //TODO 这是干嘛？
                 buf.add(new NioSocketChannel(this, ch));
                 return 1;
             }
@@ -168,15 +203,18 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         return 0;
     }
 
-    // Unnecessary stuff
+    // Unnecessary stuff ： 不必要的东西 因为 Channel 是共的，下面的这些接口 NioSocketChannel 实现就可以了
     @Override
-    protected boolean doConnect(
-            SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
+    protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
+
+        //只有客户端才需要实现该方法
         throw new UnsupportedOperationException();
     }
 
     @Override
     protected void doFinishConnect() throws Exception {
+
+        //只有客户端才需要实现该方法
         throw new UnsupportedOperationException();
     }
 
@@ -187,11 +225,17 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     protected void doDisconnect() throws Exception {
+
+        //只有客户端才需要实现该方法
+
         throw new UnsupportedOperationException();
     }
 
     @Override
     protected boolean doWriteMessage(Object msg, ChannelOutboundBuffer in) throws Exception {
+
+        //只有客户端才需要实现该方法
+
         throw new UnsupportedOperationException();
     }
 

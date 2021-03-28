@@ -41,6 +41,12 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
     private static final ClosedChannelException DO_CLOSE_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(new ClosedChannelException(), AbstractNioChannel.class, "doClose()");
 
+    /**
+     * 保存java原生的socket包括服务端以及客户端
+     *
+     * @see java.nio.channels.ServerSocketChannel 服务端
+     * @see java.nio.channels.SocketChannel 客户端
+     */
     private final SelectableChannel ch;
 
     /**

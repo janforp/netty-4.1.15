@@ -80,6 +80,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
      *
      * @param parent the {@link Channel} which created this instance or {@code null} if it was created by the user
      * @param socket the {@link SocketChannel} which will be used
+     * @see NioServerSocketChannel#doReadMessages(java.util.List) 此处就会调用该方法
      */
     public NioSocketChannel(Channel parent, SocketChannel socket) {
         super(parent, socket);

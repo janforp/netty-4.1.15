@@ -48,7 +48,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
      */
     private final class NioMessageUnsafe extends AbstractNioUnsafe {
 
-        private final List<Object> readBuf = new ArrayList<Object>();
+        private final List<Object> readBuf = new ArrayList<>();
 
         @Override
         public void read() {
@@ -113,16 +113,45 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
         }
     }
 
+    public static void main(String[] args) {
+        System.out.println(Integer.toBinaryString(SelectionKey.OP_WRITE));
+        System.out.println(Integer.toBinaryString(SelectionKey.OP_ACCEPT));
+        System.out.println(Integer.toBinaryString(SelectionKey.OP_CONNECT));
+        System.out.println(Integer.toBinaryString(SelectionKey.OP_READ));
+    }
+
     @Override
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
-        final SelectionKey key = selectionKey();
-        final int interestOps = key.interestOps();
 
+        //拿到当前Channel注册之后的selectionKey
+        final SelectionKey key = selectionKey();
+
+        //获取当前的网络事件
+        final int interestOps = key.interestOps();
         for (; ; ) {
+
+            //获取一条消息
             Object msg = in.current();
             if (msg == null) {
                 // Wrote all messages.
                 if ((interestOps & SelectionKey.OP_WRITE) != 0) {
+                    /**
+                     * 条件成立说明：当前感兴趣的事件中包括写事件
+                     *
+                     * 于是取消对写事件的关注
+                     *
+                     *   SelectionKey.OP_WRITE      0       ...                 0100
+                     *  ~SelectionKey.OP_WRITE      11111111111111111111111111111011
+                     *
+                     *  如果当前感兴趣的事件是
+                     *   OP_ACCEPT                  0       ...                10000
+                     *   OP_CONNECT                 0       ...                01000
+                     *   OP_READ                    0       ...                00001
+                     *
+                     *   他们4个的二进制字符串上只有一个1，并且位置不一样，所有，位运算很方便
+                     *
+                     *   经过运算之后，该key感兴趣的事件不会包括写事件
+                     */
                     key.interestOps(interestOps & ~SelectionKey.OP_WRITE);
                 }
                 break;
@@ -130,6 +159,9 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
             try {
                 boolean done = false;
                 for (int i = config().getWriteSpinCount() - 1; i >= 0; i--) {
+                    /**
+                     * 模版方法
+                     */
                     if (doWriteMessage(msg, in)) {
                         done = true;
                         break;
@@ -137,10 +169,19 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 }
 
                 if (done) {
+
+                    //如果当前消息被完全发送出去，将该消息移除
                     in.remove();
                 } else {
+                    //否则就说明还没有完全发送完毕，还有一半的包没有发送
+
                     // Did not write all messages.
                     if ((interestOps & SelectionKey.OP_WRITE) == 0) {
+                        /**
+                         * (interestOps & SelectionKey.OP_WRITE) == 0 说明，当前的 interestOps 中肯定不包括 写事件
+                         *
+                         * 所以需要重新注册感兴趣的写事件
+                         */
                         key.interestOps(interestOps | SelectionKey.OP_WRITE);
                     }
                     break;
@@ -177,8 +218,9 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
 
     /**
      * Write a message to the underlying {@link java.nio.channels.Channel}.
+     * -- 将消息写到基础{@link java.nio.channels.Channel}。
      *
-     * @return {@code true} if and only if the message has been written
+     * @return {@code true} if and only if the message has been written -- 当且仅当消息已被写入
      */
     protected abstract boolean doWriteMessage(Object msg, ChannelOutboundBuffer in) throws Exception;
 }
