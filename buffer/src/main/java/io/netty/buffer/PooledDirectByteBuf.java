@@ -1,19 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.buffer;
 
 import io.netty.util.Recycler;
@@ -36,6 +20,12 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
         }
     };
 
+    /**
+     * 由于采用内存池实现，索引不能直接new，而是从内存池中获取，然后设置引用计数
+     *
+     * @param maxCapacity
+     * @return
+     */
     static PooledDirectByteBuf newInstance(int maxCapacity) {
         PooledDirectByteBuf buf = RECYCLER.get();
         buf.reuse(maxCapacity);
@@ -74,17 +64,17 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
     @Override
     protected int _getUnsignedMedium(int index) {
         index = idx(index);
-        return (memory.get(index) & 0xff)     << 16 |
-               (memory.get(index + 1) & 0xff) << 8  |
-               memory.get(index + 2) & 0xff;
+        return (memory.get(index) & 0xff) << 16 |
+                (memory.get(index + 1) & 0xff) << 8 |
+                memory.get(index + 2) & 0xff;
     }
 
     @Override
     protected int _getUnsignedMediumLE(int index) {
         index = idx(index);
-        return memory.get(index)      & 0xff        |
-               (memory.get(index + 1) & 0xff) << 8  |
-               (memory.get(index + 2) & 0xff) << 16;
+        return memory.get(index) & 0xff |
+                (memory.get(index + 1) & 0xff) << 8 |
+                (memory.get(index + 2) & 0xff) << 16;
     }
 
     @Override
@@ -113,7 +103,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
         if (dst.hasArray()) {
             getBytes(index, dst.array(), dst.arrayOffset() + dstIndex, length);
         } else if (dst.nioBufferCount() > 0) {
-            for (ByteBuffer bb: dst.nioBuffers(dstIndex, length)) {
+            for (ByteBuffer bb : dst.nioBuffers(dstIndex, length)) {
                 int bbLen = bb.remaining();
                 getBytes(index, bb);
                 index += bbLen;
@@ -323,7 +313,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
         if (src.hasArray()) {
             setBytes(index, src.array(), src.arrayOffset() + srcIndex, length);
         } else if (src.nioBufferCount() > 0) {
-            for (ByteBuffer bb: src.nioBuffers(srcIndex, length)) {
+            for (ByteBuffer bb : src.nioBuffers(srcIndex, length)) {
                 int bbLen = bb.remaining();
                 setBytes(index, bb);
                 index += bbLen;

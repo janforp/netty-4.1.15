@@ -240,6 +240,11 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
 
     /**
      * Create a direct {@link ByteBuf} with the given initialCapacity and maxCapacity.
+     *
+     * 根据基于内存池还是基于堆内存的区别有2个实现，基于内存池的实现直接从缓存中获取bytebuf而不是创建一个新的对象
+     *
+     * @see PooledByteBufAllocator#newDirectBuffer(int, int)
+     * @see UnpooledByteBufAllocator#newDirectBuffer(int, int)
      */
     protected abstract ByteBuf newDirectBuffer(int initialCapacity, int maxCapacity);
 
