@@ -227,6 +227,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
         protected final void removeReadOp() {
             SelectionKey key = selectionKey();
+            // deregistration(取消注册)
             // Check first if the key is still valid as it may be canceled as part of the deregistration
             // from the EventLoop
             // See https://github.com/netty/netty/issues/2104
@@ -268,17 +269,22 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                     // Schedule connect timeout.
                     int connectTimeoutMillis = config().getConnectTimeoutMillis();
                     if (connectTimeoutMillis > 0) {
-                        connectTimeoutFuture = eventLoop().schedule(new Runnable() {
-                            @Override
-                            public void run() {
-                                ChannelPromise connectPromise = AbstractNioChannel.this.connectPromise;
-                                ConnectTimeoutException cause =
-                                        new ConnectTimeoutException("connection timed out: " + remoteAddress);
-                                if (connectPromise != null && connectPromise.tryFailure(cause)) {
-                                    close(voidPromise());
-                                }
-                            }
-                        }, connectTimeoutMillis, TimeUnit.MILLISECONDS);
+
+                        //schedule(Runnable command, long delay, TimeUnit unit)
+                        connectTimeoutFuture = eventLoop().schedule(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ChannelPromise connectPromise = AbstractNioChannel.this.connectPromise;
+                                        ConnectTimeoutException cause = new ConnectTimeoutException("connection timed out: " + remoteAddress);
+                                        if (connectPromise != null && connectPromise.tryFailure(cause)) {
+                                            close(voidPromise());
+                                        }
+                                    }
+                                },
+                                connectTimeoutMillis,
+                                TimeUnit.MILLISECONDS
+                        );
                     }
 
                     promise.addListener(new ChannelFutureListener() {
@@ -316,6 +322,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             // Regardless if the connection attempt was cancelled, channelActive() event should be triggered,
             // because what happened is what happened.
             if (!wasActive && active) {
+                //连接成功之后，触发连接激活事件
                 pipeline().fireChannelActive();
             }
 

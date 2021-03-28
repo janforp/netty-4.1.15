@@ -62,6 +62,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * serverBootstrap.option(ChannelOption.SO_RCVBUF, 123)
      * 实例化 BootStrap 的时候，用户指定的一些配置
+     *
+     * 设置TCP参数
+     * 无论是异步NIO还是同步NIO，创建套接字的时候通常都会设置连接参数
+     * 例如接收和发送缓冲区大小，连接超时时间等
      */
     private final Map<ChannelOption<?>, Object> options = new LinkedHashMap<ChannelOption<?>, Object>();
 
@@ -183,6 +187,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * Allow to specify a {@link ChannelOption} which is used for the {@link Channel} instances once they got
      * created. Use a value of {@code null} to remove a previous set {@link ChannelOption}.
+     *
+     * 设置TCP参数
+     * 无论是异步NIO还是同步NIO，创建套接字的时候通常都会设置连接参数
+     * 例如接收和发送缓冲区大小，连接超时时间等
      */
     @SuppressWarnings("unchecked")
     public <T> B option(ChannelOption<T> option, T value) {

@@ -190,6 +190,8 @@ public class ChannelOption<T> extends AbstractConstant<ChannelOption<T>> {
 
     /**
      * Socket参数，TCP数据发送缓冲区大小。该缓冲区即TCP发送滑动窗口，linux操作系统可使用命令：cat /proc/sys/net/ipv4/tcp_smem查询其大小。
+     *
+     * 套接字使用的发送缓冲区大小
      */
     public static final ChannelOption<Integer> SO_SNDBUF = valueOf("SO_SNDBUF");
 
@@ -197,6 +199,8 @@ public class ChannelOption<T> extends AbstractConstant<ChannelOption<T>> {
      * Socket参数，TCP数据接收缓冲区大小。
      * 该缓冲区即TCP接收滑动窗口，linux操作系统可使用命令：cat /proc/sys/net/ipv4/tcp_rmem查询其大小。
      * 一般情况下，该值可由用户在任意时刻设置，但当设置值超过64KB时，需要在连接到远端之前设置。
+     *
+     * 套接字使用的接收缓冲区大小
      */
     public static final ChannelOption<Integer> SO_RCVBUF = valueOf("SO_RCVBUF");
 
@@ -224,6 +228,9 @@ public class ChannelOption<T> extends AbstractConstant<ChannelOption<T>> {
      */
     public static final ChannelOption<Integer> SO_BACKLOG = valueOf("SO_BACKLOG");
 
+    /**
+     * 控制读取操作将阻塞多少浩渺，如果设置为0，则无限阻塞
+     */
     public static final ChannelOption<Integer> SO_TIMEOUT = valueOf("SO_TIMEOUT");
 
     /**
