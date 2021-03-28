@@ -1,17 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.buffer;
 
 import io.netty.util.Recycler;
@@ -190,7 +176,7 @@ class PooledHeapByteBuf extends PooledByteBuf<byte[]> {
     }
 
     @Override
-    protected void _setMedium(int index, int   value) {
+    protected void _setMedium(int index, int value) {
         HeapByteBufUtil.setMedium(memory, idx(index), value);
     }
 
@@ -200,7 +186,7 @@ class PooledHeapByteBuf extends PooledByteBuf<byte[]> {
     }
 
     @Override
-    protected void _setInt(int index, int   value) {
+    protected void _setInt(int index, int value) {
         HeapByteBufUtil.setInt(memory, idx(index), value);
     }
 
@@ -210,7 +196,7 @@ class PooledHeapByteBuf extends PooledByteBuf<byte[]> {
     }
 
     @Override
-    protected void _setLong(int index, long  value) {
+    protected void _setLong(int index, long value) {
         HeapByteBufUtil.setLong(memory, idx(index), value);
     }
 
@@ -297,7 +283,7 @@ class PooledHeapByteBuf extends PooledByteBuf<byte[]> {
     public final ByteBuffer nioBuffer(int index, int length) {
         checkIndex(index, length);
         index = idx(index);
-        ByteBuffer buf =  ByteBuffer.wrap(memory, index, length);
+        ByteBuffer buf = ByteBuffer.wrap(memory, index, length);
         return buf.slice();
     }
 

@@ -1,19 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package io.netty.buffer;
 
 /**
@@ -56,22 +40,22 @@ package io.netty.buffer;
  * Algorithm:
  * ----------
  * Encode the tree in memoryMap with the notation
- *   memoryMap[id] = x => in the subtree rooted at id, the first node that is free to be allocated
- *   is at depth x (counted from depth=0) i.e., at depths [depth_of_id, x), there is no node that is free
+ * memoryMap[id] = x => in the subtree rooted at id, the first node that is free to be allocated
+ * is at depth x (counted from depth=0) i.e., at depths [depth_of_id, x), there is no node that is free
  *
- *  As we allocate & free nodes, we update values stored in memoryMap so that the property is maintained
+ * As we allocate & free nodes, we update values stored in memoryMap so that the property is maintained
  *
  * Initialization -
- *   In the beginning we construct the memoryMap array by storing the depth of a node at each node
- *     i.e., memoryMap[id] = depth_of_id
+ * In the beginning we construct the memoryMap array by storing the depth of a node at each node
+ * i.e., memoryMap[id] = depth_of_id
  *
  * Observations:
  * -------------
  * 1) memoryMap[id] = depth_of_id  => it is free / unallocated
  * 2) memoryMap[id] > depth_of_id  => at least one of its child nodes is allocated, so we cannot allocate it, but
- *                                    some of its children can still be allocated based on their availability
+ * some of its children can still be allocated based on their availability
  * 3) memoryMap[id] = maxOrder + 1 => the node is fully allocated & thus none of its children can be allocated, it
- *                                    is thus marked as unusable
+ * is thus marked as unusable
  *
  * Algorithm: [allocateNode(d) => we want to find the first node (from left) at height h that can be allocated]
  * ----------
@@ -89,7 +73,7 @@ package io.netty.buffer;
  * ----------
  * 1) use allocateNode(maxOrder) to find an empty (i.e., unused) leaf (i.e., page)
  * 2) use this handle to construct the PoolSubpage object or if it already exists just call init(normCapacity)
- *    note that this PoolSubpage object is added to subpagesPool in the PoolArena when we init() it
+ * note that this PoolSubpage object is added to subpagesPool in the PoolArena when we init() it
  *
  * Note:
  * -----
@@ -105,28 +89,47 @@ final class PoolChunk<T> implements PoolChunkMetric {
     private static final int INTEGER_SIZE_MINUS_ONE = Integer.SIZE - 1;
 
     final PoolArena<T> arena;
+
     final T memory;
+
     final boolean unpooled;
+
     final int offset;
 
     private final byte[] memoryMap;
+
     private final byte[] depthMap;
+
     private final PoolSubpage<T>[] subpages;
-    /** Used to determine if the requested capacity is equal to or greater than pageSize. */
+
+    /**
+     * Used to determine if the requested capacity is equal to or greater than pageSize.
+     */
     private final int subpageOverflowMask;
+
     private final int pageSize;
+
     private final int pageShifts;
+
     private final int maxOrder;
+
     private final int chunkSize;
+
     private final int log2ChunkSize;
+
     private final int maxSubpageAllocs;
-    /** Used to mark memory as unusable */
+
+    /**
+     * Used to mark memory as unusable
+     */
     private final byte unusable;
 
     private int freeBytes;
 
     PoolChunkList<T> parent;
+
     PoolChunk<T> prev;
+
     PoolChunk<T> next;
 
     // TODO: Test if adding padding helps under contention
@@ -153,20 +156,22 @@ final class PoolChunk<T> implements PoolChunkMetric {
         memoryMap = new byte[maxSubpageAllocs << 1];
         depthMap = new byte[memoryMap.length];
         int memoryMapIndex = 1;
-        for (int d = 0; d <= maxOrder; ++ d) { // move down the tree one level at a time
+        for (int d = 0; d <= maxOrder; ++d) { // move down the tree one level at a time
             int depth = 1 << d;
-            for (int p = 0; p < depth; ++ p) {
+            for (int p = 0; p < depth; ++p) {
                 // in each level traverse left to right and set value to the depth of subtree
                 memoryMap[memoryMapIndex] = (byte) d;
                 depthMap[memoryMapIndex] = (byte) d;
-                memoryMapIndex ++;
+                memoryMapIndex++;
             }
         }
 
         subpages = newSubpageArray(maxSubpageAllocs);
     }
 
-    /** Creates a special chunk that is not pooled. */
+    /**
+     * Creates a special chunk that is not pooled.
+     */
     PoolChunk(PoolArena<T> arena, T memory, int size, int offset) {
         unpooled = true;
         this.arena = arena;
@@ -273,7 +278,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
      */
     private int allocateNode(int d) {
         int id = 1;
-        int initial = - (1 << d); // has last d bits = 0 and rest all = 1
+        int initial = -(1 << d); // has last d bits = 0 and rest all = 1
         byte val = value(id);
         if (val > d) { // unusable
             return -1;
@@ -382,7 +387,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
             byte val = value(memoryMapIdx);
             assert val == unusable : String.valueOf(val);
             buf.init(this, handle, runOffset(memoryMapIdx) + offset, reqCapacity, runLength(memoryMapIdx),
-                     arena.parent.threadCache());
+                    arena.parent.threadCache());
         } else {
             initBufWithSubpage(buf, handle, bitmapIdx, reqCapacity);
         }
@@ -402,8 +407,8 @@ final class PoolChunk<T> implements PoolChunkMetric {
         assert reqCapacity <= subpage.elemSize;
 
         buf.init(
-            this, handle,
-            runOffset(memoryMapIdx) + (bitmapIdx & 0x3FFFFFFF) * subpage.elemSize + offset,
+                this, handle,
+                runOffset(memoryMapIdx) + (bitmapIdx & 0x3FFFFFFF) * subpage.elemSize + offset,
                 reqCapacity, subpage.elemSize, arena.parent.threadCache());
     }
 
