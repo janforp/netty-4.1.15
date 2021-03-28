@@ -85,7 +85,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     ChannelId id();
 
     /**
-     * 返回此通道已注册到的EventLoop。
+     * 返回此通道注册到的EventLoop。
      *
      * <p></p>
      * Return the {@link EventLoop} this {@link Channel} was registered to.
@@ -221,6 +221,7 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     @Override
     Channel read();
 
+    //发送给对方
     @Override
     Channel flush();
 

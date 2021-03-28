@@ -21,13 +21,15 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SelectionKey;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A skeletal {@link Channel} implementation.
+ *
+ * 骨架{@link Channel}实现。
  */
+@SuppressWarnings("all")
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannel.class);
@@ -251,6 +253,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     @Override
     public ChannelFuture connect(SocketAddress remoteAddress, SocketAddress localAddress) {
+        /**
+         * 网络I/O操作直接调用 pipeline 的相关方法，由 pipeline 中的具体的 ChannelHandler 进行具体的逻辑处理
+         */
         return pipeline.connect(remoteAddress, localAddress);
     }
 

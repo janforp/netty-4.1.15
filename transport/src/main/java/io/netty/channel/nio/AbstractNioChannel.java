@@ -37,16 +37,22 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
 
-    private static final InternalLogger logger =
-            InternalLoggerFactory.getInstance(AbstractNioChannel.class);
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractNioChannel.class);
 
-    private static final ClosedChannelException DO_CLOSE_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
-            new ClosedChannelException(), AbstractNioChannel.class, "doClose()");
+    private static final ClosedChannelException DO_CLOSE_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(new ClosedChannelException(), AbstractNioChannel.class, "doClose()");
 
     private final SelectableChannel ch;
 
+    /**
+     * @see SelectionKey#OP_READ 0001
+     */
     protected final int readInterestOp;
 
+    /**
+     * io.netty.channel.nio.AbstractNioChannel#doRegister()
+     *
+     * @see AbstractNioChannel#doRegister() 注册到selector上之后就会返回这个引用，后续可以直接修改该引用来实现修改感兴趣的事件
+     */
     volatile SelectionKey selectionKey;
 
     /**
@@ -403,6 +409,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                 //java.nio.channels.SelectableChannel.register(java.nio.channels.Selector, int, java.lang.Object)
                 //serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
                 SelectableChannel nioSelectableChannel = javaChannel();
+
+                //多路复用器
                 Selector nioSelector = eventLoop().unwrappedSelector();
 
                 //netty 底层其实就是 java.nio
@@ -416,6 +424,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                     // cached and not removed because no Select.select(..) operation was called yet.
                     eventLoop().selectNow();
                     selected = true;
+                    //继续轮询！！！！！！
                 } else {
                     // We forced a select operation on the selector before but the SelectionKey is still cached
                     // for whatever reason. JDK bug ?
@@ -456,6 +465,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
          * 这样设计就可以非常方便的通过位操作来进行网络操作位的状态判断和状态修改！！！
          */
         if ((interestOps & readInterestOp) == 0) {
+            //如果没有注册读事件，则注册读事件都 selector
             selectionKey.interestOps(interestOps | readInterestOp);
         }
     }
