@@ -33,6 +33,9 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             " (expected: " + StringUtil.simpleClassName(ByteBuf.class) + ", " +
                     StringUtil.simpleClassName(FileRegion.class) + ')';
 
+    /**
+     * @see AbstractNioByteChannel#incompleteWrite(boolean)
+     */
     private Runnable flushTask;
 
     /**
@@ -151,45 +154,73 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
         int writeSpinCount = -1;
 
+        //写半包是否完成标识
         boolean setOpWrite = false;
         for (; ; ) {
             Object msg = in.current();
             if (msg == null) {
                 // Wrote all messages.
+                //所有消息都写完了
                 clearOpWrite();
                 // Directly return here so incompleteWrite(...) is not called.
                 return;
             }
 
+            //如果需要发送的消息不为空，则继续往下执行
+
             if (msg instanceof ByteBuf) {
                 ByteBuf buf = (ByteBuf) msg;
                 int readableBytes = buf.readableBytes();
                 if (readableBytes == 0) {
+
+                    //如果可读消息为0，则说明该消息不可读，需要从环形发送数组中删除该消息，继续处理其他的消息
                     in.remove();
                     continue;
                 }
 
+                //消息是否全部发送完毕
                 boolean done = false;
+
+                //发送的总字节数
                 long flushedAmount = 0;
                 if (writeSpinCount == -1) {
+
+                    //如果为-1，则从 Channel 配置对象中获取循环发送次数
                     writeSpinCount = config().getWriteSpinCount();
                 }
                 for (int i = writeSpinCount - 1; i >= 0; i--) {
+
+                    /**
+                     * 模版方法，子类实现
+                     */
                     int localFlushedAmount = doWriteBytes(buf);
                     if (localFlushedAmount == 0) {
+                        /**
+                         * 本次发送的数量=0，说明TCP缓冲区已经满了，发生了 ZERO_WINDOW
+                         * 此时如果继续循环发送则继续可能出现0字节的情况吗，空循环会占用CPU
+                         * 资源，导致I/O线程无法处理其他事件，所以将写半包标识设置为 true,
+                         * 退出循环,释放I/O线程
+                         */
+
+                        //写半包标识完成
                         setOpWrite = true;
                         break;
                     }
 
+                    //如果发送的字节数量>0则计数
                     flushedAmount += localFlushedAmount;
                     if (!buf.isReadable()) {
+                        /**
+                         * 判断当前消息是否已经发送成功（缓冲区没有可读字节），
+                         * 如果发送成功则设置done为true,退出循环
+                         */
                         done = true;
                         break;
                     }
                 }
 
+                //消息发送完成之后，更新发送进度信息
                 in.progress(flushedAmount);
-
                 if (done) {
                     in.remove();
                 } else {
@@ -199,30 +230,25 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             } else if (msg instanceof FileRegion) {
                 FileRegion region = (FileRegion) msg;
                 boolean done = region.transferred() >= region.count();
-
                 if (!done) {
                     long flushedAmount = 0;
                     if (writeSpinCount == -1) {
                         writeSpinCount = config().getWriteSpinCount();
                     }
-
                     for (int i = writeSpinCount - 1; i >= 0; i--) {
                         long localFlushedAmount = doWriteFileRegion(region);
                         if (localFlushedAmount == 0) {
                             setOpWrite = true;
                             break;
                         }
-
                         flushedAmount += localFlushedAmount;
                         if (region.transferred() >= region.count()) {
                             done = true;
                             break;
                         }
                     }
-
                     in.progress(flushedAmount);
                 }
-
                 if (done) {
                     in.remove();
                 } else {
@@ -256,6 +282,12 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 "unsupported message type: " + StringUtil.simpleClassName(msg) + EXPECTED_TYPES);
     }
 
+    /**
+     * 写还没有完成，说明写了半个包
+     * 启动写半包任务线程用于后续继续发送半包消息
+     *
+     * @param setOpWrite
+     */
     protected final void incompleteWrite(boolean setOpWrite) {
         // Did not write completely.
         if (setOpWrite) {
@@ -306,6 +338,8 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         }
         final int interestOps = key.interestOps();
         if ((interestOps & SelectionKey.OP_WRITE) == 0) {
+
+            //如果没有关注写操作位，就把写操作位设置进去
             key.interestOps(interestOps | SelectionKey.OP_WRITE);
         }
     }
@@ -318,8 +352,14 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         if (!key.isValid()) {
             return;
         }
+        //清除半包消息
+
+        //从当前 SelectionKey 中获取网络操作位
         final int interestOps = key.interestOps();
         if ((interestOps & SelectionKey.OP_WRITE) != 0) {
+            //如果进入该 if 代码块，则说明当前是 可写的，需要清除写操作位
+
+            //清除写操作位
             key.interestOps(interestOps & ~SelectionKey.OP_WRITE);
         }
     }
