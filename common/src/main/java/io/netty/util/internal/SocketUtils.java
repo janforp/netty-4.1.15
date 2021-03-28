@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package io.netty.util.internal;
 
 import java.io.IOException;
@@ -74,8 +75,7 @@ public final class SocketUtils {
         }
     }
 
-    public static boolean connect(final SocketChannel socketChannel, final SocketAddress remoteAddress)
-            throws IOException {
+    public static boolean connect(final SocketChannel socketChannel, final SocketAddress remoteAddress) throws IOException {
         try {
             return AccessController.doPrivileged(new PrivilegedExceptionAction<Boolean>() {
                 @Override

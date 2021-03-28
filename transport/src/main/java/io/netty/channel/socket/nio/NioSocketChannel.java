@@ -316,15 +316,37 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
     }
 
     @Override
-    protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
+    protected boolean doConnect(SocketAddress remoteAddress /** 连接的服务端地址 */, SocketAddress localAddress /** 本地指定的端口 */) throws Exception {
         if (localAddress != null) {
+
+            /**
+             * 调用java原生的连接函数进行连接
+             *
+             * socketChannel.bind(address);
+             *
+             * 或者
+             *
+             * socket.bind(bindpoint);
+             */
             doBind0(localAddress);
         }
 
         boolean success = false;
         try {
+
+            /**
+             * 连接，有3钟结果
+             * 1.连接成功，返回 true
+             * 2.暂时没有连接上，服务端没有返回 ACK 应答，连接结果不确定，返回 false
+             * 3.连接失败，直接抛出 IO 异常
+             */
             boolean connected = SocketUtils.connect(javaChannel(), remoteAddress);
             if (!connected) {
+
+                /**
+                 * 如果暂时没有连接上，则注册 连接 事件
+                 * 等等连接成功的时候会发送事件回调
+                 */
                 selectionKey().interestOps(SelectionKey.OP_CONNECT);
             }
             success = true;
