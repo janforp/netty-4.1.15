@@ -24,7 +24,9 @@ import java.nio.charset.Charset;
 import static io.netty.util.internal.MathUtil.isOutOfBounds;
 
 /**
- * skeletal:骨骼的
+ * skeletal:
+ *
+ * 模版方法设计模式
  *
  * A skeletal implementation of a buffer.
  */
@@ -209,15 +211,24 @@ public abstract class AbstractByteBuf extends ByteBuf {
     public ByteBuf discardReadBytes() {
         ensureAccessible();
         if (readerIndex == 0) {
+            //没有可以丢弃的或者说没有可以重用的缓冲区
             return this;
         }
 
         if (readerIndex != writerIndex) {
+            //说明有部分缓冲区可以重用
+
+            //数据移动
             setBytes(0, this, readerIndex, writerIndex - readerIndex);
+
+            //writerIndex = writerIndex - readerIndex
             writerIndex -= readerIndex;
             adjustMarkers(readerIndex);
             readerIndex = 0;
-        } else {
+        }
+
+        //这个分支肯定是读写索引相同，则直接打回原形
+        else {
             adjustMarkers(readerIndex);
             writerIndex = readerIndex = 0;
         }
@@ -275,10 +286,12 @@ public abstract class AbstractByteBuf extends ByteBuf {
     final void ensureWritable0(int minWritableBytes) {
         ensureAccessible();
         if (minWritableBytes <= writableBytes()) {
+            //如果本次要写入的字节数小于当前可以写入的数量，则可以直接写
             return;
         }
 
         if (minWritableBytes > maxCapacity - writerIndex) {
+            //超过了最大界限
             throw new IndexOutOfBoundsException(String.format(
                     "writerIndex(%d) + minWritableBytes(%d) exceeds maxCapacity(%d): %s",
                     writerIndex, minWritableBytes, maxCapacity, this));
@@ -1060,6 +1073,8 @@ public abstract class AbstractByteBuf extends ByteBuf {
     @Override
     public ByteBuf writeBytes(byte[] src, int srcIndex, int length) {
         ensureWritable(length);
+
+        //模版方法
         setBytes(writerIndex, src, srcIndex, length);
         writerIndex += length;
         return this;

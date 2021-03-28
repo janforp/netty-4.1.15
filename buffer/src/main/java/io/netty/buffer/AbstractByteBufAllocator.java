@@ -25,9 +25,13 @@ import io.netty.util.internal.StringUtil;
  * Skeletal {@link ByteBufAllocator} implementation to extend.
  */
 public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
+
     static final int DEFAULT_INITIAL_CAPACITY = 256;
+
     static final int DEFAULT_MAX_CAPACITY = Integer.MAX_VALUE;
+
     static final int DEFAULT_MAX_COMPONENTS = 16;
+
     static final int CALCULATE_THRESHOLD = 1048576 * 4; // 4 MiB page
 
     protected static ByteBuf toLeakAwareBuffer(ByteBuf buf) {
@@ -75,6 +79,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     }
 
     private final boolean directByDefault;
+
     private final ByteBuf emptyBuf;
 
     /**
@@ -88,7 +93,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
      * Create new instance
      *
      * @param preferDirect {@code true} if {@link #buffer(int)} should try to allocate a direct buffer rather than
-     *                     a heap buffer
+     * a heap buffer
      */
     protected AbstractByteBufAllocator(boolean preferDirect) {
         directByDefault = preferDirect && PlatformDependent.hasUnsafe();
@@ -243,15 +248,23 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return StringUtil.simpleClassName(this) + "(directByDefault: " + directByDefault + ')';
     }
 
+    /**
+     * 动态扩容
+     *
+     * int newCapacity = alloc().calculateNewCapacity(writerIndex + minWritableBytes, maxCapacity);
+     */
     @Override
-    public int calculateNewCapacity(int minNewCapacity, int maxCapacity) {
+    public int calculateNewCapacity(
+
+            int minNewCapacity, //本次扩容之后的容量至少是这个数
+
+            int maxCapacity) { // 本次扩容之后的容量最大是这个数
+
         if (minNewCapacity < 0) {
             throw new IllegalArgumentException("minNewCapacity: " + minNewCapacity + " (expected: 0+)");
         }
         if (minNewCapacity > maxCapacity) {
-            throw new IllegalArgumentException(String.format(
-                    "minNewCapacity: %d (expected: not greater than maxCapacity(%d)",
-                    minNewCapacity, maxCapacity));
+            throw new IllegalArgumentException(String.format("minNewCapacity: %d (expected: not greater than maxCapacity(%d)", minNewCapacity, maxCapacity));
         }
         final int threshold = CALCULATE_THRESHOLD; // 4 MiB page
 
@@ -273,6 +286,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         // Not over threshold. Double up to 4 MiB, starting from 64.
         int newCapacity = 64;
         while (newCapacity < minNewCapacity) {
+            //如果扩容侯的容量少于minNewCapacity，则以64为计数进行倍增，直到倍增后的结果大于或者等于需要的容量值
             newCapacity <<= 1;
         }
 
