@@ -360,7 +360,14 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
     @Override
     protected void doFinishConnect() throws Exception {
+
+        /**
+         * 连接成功返回true
+         * 连接失败返回false
+         * 发送链路被关闭，链路中断等异常，连接失败
+         */
         if (!javaChannel().finishConnect()) {
+            //只有连接失败，就抛出异常,由调用方执行句柄关闭等资源释放操作
             throw new Error();
         }
     }

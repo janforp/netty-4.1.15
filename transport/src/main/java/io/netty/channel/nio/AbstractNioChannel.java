@@ -273,12 +273,14 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
                 boolean wasActive = isActive();
                 if (doConnect(remoteAddress, localAddress)) {
+                    //连接成功
                     fulfillConnectPromise(promise, wasActive);
                 } else {
                     connectPromise = promise;
                     requestedRemoteAddress = remoteAddress;
 
                     // Schedule connect timeout.
+                    // 连接超时的配置
                     int connectTimeoutMillis = config().getConnectTimeoutMillis();
                     if (connectTimeoutMillis > 0) {
 
@@ -364,7 +366,11 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
             try {
                 boolean wasActive = isActive();
+
+                //客户端收到服务端的 TCP 握手应答消息，通过 SocketChannel 的 finishConnect 方法对连接结果进行判断
                 doFinishConnect();
+
+                //如果连接成功，则执行下面的方法，它赋值将 SocketChannel 修改为监听读操作位，来监听网络读事件
                 fulfillConnectPromise(connectPromise, wasActive);
             } catch (Throwable t) {
                 fulfillConnectPromise(connectPromise, annotateConnectException(t, requestedRemoteAddress));

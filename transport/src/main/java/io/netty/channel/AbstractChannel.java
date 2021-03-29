@@ -453,6 +453,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected abstract class AbstractUnsafe implements Unsafe {
 
+        /**
+         * 缓冲区
+         */
         private volatile ChannelOutboundBuffer outboundBuffer = new ChannelOutboundBuffer(AbstractChannel.this);
 
         private RecvByteBufAllocator.Handle recvHandle;
@@ -654,7 +657,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             boolean wasActive = isActive();
             try {
-                //真正的使用 java.nio 绑定函数
+                /**
+                 * 真正的使用 java.nio 绑定函数
+                 *
+                 * 模版方法
+                 * 客户端跟服务端不同的绑定方法
+                 */
                 doBind(localAddress);
             } catch (Throwable t) {
                 safeSetFailure(promise, t);
@@ -918,6 +926,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             int size;
             try {
+
+                //拿到消息
                 msg = filterOutboundMessage(msg);
                 size = pipeline.estimatorHandle().size(msg);
                 if (size < 0) {
