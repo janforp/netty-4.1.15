@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package io.netty.channel;
 
 import java.util.ArrayList;
@@ -27,15 +12,21 @@ import java.util.List;
  * number of readable bytes if the read operation was not able to fill a certain
  * amount of the allocated buffer two times consecutively.  Otherwise, it keeps
  * returning the same prediction.
+ *
+ *
+ * 顾名思义：该类是指缓冲区大小是可以动态调整的 ByteBuf 分配器
  */
 public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufAllocator {
 
-    static final int DEFAULT_MINIMUM = 64;
-    static final int DEFAULT_INITIAL = 1024;
-    static final int DEFAULT_MAXIMUM = 65536;
+    static final int DEFAULT_MINIMUM = 64;//最小缓冲区长度字节
 
-    private static final int INDEX_INCREMENT = 4;
-    private static final int INDEX_DECREMENT = 1;
+    static final int DEFAULT_INITIAL = 1024;//初始容量字节
+
+    static final int DEFAULT_MAXIMUM = 65536;//最大容量字节
+
+    private static final int INDEX_INCREMENT = 4;//扩张的步进索引
+
+    private static final int INDEX_DECREMENT = 1;//收缩的步长
 
     private static final int[] SIZE_TABLE;
 
@@ -50,7 +41,7 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
         }
 
         SIZE_TABLE = new int[sizeTable.size()];
-        for (int i = 0; i < SIZE_TABLE.length; i ++) {
+        for (int i = 0; i < SIZE_TABLE.length; i++) {
             SIZE_TABLE[i] = sizeTable.get(i);
         }
     }
@@ -62,7 +53,7 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
     public static final AdaptiveRecvByteBufAllocator DEFAULT = new AdaptiveRecvByteBufAllocator();
 
     private static int getSizeTableIndex(final int size) {
-        for (int low = 0, high = SIZE_TABLE.length - 1;;) {
+        for (int low = 0, high = SIZE_TABLE.length - 1; ; ) {
             if (high < low) {
                 return low;
             }
@@ -73,6 +64,8 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             int mid = low + high >>> 1;
             int a = SIZE_TABLE[mid];
             int b = SIZE_TABLE[mid + 1];
+
+            //二分查找法！！！
             if (size > b) {
                 low = mid + 1;
             } else if (size < a) {
@@ -86,11 +79,16 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
     }
 
     private final class HandleImpl extends MaxMessageHandle {
+
         private final int minIndex;
+
         private final int maxIndex;
+
         private int index;
-        private int nextReceiveBufferSize;
-        private boolean decreaseNow;
+
+        private int nextReceiveBufferSize;//下一次预分配的Buffer大小
+
+        private boolean decreaseNow;//释放立即执行容量收缩操作？
 
         public HandleImpl(int minIndex, int maxIndex, int initial) {
             this.minIndex = minIndex;
@@ -105,6 +103,11 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             return nextReceiveBufferSize;
         }
 
+        /**
+         * 就是根据本次读取的实际字节数对下次接收缓冲区的容量进行动态调整！！
+         *
+         * @param actualReadBytes
+         */
         private void record(int actualReadBytes) {
             if (actualReadBytes <= SIZE_TABLE[Math.max(0, index - INDEX_DECREMENT - 1)]) {
                 if (decreaseNow) {
@@ -128,7 +131,9 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
     }
 
     private final int minIndex;
+
     private final int maxIndex;
+
     private final int initial;
 
     /**
@@ -143,9 +148,9 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
     /**
      * Creates a new predictor with the specified parameters.
      *
-     * @param minimum  the inclusive lower bound of the expected buffer size
-     * @param initial  the initial buffer size when no feed back was received
-     * @param maximum  the inclusive upper bound of the expected buffer size
+     * @param minimum the inclusive lower bound of the expected buffer size
+     * @param initial the initial buffer size when no feed back was received
+     * @param maximum the inclusive upper bound of the expected buffer size
      */
     public AdaptiveRecvByteBufAllocator(int minimum, int initial, int maximum) {
         if (minimum <= 0) {

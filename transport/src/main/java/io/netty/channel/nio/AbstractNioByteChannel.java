@@ -102,9 +102,14 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
         @Override
         public final void read() {
+            //配置：设置客户端连接的 TCP 参数
             final ChannelConfig config = config();
+            //管道
             final ChannelPipeline pipeline = pipeline();
+            //分配器
             final ByteBufAllocator allocator = config.getAllocator();
+
+            //复用器
             final RecvByteBufAllocator.Handle allocHandle = recvBufAllocHandle();
             allocHandle.reset(config);
 
