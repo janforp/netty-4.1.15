@@ -35,6 +35,7 @@ import java.util.List;
  */
 public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerAdapter {
 
+    // 类型匹配器，判断某个对象释放能够被当前编码器处理
     private final TypeParameterMatcher matcher;
 
     /**
@@ -82,10 +83,11 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
                     out.recycle();
                     out = null;
 
-                    throw new EncoderException(
-                            StringUtil.simpleClassName(this) + " must produce at least one message.");
+                    throw new EncoderException(StringUtil.simpleClassName(this) + " must produce at least one message.");
                 }
             } else {
+
+                //当前类型不匹配，继续向下传递
                 ctx.write(msg, promise);
             }
         } catch (EncoderException e) {

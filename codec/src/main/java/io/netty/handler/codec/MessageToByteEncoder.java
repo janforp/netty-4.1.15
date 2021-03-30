@@ -39,6 +39,8 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
      * 如果应尝试将直接{@link ByteBuf}用作编码消息的目标，则{@code true}。如果使用{@code false}，它将分配一个堆{@link ByteBuf}，该堆由字节数组支持。
      *
      * @see MessageToByteEncoder#allocateBuffer(io.netty.channel.ChannelHandlerContext, java.lang.Object, boolean) 看这个方法就能理解了
+     *
+     * 是字节堆内存还是使用堆外内存
      */
     private final boolean preferDirect;
 
@@ -97,15 +99,20 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        //负责将 POJO 转换成 ByteBuf
+
         ByteBuf buf = null;
         try {
             if (acceptOutboundMessage(msg)) {
+                //如果当前类型满足当前对象需要的类型，则进入当前分支
                 @SuppressWarnings("unchecked")
                 I cast = (I) msg;
                 buf = allocateBuffer(ctx, cast, preferDirect);
                 try {
                     /**
                      * 由子类实现，模版方法设计模式
+                     *
+                     * 把对象 cast 编码成字节，并且放到 buf 中
                      */
                     encode(ctx, cast, buf);
                 } finally {
@@ -113,9 +120,13 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
                 }
 
                 if (buf.isReadable()) {
+                    // 如果缓冲区包含可以发送的字节，则发送
+
                     //触发 pipeline 中的下一个处理器
                     ctx.write(buf, promise);
                 } else {
+                    // 如果缓冲区不包含可以发送的字节，则释放，并且写入一个空 ByteBuf 到 ctx
+
                     buf.release();
                     ctx.write(Unpooled.EMPTY_BUFFER, promise);
                 }
@@ -132,6 +143,8 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
             throw new EncoderException(e);
         } finally {
             if (buf != null) {
+                //方法退出之前释放
+
                 buf.release();
             }
         }
