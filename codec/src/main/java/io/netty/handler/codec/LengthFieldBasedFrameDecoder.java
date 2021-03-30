@@ -166,6 +166,8 @@ import java.util.List;
  * </pre>
  *
  * @see LengthFieldPrepender
+ *
+ * 基于消息长度的半包解码器！！！！
  */
 public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
 
@@ -274,9 +276,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param byteOrder the {@link ByteOrder} of the length field
-     * @param maxFrameLength the maximum length of the frame.  If the length of the frame is
-     * greater than this value, {@link TooLongFrameException} will be
-     * thrown.
+     * @param maxFrameLength the maximum length of the frame.  If the length of the frame is greater than this value, {@link TooLongFrameException} will be thrown.
      * @param lengthFieldOffset the offset of the length field
      * @param lengthFieldLength the length of the length field
      * @param lengthAdjustment the compensation value to add to the value of the length field
@@ -289,36 +289,32 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * has been read.
      */
     public LengthFieldBasedFrameDecoder(
-            ByteOrder byteOrder, int maxFrameLength, int lengthFieldOffset, int lengthFieldLength,
-            int lengthAdjustment, int initialBytesToStrip, boolean failFast) {
+            ByteOrder byteOrder,        // 长度字段的{@link ByteOrder}
+            int maxFrameLength,         // 帧的最大长度。如果帧的长度大于此值，将抛出{@link TooLongFrameException}。
+            int lengthFieldOffset,      // 长度字段的偏移量
+            int lengthFieldLength,      // 长度字段的长度
+            int lengthAdjustment,       // 要添加到长度字段值的补偿值
+            int initialBytesToStrip,    // 要从解码帧中删除的第一个字节数
+            boolean failFast
+    ) {
         if (byteOrder == null) {
             throw new NullPointerException("byteOrder");
         }
 
         if (maxFrameLength <= 0) {
-            throw new IllegalArgumentException(
-                    "maxFrameLength must be a positive integer: " +
-                            maxFrameLength);
+            throw new IllegalArgumentException("maxFrameLength must be a positive integer: " + maxFrameLength);
         }
 
         if (lengthFieldOffset < 0) {
-            throw new IllegalArgumentException(
-                    "lengthFieldOffset must be a non-negative integer: " +
-                            lengthFieldOffset);
+            throw new IllegalArgumentException("lengthFieldOffset must be a non-negative integer: " + lengthFieldOffset);
         }
 
         if (initialBytesToStrip < 0) {
-            throw new IllegalArgumentException(
-                    "initialBytesToStrip must be a non-negative integer: " +
-                            initialBytesToStrip);
+            throw new IllegalArgumentException("initialBytesToStrip must be a non-negative integer: " + initialBytesToStrip);
         }
 
         if (lengthFieldOffset > maxFrameLength - lengthFieldLength) {
-            throw new IllegalArgumentException(
-                    "maxFrameLength (" + maxFrameLength + ") " +
-                            "must be equal to or greater than " +
-                            "lengthFieldOffset (" + lengthFieldOffset + ") + " +
-                            "lengthFieldLength (" + lengthFieldLength + ").");
+            throw new IllegalArgumentException("maxFrameLength (" + maxFrameLength + ") " + "must be equal to or greater than " + "lengthFieldOffset (" + lengthFieldOffset + ") + " + "lengthFieldLength (" + lengthFieldLength + ").");
         }
 
         this.byteOrder = byteOrder;
@@ -348,9 +344,12 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * be created.
      */
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
-        if (discardingTooLongFrame) {
+        if (discardingTooLongFrame) { // 判断是否需要丢弃当前可读的字节长度，如果为真，则执行丢弃操作
             long bytesToDiscard = this.bytesToDiscard;
+            //由于丢弃的字节数不能大于当前缓冲区可读字节数，所以需要通过 min 函数进行选择
             int localBytesToDiscard = (int) Math.min(bytesToDiscard, in.readableBytes());
+
+            //丢弃上面计算得到的字节数
             in.skipBytes(localBytesToDiscard);
             bytesToDiscard -= localBytesToDiscard;
             this.bytesToDiscard = bytesToDiscard;
@@ -359,18 +358,25 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
         }
 
         if (in.readableBytes() < lengthFieldEndOffset) {
+            // 对当前缓冲区的可读字节数和长度偏移量进行对比，如果小于长度偏移量，则说明当前缓冲区
+            // 的数据报不够，需要返回空，有IO线程继续读取后续的数据报
+
             return null;
         }
 
         int actualLengthFieldOffset = in.readerIndex() + lengthFieldOffset;
+
+        // 获取当前报文的长度
         long frameLength = getUnadjustedFrameLength(in, actualLengthFieldOffset, lengthFieldLength, byteOrder);
 
         if (frameLength < 0) {
+            //长度 <0 报文非法，跳过几个字节之后抛出异常
             in.skipBytes(lengthFieldEndOffset);
-            throw new CorruptedFrameException(
-                    "negative pre-adjustment length field: " + frameLength);
+            throw new CorruptedFrameException("negative pre-adjustment length field: " + frameLength);
         }
 
+        //frameLength = frameLength + lengthAdjustment + lengthFieldEndOffset;;
+        //长度修正
         frameLength += lengthAdjustment + lengthFieldEndOffset;
 
         if (frameLength < lengthFieldEndOffset) {
@@ -380,19 +386,30 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
                             "than lengthFieldEndOffset: " + lengthFieldEndOffset);
         }
 
-        if (frameLength > maxFrameLength) {
+        if (frameLength > maxFrameLength) {//如果修正后的长度大于最大容量
+
+            //则计算丢弃的字节数
             long discard = frameLength - in.readableBytes();
             tooLongFrameLength = frameLength;
 
             if (discard < 0) {
+                // 说明： frameLength < in.readableBytes()
+                // 如果需要丢弃的字节数 小于 缓冲区可读的字节数，则字节丢弃整包消息
+
                 // buffer contains more bytes then the frameLength so we can discard all now
                 in.skipBytes((int) frameLength);
             } else {
+                // 说明： frameLength >= in.readableBytes()
+
+                // 如果需要丢弃的字节数大于当前可读的字节数，说明即便将当前所有可读的字节数全部丢弃，也无法完成任务，则设置 discardingTooLongFrame 为 true，表示下次解码的时候继续丢弃
+
                 // Enter the discard mode and discard everything received so far.
                 discardingTooLongFrame = true;
                 bytesToDiscard = discard;
                 in.skipBytes(in.readableBytes());
             }
+
+            //丢弃操作完成之后，根据实际情况抛出异常
             failIfNecessary(true);
             return null;
         }
@@ -400,15 +417,19 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
         // never overflows because it's less than maxFrameLength
         int frameLengthInt = (int) frameLength;
         if (in.readableBytes() < frameLengthInt) {
+
+            //如果当前可读的字节小于 frameLength 说明是个半包消息，需要返回空，由IO下次继续读取后续的数据报，等待下次解码
             return null;
         }
 
         if (initialBytesToStrip > frameLengthInt) {
+            //对需要忽略的消息头字段进行判断，如果大于消息长度 frameLength，则说明码流非法，需要忽略当前的数据报，并且抛出异常
+
             in.skipBytes(frameLengthInt);
-            throw new CorruptedFrameException(
-                    "Adjusted frame length (" + frameLength + ") is less " +
-                            "than initialBytesToStrip: " + initialBytesToStrip);
+            throw new CorruptedFrameException("Adjusted frame length (" + frameLength + ") is less " + "than initialBytesToStrip: " + initialBytesToStrip);
         }
+
+        //调整正常个数的忽略字节，得到整包 ByteBuf
         in.skipBytes(initialBytesToStrip);
 
         // extract frame
@@ -447,8 +468,9 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
                 frameLength = buf.getLong(offset);
                 break;
             default:
-                throw new DecoderException(
-                        "unsupported lengthFieldLength: " + lengthFieldLength + " (expected: 1, 2, 3, 4, or 8)");
+
+                //其他长度不支持！！！
+                throw new DecoderException("unsupported lengthFieldLength: " + lengthFieldLength + " (expected: 1, 2, 3, 4, or 8)");
         }
         return frameLength;
     }
