@@ -279,6 +279,10 @@ public abstract class ByteToMessageDecoder
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        /**
+         * 因为当前处理器是 byte 转 message
+         * 所以只处理 byteBuf
+         */
         if (msg instanceof ByteBuf) {
             CodecOutputList out = CodecOutputList.newInstance();
             try {
@@ -435,11 +439,9 @@ public abstract class ByteToMessageDecoder
         try {
             while (in.isReadable()) {
                 int outSize = out.size();
-
                 if (outSize > 0) {
                     fireChannelRead(ctx, out, outSize);
                     out.clear();
-
                     // Check if this handler was removed before continuing with decoding.
                     // If it was removed, it is not safe to continue to operate on the buffer.
                     //
@@ -471,9 +473,7 @@ public abstract class ByteToMessageDecoder
                 }
 
                 if (oldInputLength == in.readableBytes()) {
-                    throw new DecoderException(
-                            StringUtil.simpleClassName(getClass()) +
-                                    ".decode() did not read anything but decoded a message.");
+                    throw new DecoderException(StringUtil.simpleClassName(getClass()) + ".decode() did not read anything but decoded a message.");
                 }
 
                 if (isSingleDecode()) {
@@ -516,10 +516,12 @@ public abstract class ByteToMessageDecoder
      * @param out the {@link List} to which decoded messages should be added
      * @throws Exception is thrown if an error occurs
      */
-    final void decodeRemovalReentryProtection(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
-            throws Exception {
+    final void decodeRemovalReentryProtection(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         decodeState = STATE_CALLING_CHILD_DECODE;
         try {
+            /**
+             * 模版方法，用户需要实现该方法
+             */
             decode(ctx, in, out);
         } finally {
             boolean removePending = decodeState == STATE_HANDLER_REMOVED_PENDING;
