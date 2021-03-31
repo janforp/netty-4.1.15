@@ -21,11 +21,12 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
     /**
      * 最大待处理任务（在拒绝新任务之前，最大待处理任务数。）
      */
-    protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
-            SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
+    protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16, SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
 
     /**
      * 待处理任务列表
+     *
+     * 防止竞争，实现局部无锁化
      *
      * 在构造器：tailTasks = newTaskQueue(maxPendingTasks);
      */
@@ -39,8 +40,11 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
         this(parent, executor, addTaskWakesUp, DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject());
     }
 
-    protected SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory,
-            boolean addTaskWakesUp, int maxPendingTasks,
+    protected SingleThreadEventLoop(
+            EventLoopGroup parent,
+            ThreadFactory threadFactory,
+            boolean addTaskWakesUp,
+            int maxPendingTasks,
             RejectedExecutionHandler rejectedExecutionHandler) {
         super(parent, threadFactory, addTaskWakesUp, maxPendingTasks, rejectedExecutionHandler);
         tailTasks = newTaskQueue(maxPendingTasks);

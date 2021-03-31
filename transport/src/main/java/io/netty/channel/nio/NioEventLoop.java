@@ -47,8 +47,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     private static final int CLEANUP_INTERVAL = 256; // XXX Hard-coded value, but won't need customization.
 
-    private static final boolean DISABLE_KEYSET_OPTIMIZATION =
-            SystemPropertyUtil.getBoolean("io.netty.noKeySetOptimization", false);
+    private static final boolean DISABLE_KEYSET_OPTIMIZATION = SystemPropertyUtil.getBoolean("io.netty.noKeySetOptimization", false);
 
     private static final int MIN_PREMATURE_SELECTOR_RETURNS = 3;
 
@@ -204,6 +203,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
         final Selector unwrappedSelector;
 
+        /**
+         * @see SelectedSelectionKeySetSelector#SelectedSelectionKeySetSelector(java.nio.channels.Selector, io.netty.channel.nio.SelectedSelectionKeySet)
+         */
         final Selector selector;
 
         SelectorTuple(Selector unwrappedSelector) {
@@ -218,6 +220,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     }
 
     private SelectorTuple openSelector() {
+        //原生的 Selector
         final Selector unwrappedSelector;
         try {
             unwrappedSelector = provider.openSelector();
@@ -229,8 +232,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             //如果不开启优化
             return new SelectorTuple(unwrappedSelector);
         }
+        /**
+         * 如果开启了优化
+         */
 
-        //如果开启优化
+        // 如果开启优化
         final SelectedSelectionKeySet selectedKeySet = new SelectedSelectionKeySet();
 
         Object maybeSelectorImplClass = AccessController.doPrivileged(new PrivilegedAction<Object>() {
@@ -242,27 +248,57 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                             false,
                             PlatformDependent.getSystemClassLoader());
                 } catch (Throwable cause) {
+
+                    // 如果报错了，则返回异常
                     return cause;
                 }
             }
         });
 
-        if (!(maybeSelectorImplClass instanceof Class) ||
-                // ensure the current selector implementation is what we can instrument.
-                !((Class<?>) maybeSelectorImplClass).isAssignableFrom(unwrappedSelector.getClass())) {
+        if (
+        /**
+         * 上面反射调用失败了
+         */
+                !(maybeSelectorImplClass instanceof Class) ||
+
+                        /**
+                         * 上面反射调用失败了
+                         */
+                        // ensure the current selector implementation is what we can instrument.
+                        !((Class<?>) maybeSelectorImplClass).isAssignableFrom(unwrappedSelector.getClass())
+        ) {
+
             if (maybeSelectorImplClass instanceof Throwable) {
                 Throwable t = (Throwable) maybeSelectorImplClass;
                 logger.trace("failed to instrument a special java.util.Set into: {}", unwrappedSelector, t);
             }
+
+            /**
+             * 反射失败，打印日志之后还是返回
+             */
             return new SelectorTuple(unwrappedSelector);
         }
 
+        // 如果执行到这里，说明上面反射调用成功，得到了一个 sun.nio.ch.SelectorImpl 的 Class
         final Class<?> selectorImplClass = (Class<?>) maybeSelectorImplClass;
 
+        // 该对象可能是一个异常
         Object maybeException = AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
                 try {
+                    /**
+                     * public abstract class SelectorImpl extends AbstractSelector {
+                     *
+                     *     protected Set<SelectionKey> selectedKeys = new HashSet();
+                     *
+                     *     protected HashSet<SelectionKey> keys = new HashSet();
+                     *     private Set<SelectionKey> publicKeys;
+                     *
+                     *     private Set<SelectionKey> publicSelectedKeys;
+                     *     .........
+                     * }
+                     */
                     Field selectedKeysField = selectorImplClass.getDeclaredField("selectedKeys");
                     Field publicSelectedKeysField = selectorImplClass.getDeclaredField("publicSelectedKeys");
 
@@ -275,12 +311,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         return cause;
                     }
 
+                    //设置成自己的 set
                     selectedKeysField.set(unwrappedSelector, selectedKeySet);
                     publicSelectedKeysField.set(unwrappedSelector, selectedKeySet);
                     return null;
-                } catch (NoSuchFieldException e) {
-                    return e;
-                } catch (IllegalAccessException e) {
+                } catch (NoSuchFieldException | IllegalAccessException e) {
                     return e;
                 }
             }
@@ -292,6 +327,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             logger.trace("failed to instrument a special java.util.Set into: {}", unwrappedSelector, e);
             return new SelectorTuple(unwrappedSelector);
         }
+
+        //maybeException 赋值 成功了
         selectedKeys = selectedKeySet;
         logger.trace("instrumented a special java.util.Set into: {}", unwrappedSelector);
         return new SelectorTuple(unwrappedSelector,
@@ -388,6 +425,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             execute(new Runnable() {
                 @Override
                 public void run() {
+                    //封装成 task
                     rebuildSelector0();
                 }
             });
@@ -466,11 +504,17 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     @Override
     protected void run() {
+        /**
+         * 所有的逻辑操作都在该循环中执行，只有当NioEventLoop收到退出命令的时候才退出循环
+         */
         for (; ; ) {
             try {
                 switch (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {
                     //继续循环
                     case SelectStrategy.CONTINUE:
+                        /**
+                         * 继续
+                         */
                         continue;
                     case SelectStrategy.SELECT:
                         select(wakenUp.getAndSet(false));
@@ -786,6 +830,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             //此方法执行非阻塞选择操作
             //如果自上一次选择操作以来没有通道变为可选择通道，则此方法立即返回零。
             //调用此方法将清除以前任何唤醒方法的影响。
+
+            // 立即触发选择，如果有准备就绪的Channel，则返回就绪Channel的集合，否则返回0
             return selector.selectNow();
         } finally {
             // restore wakeup state if needed
