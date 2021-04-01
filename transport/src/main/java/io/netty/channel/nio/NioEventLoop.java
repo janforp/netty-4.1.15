@@ -607,6 +607,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         if (selectedKeys != null) {
             processSelectedKeysOptimized();
         } else {
+            // 默认进入该分支
             processSelectedKeysPlain(selector.selectedKeys());
         }
     }
@@ -643,6 +644,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         // creating a new Iterator every time even if there is nothing to process.
         // See https://github.com/netty/netty/issues/597
         if (selectedKeys.isEmpty()) {
+
+            // 保护性判断
             return;
         }
 
@@ -665,7 +668,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             }
 
             if (needsToSelectAgain) {
+                //选择之后
                 selectAgain();
+                //selectKeys 就可能会有新值
                 selectedKeys = selector.selectedKeys();
 
                 // Create the iterator again to avoid ConcurrentModificationException
@@ -709,6 +714,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private void processSelectedKey(SelectionKey k, AbstractNioChannel ch) {
         final AbstractNioChannel.NioUnsafe unsafe = ch.unsafe();
         if (!k.isValid()) {
+            // 无效了
+
             final EventLoop eventLoop;
             try {
                 eventLoop = ch.eventLoop();
@@ -729,6 +736,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             unsafe.close(unsafe.voidPromise());
             return;
         }
+
+        // 当前 key 有效
 
         try {
             int readyOps = k.readyOps();
