@@ -161,6 +161,28 @@ public interface ChannelFuture extends Future<Void> {
      *      *             }
      *      * });
      *      *}
+     *
+     *
+     *  状态变化
+     *
+     *  * <pre>
+     *  *                                      +---------------------------+
+     *  *                                      | Completed successfully    |
+     *  *                                      +---------------------------+
+     *  *                                 +---->      isDone() = true      |
+     *  * +--------------------------+    |    |   isSuccess() = true      |
+     *  * |        Uncompleted       |    |    +===========================+
+     *  * +--------------------------+    |    | Completed with failure    |
+     *  * |      isDone() = false    |    |    +---------------------------+
+     *  * |   isSuccess() = false    |----+---->      isDone() = true      |
+     *  * | isCancelled() = false    |    |    |       cause() = non-null  |
+     *  * |       cause() = null     |    |    +===========================+
+     *  * +--------------------------+    |    | Completed by cancellation |
+     *  *                                 |    +---------------------------+
+     *  *                                 +---->      isDone() = true      |
+     *  *                                      | isCancelled() = true      |
+     *  *                                      +---------------------------+
+     *  * </pre>
      */
 
     /**
@@ -173,6 +195,9 @@ public interface ChannelFuture extends Future<Void> {
     Channel channel();
 
     //下面的方法是直接继承自 io.netty.util.concurrent.Future，这样做的目的是为了使用 ChannelFuture 就可以使用 Future 的方法而不需要向上转型
+
+    // netty 强烈建议通过添加监听器的反射获取I/O操作的结果
+    // 推荐通过 GenericFutureListener 代替 ChannelFuture 的 get 方法的原因是：当我们进行异步IO操作的时候，完成的时间是无法预测的，
 
     @Override
     ChannelFuture addListener(GenericFutureListener<? extends Future<? super Void>> listener);
