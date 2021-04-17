@@ -193,11 +193,11 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
                  * @see io.netty.util.concurrent.ThreadPerTaskExecutor
                  */
                 executor,
-                //java
+                //args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
                 (SelectorProvider) args[0],
-                //
+                //args[1]=selectStrategy（选择器工作策略）
                 ((SelectStrategyFactory) args[1]).newSelectStrategy(),
-                //拒绝策略
+                //拒绝策略 args[2]=线程池拒绝策略
                 (RejectedExecutionHandler) args[2]
         );
     }

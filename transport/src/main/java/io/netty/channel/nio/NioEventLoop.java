@@ -162,15 +162,16 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * @see NioEventLoopGroup#newChild(java.util.concurrent.Executor, java.lang.Object...)
      */
     NioEventLoop(
-            NioEventLoopGroup parent,
+            NioEventLoopGroup parent,//父线程
             /**
              * ThreadPerTaskExecutor 实例，这个实例里面包含一个 ThreadFactory 实例，
              * 创建出来的实例的类型为{@link io.netty.util.concurrent.FastThreadLocalThread}
              * @see io.netty.util.concurrent.ThreadPerTaskExecutor
              */
             Executor executor,
-            SelectorProvider selectorProvider,
-            SelectStrategy strategy,
+            SelectorProvider selectorProvider,//获取jdk层面的selector对象
+            SelectStrategy strategy,//选择策略
+            // 拒绝策略
             RejectedExecutionHandler rejectedExecutionHandler) {
 
         /**
@@ -180,7 +181,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         super(
                 parent,//NioEventLoop
                 executor,//ThreadPerTaskExecutor
-                false,
+                false, // TODO ?
                 DEFAULT_MAX_PENDING_TASKS,//最少16
                 rejectedExecutionHandler);
 
@@ -194,6 +195,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         /**
          * 封装类一个原始的selector跟一个包装后的selector
          * 也就是说，每个 NioEventLoop 都持有一个 selector 实例
+         *
+         * 下面4行代码，创建出来了 selector 实例，也就是说 每个 NioEventLoop 都持有一个 selector 实例
          */
         final SelectorTuple selectorTuple = openSelector();
         selector = selectorTuple.selector;

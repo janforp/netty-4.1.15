@@ -106,7 +106,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     private final Set<Runnable> shutdownHooks = new LinkedHashSet<Runnable>();
 
     /**
-     * @code true} if and only if invocation of {@link #addTask(Runnable)} will wake up the executor thread
+     * {@code true} if and only if invocation of {@link #addTask(Runnable)} will wake up the executor thread
      */
     private final boolean addTaskWakesUp;
 
@@ -188,8 +188,13 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * @param maxPendingTasks the maximum number of pending tasks before new tasks will be rejected. （在拒绝新任务之前，最大待处理任务数。）
      * @param rejectedHandler the {@link RejectedExecutionHandler} to use.
      */
-    protected SingleThreadEventExecutor(EventExecutorGroup parent, Executor executor, boolean addTaskWakesUp, int maxPendingTasks,
-            RejectedExecutionHandler rejectedHandler) {
+    protected SingleThreadEventExecutor(
+            EventExecutorGroup parent,
+            Executor executor,
+            boolean addTaskWakesUp,
+            int maxPendingTasks,
+            RejectedExecutionHandler rejectedHandler
+    ) {
 
         super(parent);
         this.addTaskWakesUp = addTaskWakesUp;
