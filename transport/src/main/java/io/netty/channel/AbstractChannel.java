@@ -610,9 +610,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
 
         /**
+         * 该方法由 当前 Channel 关联的 NioEventLoop 执行，跟主线程没关系
          * 经过之前的一些操作，使用该方法注册 Channel
          *
-         * @param promise 其中包含了 Channel
+         * @param promise 其中包含了 Channel，表示注册结果的，外部可以向它注册监听器来完成注册后的逻辑
          */
         private void register0(ChannelPromise promise) {
             try {
@@ -621,15 +622,20 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 if (!promise.setUncancellable() || !ensureOpen(promise)) {
                     return;
                 }
+                // 是否还没有注册过
                 boolean firstRegistration = neverRegistered;
 
                 /**
                  * 具体逻辑：selectionKey = nioSelectableChannel.register(nioSelector, 0, this);
                  *
                  * @see AbstractNioChannel#doRegister() 调用java.nio 注册
+                 *
+                 * jdk nio 原生的注册
                  */
                 doRegister();
+                // 表示已经注册过了
                 neverRegistered = false;
+                // 表示已经注册过了
                 registered = true;
 
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the

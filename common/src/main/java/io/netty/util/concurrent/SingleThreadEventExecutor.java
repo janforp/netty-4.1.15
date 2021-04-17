@@ -93,6 +93,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * 执行器，传入一个 Runnable 就可以执行啦
+     *
+     * @see ThreadPerTaskExecutor
      */
     private final Executor executor;
 
@@ -789,10 +791,16 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
             throw new NullPointerException("task");
         }
 
+        // 是否同线程
         boolean inEventLoop = inEventLoop();
         if (inEventLoop) {
+
+            // 添加到任务队列
             addTask(task);
         } else {
+
+            // 大概率不是当前线程，会进入该分支
+
             startThread();
             addTask(task);
             if (isShutdown() && removeTask(task)) {
@@ -887,7 +895,11 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     private void startThread() {
         if (state == ST_NOT_STARTED) {
+            // 状态是没有启动
+
             if (STATE_UPDATER.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {
+                // 通过cas设置为启动状态
+
                 doStartThread();
             }
         }
@@ -895,6 +907,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     private void doStartThread() {
         assert thread == null;
+
+        // 该 executor 就是 channel 绑定的 executor
         executor.execute(new Runnable() {
             @Override
             public void run() {

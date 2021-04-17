@@ -430,9 +430,11 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                 //真正的使用 java.nio 注册的过程
                 //java.nio.channels.SelectableChannel.register(java.nio.channels.Selector, int, java.lang.Object)
                 //serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+                // 返回jdk层面的 channel，可能是 ServerSocketChannel 或者 SocketChannel
                 SelectableChannel nioSelectableChannel = javaChannel();
 
-                //多路复用器
+                //jdk层面的多路复用器
                 Selector nioSelector = eventLoop().unwrappedSelector();
 
                 //netty 底层其实就是 java.nio
