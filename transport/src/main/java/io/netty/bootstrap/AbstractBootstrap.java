@@ -387,11 +387,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
              * 这个 channelFactory 就是创建 bootstrap 的时候穿进去的{bootstrap.channel(NioServerSocketChannel.class)}
              *
              * 调用的是 Channel 的无参数构造器,如果是服务端，这是{@link NioServerSocketChannel#NioServerSocketChannel()}
+             *
              */
             channel = channelFactory.newChannel();
             //模版方法模式，该逻辑由具体的子类实现
             //向该 Channel 的 pipeline 添加了 用户指定的处理器，并且把parent线程的处理器添加到parent
             //把工作线程的处理器添加到工作线程
+
+            //记住，最主要的：这一步会给当前服务端 Channel 的 Pipeline 添加一个 CI!!!!!!
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -404,11 +407,24 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
 
         //如果初始化成功，则执行后面的注册逻辑
+        /**** 开始注册 ********/
+
+        // new ServerBootstrapConfig(this);
         AbstractBootstrapConfig<B, C> config = config();
+
+        /**
+         * 返回 boss 线程组
+         * config()返回的是什么呢？返回 boss 线程组
+         * 其实就是 NioEventLoopGroup
+         */
         EventLoopGroup eventLoopGroup = config.group();
 
         //真正的使用java.nio 进行注册
+        /**
+         * @see io.netty.channel.nio.NioEventLoopGroup#register(Channel)
+         */
         ChannelFuture regFuture = eventLoopGroup.register(channel);
+
         //返回一个注册完成后的回调
 
         //如果注册的时候发生了异常

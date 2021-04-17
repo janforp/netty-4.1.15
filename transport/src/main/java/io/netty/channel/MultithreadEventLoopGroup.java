@@ -96,6 +96,9 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
 
     @Override
     public EventLoop next() {
+        /**
+         * @see EventExecutorChooserFactory.EventExecutorChooser#next()
+         */
         return (EventLoop) super.next();
     }
 
@@ -104,8 +107,22 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
 
     @Override
     public ChannelFuture register(Channel channel) {
-        EventLoop next = next();
-        return next.register(channel);
+        /**
+         * @see EventExecutorChooserFactory.EventExecutorChooser#next()
+         *
+         * 从当前 group 中选择一个 EventLoop 对象返回,她是一个单线程的线程池
+         * 并且它内部有 selector 实例
+         * 它的工作
+         * 1.处理 EventLoop 工作队列内部的任务
+         * 2.处理 EventLoop 内部 selector 上注册的 channel 事件
+         */
+        EventLoop eventLoop = next();
+
+        /**
+         * @see SingleThreadEventLoop#register(io.netty.channel.Channel)
+         * @param channel
+         */
+        return eventLoop.register(channel);
     }
 
     @Override

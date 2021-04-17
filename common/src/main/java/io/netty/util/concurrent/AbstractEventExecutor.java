@@ -70,8 +70,7 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
     @Override
     public boolean inEventLoop() {
         //内部这个方法由具体的实现子类实现
-        Thread currentThread = Thread.currentThread();
-        return inEventLoop(currentThread);
+        return inEventLoop(Thread.currentThread());
     }
 
     @Override

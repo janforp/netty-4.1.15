@@ -50,7 +50,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
      *
      * @see com.shengsiyuan.netty.secondexample.server.MyServerInitializer
      *
-     *  配置的是当前Server上连接进来的的客户端的Channel的handler，其实也是保存配置的过程
+     * 配置的是当前Server上连接进来的的客户端的Channel的handler，其实也是保存配置的过程
      */
     private volatile ChannelHandler childHandler;
 
@@ -176,12 +176,33 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
          */
         ChannelPipeline p = channel.pipeline();
 
+        /**
+         * b.group(bossGroup, workerGroup)
+         *    .channel(NioServerSocketChannel.class) // 设置服务端Channel类型，内部创建一个反射工厂，反射工厂提供了一个newInstance方法用于创建 Channel 实例
+         *    .option(ChannelOption.SO_BACKLOG, 100) //保存一些 Server 端自定义选项
+         *
+         *    // 配置用户自定义的 Server 端 pipeline 处理器,后续创建出来的 NioServerChannel 实例以后，会将用户自定义的handler加到该channel的pipeline中
+         *    .handler(new LoggingHandler(LogLevel.INFO))
+         *
+         *    // 配置的是当前Server上连接进来的的客户端的Channel的handler，其实也是保存配置的过程
+         *    .childHandler(new ChannelInitializer<SocketChannel>() {
+         *        @Override
+         *        public void initChannel(SocketChannel ch) throws Exception {
+         *            ChannelPipeline p = ch.pipeline();
+         *            if (sslCtx != null) {
+         *                p.addLast(sslCtx.newHandler(ch.alloc()));
+         *            }
+         *            //p.addLast(new LoggingHandler(LogLevel.INFO));
+         *            p.addLast(new EchoServerHandler());
+         *        }
+         *    });
+         */
         //serverBootstrap.group(parentGroup, childGroup) 的 childGroup
         final EventLoopGroup currentChildGroup = childGroup;
         //serverBootstrap.childHandler(new MyServerInitializer());
         final ChannelHandler currentChildHandler = childHandler;
 
-        //用户指定的一些配置
+        //用户指定的一些配置，客户端socket选项
         final Entry<ChannelOption<?>, Object>[] currentChildOptions;
 
         //用户传的一些值
@@ -190,10 +211,19 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             currentChildOptions = childOptions.entrySet().toArray(newOptionArray(childOptions.size()));
         }
         synchronized (childAttrs) {
+            // netty 的 channel 都实现了 AttributeMap 接口，可以在启动磊内配置一些自定义数据，创建出来的 Channel 实例就包含这些数据了
             currentChildAttrs = childAttrs.entrySet().toArray(newAttrArray(childAttrs.size()));
         }
 
         //添加处理器到 pipeline
+
+        /**
+         * ChannelInitializer 本身不是一个Handler，只是通过适配器实现了 handler接口
+         * 它存在的意义：就是为了延迟初始化 pipeLINE，什么时候初始化呢？当 pipeline 上的 channel激活以后，真正的添加 handler 逻辑才执行
+         *
+         * 目前知道咱们的 NioServerSocketChannel 内部的 pipeline 长这个样子： head <---> CI <---> tail
+         * 后面合适的时候，CI会做解压缩操作，将内部真正的 handler 添加到 pipeline中，并且将自己移出 pipeline
+         */
         p.addLast(new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) throws Exception {
@@ -203,12 +233,14 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                 if (handler != null) {
                     //往pipeline中添加parent的处理器
                     pipeline.addLast(handler);
+                    // 现在： headContext --> CI(zip类似handler压缩的) ---> tailContext
                 }
 
                 EventLoop eventLoop = ch.eventLoop();
                 eventLoop.execute(new Runnable() {
                     @Override
                     public void run() {
+                        // TODO ??
                         ServerBootstrapAcceptor bootstrapAcceptor = new ServerBootstrapAcceptor(ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs);
                         pipeline.addLast(bootstrapAcceptor);
                     }

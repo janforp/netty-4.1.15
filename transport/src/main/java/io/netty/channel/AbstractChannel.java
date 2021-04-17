@@ -522,27 +522,34 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         /**
          * 不可复写的方法
          *
-         * @param eventLoop 事件循环
-         * @param promise 回调对象
+         * @param eventLoop 事件循环，NioEventLoop 单线程线程池
+         * @param promise 回调对象，结果封装，外部可以注册监听，进行异步操作
          */
         @Override
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
             if (eventLoop == null) {
                 throw new NullPointerException("eventLoop");
             }
+
+            // 防止channel重复注册
             if (isRegistered()) {
                 //如果当前 Channel 已经注册过了，则无法重复注册
+                /**
+                 * 1.设置当前promise结果是失败
+                 * 2.回调监听者执行失败的逻辑
+                 */
                 promise.setFailure(new IllegalStateException("registered to an event loop already"));
                 return;
             }
             if (!isCompatible(eventLoop)) {
                 //如果给定的EventLoop与此实例兼容，则返回true。如果不兼容返回false，是否兼容由具体的 Channel 实例决定
-                promise.setFailure(
-                        new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
+                promise.setFailure(new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
                 return;
             }
 
-            //初始化该成员变量
+            //初始化该成员变量,
+            // 获取到 Channel 作用域，这个 channel 就是unsafe的外层对象，如果是服务端，则channel就是 NioServersocketChannel对象,并且保存 eventLoop 到该 channel
+            // 绑定关系，后续该 channel上的事件 或者 任务 都会依赖当前 eventLoop 线程去处理！！！！！
             AbstractChannel.this.eventLoop = eventLoop;
 
             /**
@@ -563,12 +570,18 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
              *  业务线程池通常有2种实现方式"
              *  1.在 ChannelHandler 的回调方法中使用自定义的业务线程池，这样就可以实现异步调用。
              *  2.借助于netty提供的向 ChannelPipeline 添加 ChannelHandler 时调用的如 addLast 方法来传递 EventExecutor。
+             *
+             * @see SingleThreadEventExecutor#inEventLoop(java.lang.Thread) 判断当前线程是不是 当前 eventLoop 自己这个线程！！！！
              */
             if (eventLoop.inEventLoop()) {
+                // 当前线程是不是 当前 eventLoop 自己这个线程！！！！
+                // 真正注册的逻辑
+                // 这样设计得到目的就是为了线程安全,因为咱们的 channel 支持 unregistor......？？？？TODO
                 register0(promise);
             } else {
                 try {
                     /**
+                     * 将注册的任务提交到了 eventLoop 工作队列中了，带着 promise 过去的,注册的结果都通过带入的 promise 处理！！！
                      * 提交一个任务
                      *
                      * 并且在该方法中真正的创建线程
@@ -581,6 +594,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                          */
                         @Override
                         public void run() {
+                            // 封装成一个任务！！！
                             register0(promise);
                         }
                     });
