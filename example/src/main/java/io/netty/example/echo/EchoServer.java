@@ -61,6 +61,9 @@ public final class EchoServer {
                     });
 
             // Start the server.
+            // 这个方法最终返回了一个与 绑定 操作相关的 promise 对象
+            // promise.sync8()方法会让主线程陷入 挂起 状态，直到绑定 操作完成后才会被唤醒
+            //  wait()
             ChannelFuture f = b.bind(PORT).sync();
 
             // Wait until the server socket is closed.

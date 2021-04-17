@@ -324,7 +324,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      */
     private ChannelFuture doBind(final SocketAddress localAddress) {
         //初始化并注册，返回一个注册回调Future
-        //其实这一步就是调用 java 原生的方法进行注册了
+        //其实这一步就是调用 java 原生的方法进行注册了，返回了promise对象，其实就是一个注册结果
         final ChannelFuture regFuture = initAndRegister();
         //拿到被注册的Channel
         final Channel channel = regFuture.channel();
@@ -336,7 +336,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         /**
          * 如果此任务完成，则返回true。完成可能是由于正常终止，异常或取消引起的，在所有这些情况下，此方法都将返回true。
          */
-        if (regFuture.isDone()) {//ChannelFuture 注册已经完成
+        if (regFuture.isDone()) {
+            //ChannelFuture 注册已经完成
+            // 当 register0 已经被执行完后， regFuture 就是 done 状态
+
             // At this point we know that the registration was complete and successful.
             ChannelPromise promise = channel.newPromise();
             doBind0(regFuture, channel, localAddress, promise);
@@ -344,9 +347,12 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         } else {//ChannelFuture 注册还没有完成
             // Registration future is almost always fulfilled already, but just in case it's not.
             final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
+
+            // 给 register0 任务的promise对象添加了一个监听器，register0任务成功或者失败的事情，监听器回调线程就是 eventLoop 线程，并不是当前主线程
             regFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
+                    // 当 register0 任务执行完成之后，就会回调 operationComplete 该方法
                     Throwable cause = future.cause();
                     if (cause != null) {
                         // Registration on the EventLoop failed so fail the ChannelPromise directly to not cause an
@@ -357,10 +363,12 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
                         // See https://github.com/netty/netty/issues/2586
                         promise.registered();
 
+                        // TODO？？？？
                         doBind0(regFuture, channel, localAddress, promise);
                     }
                 }
             });
+            // 主线程返回一个与 bind 操作相关的 promise 对象
             return promise;
         }
     }
@@ -422,6 +430,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         //真正的使用java.nio 进行注册
         /**
          * @see io.netty.channel.nio.NioEventLoopGroup#register(Channel)
+         *
+         * 返回一个注册的结果
          */
         ChannelFuture regFuture = eventLoopGroup.register(channel);
 

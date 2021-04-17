@@ -242,7 +242,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         synchronized (this) {
             //只有没有完成，就继续死循环
             while (!isDone()) {
-                //TODO 什么意思？
+                //TODO 什么意思？等待则数量计数！！！！
                 incWaiters();
                 try {
                     wait();
