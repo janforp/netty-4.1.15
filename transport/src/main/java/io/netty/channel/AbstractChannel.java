@@ -54,13 +54,19 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     private final Channel parent;
 
+    /**
+     * 每个channel实例都有一个id对象
+     */
     private final ChannelId id;
 
     /**
-     * AbstractUnsafe
+     * @see AbstractUnsafe
+     * 服务端的时候：NioServerSocketChannel，她的unsafe实例是谁？{@link io.netty.channel.nio.AbstractNioMessageChannel.NioMessageUnsafe}
+     * 客户端的时候：NioSocketChannel，她的unsafe实例是谁？
      */
     private final Unsafe unsafe;
 
+    // 创建出来当前channel内部的 pipeline 管道
     private final DefaultChannelPipeline pipeline;
 
     private final VoidChannelPromise unsafeVoidPromise = new VoidChannelPromise(this, false);
@@ -109,8 +115,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected AbstractChannel(Channel parent) {
         this.parent = parent;
+        // 每个channel实例都有一个id对象
         id = newId();
+
+        /**
+         * 服务端的时候：NioServerSocketChannel，她的unsafe实例是谁？{@link io.netty.channel.nio.AbstractNioMessageChannel.NioMessageUnsafe}
+         * 客户端的时候：NioSocketChannel，她的unsafe实例是谁？
+         */
         unsafe = newUnsafe();
+        // 创建出来当前channel内部的 pipeline 管道, 创建出来的 pipeline 内部有2个默认的处理器，分别是 HeadContext 和 TailContext，如： head <--> tail
         pipeline = newChannelPipeline();
     }
 
@@ -143,6 +156,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      * Returns a new {@link DefaultChannelPipeline} instance.
      */
     protected DefaultChannelPipeline newChannelPipeline() {
+
+        // 创建出来当前channel内部的 pipeline 管道, 创建出来的 pipeline 内部有2个默认的处理器，分别是 HeadContext 和 TailContext，如： head <--> tail
         return new DefaultChannelPipeline(this);
     }
 

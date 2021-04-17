@@ -23,6 +23,9 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
     boolean inputShutdown;
 
     /**
+     * @param parent 一般为null
+     * @param ch jdk原生的 Channel
+     * @param readInterestOp 注册感兴趣的事件：因为这个是服务端，使用感兴趣的时间是i accept 时间，当前服务端 Channel 最终会注册到 selector[多路复用器]，所以需要这个信息
      * @see NioServerSocketChannel#NioServerSocketChannel(java.nio.channels.ServerSocketChannel) 通过该方法调用
      * @see AbstractNioChannel#AbstractNioChannel(Channel, SelectableChannel, int)
      */

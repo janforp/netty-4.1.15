@@ -46,11 +46,15 @@ public abstract class AbstractNioChannel extends AbstractChannel {
      *
      * @see java.nio.channels.ServerSocketChannel 服务端
      * @see java.nio.channels.SocketChannel 客户端
+     *
+     * jdk原生的 Channel
      */
     private final SelectableChannel ch;
 
     /**
      * @see SelectionKey#OP_READ 0001
+     *
+     * 如果是服务端则，注册感兴趣的事件：因为这个是服务端，使用感兴趣的时间是 accept 时间，当前服务端 Channel 最终会注册到 selector[多路复用器]，所以需要这个信息
      */
     protected final int readInterestOp;
 
@@ -89,23 +93,29 @@ public abstract class AbstractNioChannel extends AbstractChannel {
      * @param parent the parent {@link Channel} by which this instance was created. May be {@code null}
      * @param ch the underlying {@link SelectableChannel} on which it operates
      * @param readInterestOp the ops to set to receive data from the {@link SelectableChannel}
+     *
+     * =============
+     * @param parent 如果是服务端channel一般为null
+     * @param ch jdk原生的 Channel
+     * @param readInterestOp 如果是服务端则，注册感兴趣的事件：因为这个是服务端，使用感兴趣的时间是 accept 时间，当前服务端 Channel 最终会注册到 selector[多路复用器]，所以需要这个信息
+     * 如果是客户：
      */
     protected AbstractNioChannel(Channel parent, SelectableChannel ch, int readInterestOp) {
         super(parent);
         this.ch = ch;
         this.readInterestOp = readInterestOp;
         try {
+
+            // java nio 编码的时候也要写这一行代码，这里只是在这里配置而已
             ch.configureBlocking(false);
         } catch (IOException e) {
             try {
                 ch.close();
             } catch (IOException e2) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(
-                            "Failed to close a partially initialized socket.", e2);
+                    logger.warn("Failed to close a partially initialized socket.", e2);
                 }
             }
-
             throw new ChannelException("Failed to enter non-blocking mode.", e);
         }
     }

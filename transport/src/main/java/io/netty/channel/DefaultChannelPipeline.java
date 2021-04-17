@@ -125,6 +125,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     /**
      * 实例化
      *
+     * 创建出来当前channel内部的 pipeline 管道, 创建出来的 pipeline 内部有2个默认的处理器，分别是 HeadContext 和 TailContext，如： head <--> tail
+     *
      * @param channel 该 pipeline 对应的 Channel
      */
     protected DefaultChannelPipeline(Channel channel) {

@@ -39,6 +39,8 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     /**
      * serverBootstrap.group(parentGroup, childGroup) 的 childGroup
+     *
+     * 是基于当前Server产生的客户端Channel使用
      */
     private volatile EventLoopGroup childGroup;
 
@@ -47,6 +49,8 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
      * 处理工作线程的处理器
      *
      * @see com.shengsiyuan.netty.secondexample.server.MyServerInitializer
+     *
+     *  配置的是当前Server上连接进来的的客户端的Channel的handler，其实也是保存配置的过程
      */
     private volatile ChannelHandler childHandler;
 
@@ -78,7 +82,10 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
      * {@link EventLoopGroup}'s are used to handle all the events and IO for {@link ServerChannel} and
      * {@link Channel}'s.
      */
-    public ServerBootstrap group(EventLoopGroup parentGroup, EventLoopGroup childGroup) {
+    public ServerBootstrap group(
+            EventLoopGroup parentGroup, // boss 是砸门的 ServerChannel 使用
+            EventLoopGroup childGroup   // 是基于当前Server产生的客户端Channel使用
+    ) {
         super.group(parentGroup);
         if (childGroup == null) {
             throw new NullPointerException("childGroup");
@@ -129,6 +136,8 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     /**
      * Set the {@link ChannelHandler} which is used to serve the request for the {@link Channel}'s.
+     *
+     * 配置的是当前Server上连接进来的的客户端的Channel的handler，其实也是保存配置的过程
      */
     public ServerBootstrap childHandler(ChannelHandler childHandler) {
         if (childHandler == null) {

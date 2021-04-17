@@ -58,8 +58,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
              */
             return provider.openServerSocketChannel();
         } catch (IOException e) {
-            throw new ChannelException(
-                    "Failed to open a server socket.", e);
+            throw new ChannelException("Failed to open a server socket.", e);
         }
     }
 
@@ -79,7 +78,14 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
     public NioServerSocketChannel() {
         //ServerSocketChannel serverSocketChannel = newSocket(DEFAULT_SELECTOR_PROVIDER);
         //传入java原生的服务端的：ServerSocketChannel
-        this(newSocket(DEFAULT_SELECTOR_PROVIDER));
+        this(
+                // 获取java原生的服务端的：ServerSocketChannel
+                newSocket(
+
+                        //这是一个 SelectorProvider.provider()
+                        DEFAULT_SELECTOR_PROVIDER
+                )
+        );
     }
 
     /**
@@ -91,9 +97,11 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     /**
      * Create a new instance using the given {@link ServerSocketChannel}.
+     *
+     * @param channel jdk原生的 Channel
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
-        //注册感兴趣的事件
+        //注册感兴趣的事件：因为这个是服务端，使用感兴趣的时间是i accept 时间，当前服务端 Channel 最终会注册到 selector[多路复用器]，所以需要这个信息
         super(null, channel, SelectionKey.OP_ACCEPT);
         //java nio
         ServerSocketChannel serverSocketChannel = javaChannel();

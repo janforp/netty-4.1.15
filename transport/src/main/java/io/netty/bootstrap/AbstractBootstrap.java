@@ -11,10 +11,10 @@ import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ReflectiveChannelFactory;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.internal.SocketUtils;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import io.netty.util.internal.SocketUtils;
 import io.netty.util.internal.StringUtil;
 import io.netty.util.internal.logging.InternalLogger;
 
@@ -77,6 +77,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * .handler(new LoggingHandler(LogLevel.WARN)) 用于处理 parentGroup 的处理器
+     *
+     * 配置用户自定义的 Server 端 pipeline 处理器,后续创建出来的 NioServerChannel 实例以后，会将用户自定义的handler加到该channel的pipeline中
      */
     private volatile ChannelHandler handler;
 
@@ -117,6 +119,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * The {@link Class} which is used to create {@link Channel} instances from.
      * You either use this or {@link #channelFactory(io.netty.channel.ChannelFactory)} if your
      * {@link Channel} implementation has no no-args constructor.
+     *
+     * 设置 Channel 类型
      */
     public B channel(Class<? extends C> channelClass) {
         if (channelClass == null) {
@@ -191,6 +195,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * 设置TCP参数
      * 无论是异步NIO还是同步NIO，创建套接字的时候通常都会设置连接参数
      * 例如接收和发送缓冲区大小，连接超时时间等
+     *
+     * 保存一些 Server 端自定义选项
      */
     @SuppressWarnings("unchecked")
     public <T> B option(ChannelOption<T> option, T value) {
@@ -276,8 +282,12 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * Create a new {@link Channel} and bind it.
+     *
+     * @param inetPort 服务端要绑定的端口号
      */
     public ChannelFuture bind(int inetPort) {
+
+        // 把端口封装了一下
         return bind(new InetSocketAddress(inetPort));
     }
 
@@ -306,6 +316,12 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return doBind(localAddress);
     }
 
+    /**
+     * 真正完成bind 工作的方法，非常关键
+     *
+     * @param localAddress 封装了端口
+     * @return
+     */
     private ChannelFuture doBind(final SocketAddress localAddress) {
         //初始化并注册，返回一个注册回调Future
         //其实这一步就是调用 java 原生的方法进行注册了
@@ -367,6 +383,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
              * 会分别注册感兴趣的事件到操作系统上
              *
              * 会做一些列初始化的赋值，默认的也有
+             *
+             * 这个 channelFactory 就是创建 bootstrap 的时候穿进去的{bootstrap.channel(NioServerSocketChannel.class)}
+             *
+             * 调用的是 Channel 的无参数构造器,如果是服务端，这是{@link NioServerSocketChannel#NioServerSocketChannel()}
              */
             channel = channelFactory.newChannel();
             //模版方法模式，该逻辑由具体的子类实现
@@ -452,6 +472,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * the {@link ChannelHandler} to use for serving the requests.
+     *
+     * 配置用户自定义的 Server 端 pipeline 处理器,后续创建出来的 NioServerChannel 实例以后，会将用户自定义的handler加到该channel的pipeline中
      */
     @SuppressWarnings("unchecked")
     public B handler(ChannelHandler handler) {
