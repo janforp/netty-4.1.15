@@ -80,6 +80,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
                 /**
                  * Chooser的工厂
+                 *
                  * @see EventExecutorChooserFactory.EventExecutorChooser
                  * @see DefaultEventExecutorChooserFactory.PowerOfTwoEventExecutorChooser 性能好点的
                  * @see DefaultEventExecutorChooserFactory.GenericEventExecutorChooser 性能差点的
@@ -87,8 +88,13 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                 DefaultEventExecutorChooserFactory.INSTANCE,
                 /**
                  * args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
+                 * @see java.nio.channels.spi.SelectorProvider
+                 *
                  * args[1]=selectStrategy（选择器工作策略）
+                 * @see DefaultSelectStrategyFactory
+                 *
                  * args[2]=线程池拒绝策略
+                 * @see io.netty.util.concurrent.RejectedExecutionHandler
                  */
                 args);
     }
@@ -118,10 +124,16 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
              * @see DefaultEventExecutorChooserFactory.GenericEventExecutorChooser 性能差点的
              */
             EventExecutorChooserFactory chooserFactory,
+
             /**
              * args[0]=selectProvider（选择器提供器，用于获取jdk层面的选择器selector实例）
+             * @see java.nio.channels.spi.SelectorProvider
+             *
              * args[1]=selectStrategy（选择器工作策略）
+             * @see DefaultSelectStrategyFactory
+             *
              * args[2]=线程池拒绝策略
+             * @see io.netty.util.concurrent.RejectedExecutionHandler
              */
             Object... args) {
 
@@ -180,8 +192,8 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                          * args[2]=线程池拒绝策略
                          */
                         args);
-
                 success = true;
+
             } catch (Exception e) {
                 // TODO: Think about if this is a good exception type
                 throw new IllegalStateException("failed to create a child event loop", e);
@@ -214,7 +226,9 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
         /**
          * 通过 ChooserFactory 根据当前 children 数组的长度，构建一个 合适的 chooser 实例
-         * 后面，外部只有想要 获取 或者 注册... 到 NioEventLoop， 都是通过该  chooser 来分配 NioEventLoop 的
+         * 后面，外部资源想要 获取 或者 注册... 到 NioEventLoop， 都是通过该  chooser 来分配 {@link EventExecutor} 的
+         *
+         * EventExecutorChooser newChooser(EventExecutor[] executors);
          *
          * @see DefaultEventExecutorChooserFactory#newChooser(io.netty.util.concurrent.EventExecutor[])
          * 实例化选择器
@@ -228,13 +242,20 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         /**
          * 实例化一个监听器
          * 用于监听每一个子 EventLoop 是不是已经终止
+         *
+         * 结束监听
          */
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {
             @Override
             public void operationComplete(Future<Object> future) {
                 //成员变量
                 if (terminatedChildren.incrementAndGet() == children.length) {
-                    //当所有的执行器都关闭的时候，就发出通知
+                    /**
+                     * 当所有的执行器都关闭的时候，就发出通知
+                     *
+                     * private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+                     *
+                     */
                     terminationFuture.setSuccess(null);
                 }
             }

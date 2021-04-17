@@ -40,7 +40,10 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
      */
     public NioEventLoopGroup(int nThreads) {
         //强制把 null 转换为对应的类型，是为了指定具体的构造器，否则，编译器不知道使用哪个构造器
-        this(nThreads, (Executor) null);
+        this(
+                nThreads,
+                (Executor) null
+        );
     }
 
     /**
@@ -54,8 +57,8 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     public NioEventLoopGroup(int nThreads, Executor executor) {
         //生成一个java原生的选择器
         this(
-                nThreads,
-                executor,
+                nThreads, // 线程数量
+                executor, // 执行器
                 SelectorProvider.provider() // 选择器提供器，通过这个参数可以获取到jdk层面的 selector 实例(这是java nio 的知识)
         );
     }
@@ -97,6 +100,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
         );
     }
 
+    // 线程池组
     public NioEventLoopGroup(int nThreads, Executor executor, final SelectorProvider selectorProvider, final SelectStrategyFactory selectStrategyFactory) {
         /**
          * 传入一个拒绝策略：直接抛出移除

@@ -19,7 +19,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
      */
     @Override
     public void bind(ChannelHandlerContext ctx, SocketAddress localAddress,
-                     ChannelPromise promise) throws Exception {
+            ChannelPromise promise) throws Exception {
         ctx.bind(localAddress, promise);
     }
 
@@ -31,7 +31,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
      */
     @Override
     public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress,
-                        SocketAddress localAddress, ChannelPromise promise) throws Exception {
+            SocketAddress localAddress, ChannelPromise promise) throws Exception {
         ctx.connect(remoteAddress, localAddress, promise);
     }
 

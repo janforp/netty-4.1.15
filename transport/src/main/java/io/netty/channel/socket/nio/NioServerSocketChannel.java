@@ -203,10 +203,9 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         return 0;
     }
 
-    // Unnecessary stuff ： 不必要的东西 因为 Channel 是共的，下面的这些接口 NioSocketChannel 实现就可以了
+    // Unnecessary stuff ： 不必要的东西 因为 Channel 是公共的，下面的这些接口 NioSocketChannel 实现就可以了
     @Override
     protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
-
         //只有客户端才需要实现该方法
         throw new UnsupportedOperationException();
     }
