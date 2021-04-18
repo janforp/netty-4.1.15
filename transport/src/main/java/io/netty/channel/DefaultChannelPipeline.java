@@ -1493,6 +1493,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
         @Override
         public void read(ChannelHandlerContext ctx) {
+
+            // 开启 read
             unsafe.beginRead();
         }
 
@@ -1529,8 +1531,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            // 直接传播
             ctx.fireChannelActive();
-
             readIfIsAutoRead();
         }
 

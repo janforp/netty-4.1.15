@@ -573,6 +573,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     private synchronized void checkNotifyWaiters() {
         if (waiters > 0) {
+            // 唤醒在当前对象上等待的线程
             notifyAll();
         }
     }

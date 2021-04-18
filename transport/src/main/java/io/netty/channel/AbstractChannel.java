@@ -1,9 +1,11 @@
 package io.netty.channel;
 
+import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.nio.AbstractNioChannel;
 import io.netty.channel.socket.ChannelOutputShutdownEvent;
 import io.netty.channel.socket.ChannelOutputShutdownException;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.DefaultAttributeMap;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.SingleThreadEventExecutor;
@@ -655,14 +657,30 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                  */
                 pipeline.invokeHandlerAddedIfNeeded();
 
+                /**
+                 * @param promise 其中包含了 Channel，表示注册结果的，外部可以向它注册监听器来完成注册后的逻辑
+                 *
+                 * 这一步会去回调 注册相关的 promise 上注册的哪些 listener，比如 主线程在 regFuture 上注册的 监听器
+                 * @see AbstractBootstrap#doBind(java.net.SocketAddress) 这里添加了任务 {@link AbstractBootstrap#doBind0(io.netty.channel.ChannelFuture, io.netty.channel.Channel, java.net.SocketAddress, io.netty.channel.ChannelPromise)}
+                 * @see AbstractBootstrap#doBind0(io.netty.channel.ChannelFuture, io.netty.channel.Channel, java.net.SocketAddress, io.netty.channel.ChannelPromise)
+                 */
                 safeSetSuccess(promise);
-                //触发 ChannelHandler 的事件(Channel注册事件)传播
+
+                /**
+                 * 触发 ChannelHandler 的事件(Channel注册事件)传播
+                 * 向当前 channel 的 pipeline 发起注册完成事件，关注该事件的 handler 可以做一些事情，比如打印日志
+                 */
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
                 // multiple channel actives if the channel is deregistered and re-registered.
                 //如果从未注册过频道，则仅触发channelActive。如果通道已注销并重新注册，这可以防止触发多个通道活动对象。
-                boolean active = isActive();
-                if (active) {
+
+                /**
+                 * @see NioServerSocketChannel#isActive() 这个方法其实就是判断是否绑定
+                 * 那么咱们在这一步的时候完成绑定了吗？绑定操作一定是当前 eventLoop 线程去做的，当前 eventLoop 线程在干嘛呢？它还在执行register0也就是当前方法呢
+                 * 所以，在这里的时候绑定操作一定是没有完成的，所以此时 isActive(0 == false
+                 */
+                if (isActive()) {
                     if (firstRegistration) {
                         pipeline.fireChannelActive();
                     } else if (config().isAutoRead()) {
@@ -703,6 +721,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                                 "address (" + localAddress + ") anyway as requested.");
             }
 
+            // 一般是 false
             boolean wasActive = isActive();
             try {
                 /**
@@ -718,16 +737,25 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 return;
             }
 
+            // 此时肯定完成了绑定
             if (!wasActive && isActive()) {
+
+                // 向 eventLoop 提交任务4
                 invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         //触发 Channel 激活事件传播
+                        // headContext 会响应 active 事件，如何处理呢？
+                        // 再次向当前Channel的pipeline发起read事件
+                        // read 事件，就会修改 Channel 在 selector 上注册的感兴趣的事件为 accept
+
                         pipeline.fireChannelActive();
                     }
                 });
             }
 
+            // promise 表示的是绑定结果，谁在等待绑定结果呢？
+            // 是咱们的启动线程，在该 promise 上执行的 wait 操作,所以,这一步绑定完成之后,会将其唤醒
             safeSetSuccess(promise);
         }
 
