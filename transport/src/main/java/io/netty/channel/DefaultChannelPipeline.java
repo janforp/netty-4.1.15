@@ -109,6 +109,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
      * complexity.
      *
      * @see DefaultChannelPipeline#callHandlerCallbackLater(io.netty.channel.AbstractChannelHandlerContext, boolean)
+     *
+     * 单向列表
      */
     private PendingHandlerCallback pendingHandlerCallbackHead;
 
@@ -299,8 +301,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             // In this case we add the context to the pipeline and add a task that will call
             // ChannelHandler.handlerAdded(...) once the channel is registered.
             if (!registered) {
-                newCtx.setAddPending();
+                // 如果是 init 阶段，则没有完成注册
+
+                newCtx.setAddPending(); // 修改状态
                 callHandlerCallbackLater(newCtx, true);
+
                 return this;
             }
 
@@ -755,13 +760,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             }
 
             if (removed) {
-                fireExceptionCaught(new ChannelPipelineException(
-                        ctx.handler().getClass().getName() +
-                                ".handlerAdded() has thrown an exception; removed.", t));
+                fireExceptionCaught(new ChannelPipelineException(ctx.handler().getClass().getName() + ".handlerAdded() has thrown an exception; removed.", t));
             } else {
-                fireExceptionCaught(new ChannelPipelineException(
-                        ctx.handler().getClass().getName() +
-                                ".handlerAdded() has thrown an exception; also failed to remove.", t));
+                fireExceptionCaught(new ChannelPipelineException(ctx.handler().getClass().getName() + ".handlerAdded() has thrown an exception; also failed to remove.", t));
             }
         }
     }
@@ -1275,8 +1276,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             assert !registered;
 
             // This Channel itself was registered.
+            // pipeline 已经注册过了
             registered = true;
 
+            // 拿到队列
             pendingHandlerCallbackHead = this.pendingHandlerCallbackHead;
             // Null out so it can be GC'ed.
             this.pendingHandlerCallbackHead = null;
@@ -1303,8 +1306,14 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private void callHandlerCallbackLater(AbstractChannelHandlerContext ctx, boolean added) {
         assert !registered;
 
-        PendingHandlerCallback task = added ? new PendingHandlerAddedTask(ctx) : new PendingHandlerRemovedTask(ctx);
+        PendingHandlerCallback task = added ?
+                new PendingHandlerAddedTask(ctx)
+                : new PendingHandlerRemovedTask(ctx);
+
         PendingHandlerCallback pending = pendingHandlerCallbackHead;
+
+        // 下面其实i就是一个入队的操作
+
         if (pending == null) {
             pendingHandlerCallbackHead = task;
         } else {
@@ -1312,6 +1321,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             while (pending.next != null) {
                 pending = pending.next;
             }
+
+            // 插入到队尾
             pending.next = task;
         }
     }
@@ -1597,9 +1608,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
                     executor.execute(this);
                 } catch (RejectedExecutionException e) {
                     if (logger.isWarnEnabled()) {
-                        logger.warn(
-                                "Can't invoke handlerAdded() as the EventExecutor {} rejected it, removing handler {}.",
-                                executor, ctx.name(), e);
+                        logger.warn("Can't invoke handlerAdded() as the EventExecutor {} rejected it, removing handler {}.", executor, ctx.name(), e);
                     }
                     remove0(ctx);
                     ctx.setRemoved();

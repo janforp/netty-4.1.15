@@ -641,6 +641,18 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
                 // user may already fire events through the pipeline in the ChannelFutureListener.
                 //回调 Channel 添加函数
+                /**
+                 * 其实就是把 程序员添加到 ChannelInitializer 中的 handler 添加到
+                 * 该 channel 对于的 pipeline 中，然后把 ChannelInitializer 本身从 pipeline 中移出去
+                 * @see DefaultChannelPipeline#callHandlerAddedForAllHandlers()
+                 * @see DefaultChannelPipeline.PendingHandlerAddedTask#execute()
+                 * @see DefaultChannelPipeline#callHandlerAdded0(io.netty.channel.AbstractChannelHandlerContext)
+                 * @see ChannelInitializer#handlerAdded(io.netty.channel.ChannelHandlerContext) 调用CI 的 handlerAdded 方法
+                 * @see ChannelInitializer#initChannel(io.netty.channel.ChannelHandlerContext) 在CI的该方法中调用下面的抽象方法
+                 * @see ChannelInitializer#initChannel(io.netty.channel.Channel) 最终调用 CI 的抽象方法，这个方法就是程序员自己实现的方法，一般在这个方法中会向 pipeline 中添加自定义的 handler
+                 * @see ChannelInitializer#initChannel(io.netty.channel.ChannelHandlerContext) 在上面的方法执行完成之后，此时 程序员自定义的 handler 已经添加到了 channel对应的pipeline中，
+                 * 此时在 finally 代码块中会把 CI 本身从 pipeline 中移出去!!!!
+                 */
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);
