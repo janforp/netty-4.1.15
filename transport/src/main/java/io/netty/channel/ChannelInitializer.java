@@ -101,6 +101,21 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
     private boolean initChannel(ChannelHandlerContext ctx) throws Exception {
         if (initMap.putIfAbsent(ctx, Boolean.TRUE) == null) { // Guard against re-entrance.
             try {
+                /**
+                 * 程序员 override 的方法
+                 *
+                 * @Override
+                 * public void initChannel(SocketChannel ch) throws Exception {
+                 *     ChannelPipeline p = ch.pipeline();
+                 *     if (sslCtx != null) {
+                 *         p.addLast(sslCtx.newHandler(ch.alloc()));
+                 *     }
+                 *     p.addLast(new LoggingHandler(LogLevel.INFO));
+                 *     p.addLast(new EchoServerHandler());
+                 * }
+                 *
+                 * @see io.netty.example.echo.EchoServer#main(java.lang.String[])
+                 */
                 initChannel((C) ctx.channel());
             } catch (Throwable cause) {
                 // Explicitly call exceptionCaught(...) as we removed the handler before calling initChannel(...).

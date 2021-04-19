@@ -744,7 +744,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        //触发 Channel 激活事件传播
+                        // 触发 Channel 激活事件传播
                         // headContext 会响应 active 事件，如何处理呢？
                         // 再次向当前Channel的pipeline发起read事件
                         // read 事件，就会修改 Channel 在 selector 上注册的感兴趣的事件为 accept
