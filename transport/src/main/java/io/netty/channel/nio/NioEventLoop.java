@@ -13,6 +13,7 @@ import io.netty.util.internal.ReflectionUtil;
 import io.netty.util.internal.SystemPropertyUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
+import sun.nio.ch.SelectorImpl;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -121,6 +122,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     /**
      * 其中维护了一个 SelectionKey[] keys;
+     * 表示当前 NioEventLoop
      */
     private SelectedSelectionKeySet selectedKeys;
 
@@ -134,6 +136,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * break out of its selection process. In our case we use a timeout for
      * the select method and the select method will block for that time unless
      * waken up.
+     *
+     * -- 控制该值的布尔值，确定被阻止的Selector.select是否应退出其选择过程。
+     * 在我们的例子中，我们对select方法使用了超时，并且select方法将在这段时间内阻塞，除非唤醒。
      */
     private final AtomicBoolean wakenUp = new AtomicBoolean();
 
@@ -235,81 +240,48 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         } catch (IOException e) {
             throw new ChannelException("failed to open a new selector", e);
         }
-
         if (DISABLE_KEYSET_OPTIMIZATION) {
             //如果不开启优化
             return new SelectorTuple(unwrappedSelector);
         }
-        /**
-         * 如果开启了优化
-         */
-
         // 如果开启优化
         final SelectedSelectionKeySet selectedKeySet = new SelectedSelectionKeySet();
-
         Object maybeSelectorImplClass = AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
                 try {
-                    return Class.forName(
-                            "sun.nio.ch.SelectorImpl",
-                            false,
-                            PlatformDependent.getSystemClassLoader());
+                    // 返回 SelectorImpl 的 class 对象
+                    return Class.forName("sun.nio.ch.SelectorImpl", false, PlatformDependent.getSystemClassLoader());
                 } catch (Throwable cause) {
-
                     // 如果报错了，则返回异常
                     return cause;
                 }
             }
         });
-
-        if (
-        /**
-         * 上面反射调用失败了
-         */
-                !(maybeSelectorImplClass instanceof Class) ||
-
-                        /**
-                         * 上面反射调用失败了
-                         */
-                        // ensure the current selector implementation is what we can instrument.
-                        !((Class<?>) maybeSelectorImplClass).isAssignableFrom(unwrappedSelector.getClass())
-        ) {
-
+        //上面反射调用失败了
+        //// ensure the current selector implementation is what we can instrument.
+        if (!(maybeSelectorImplClass instanceof Class) || !((Class<?>) maybeSelectorImplClass).isAssignableFrom(unwrappedSelector.getClass())) {
             if (maybeSelectorImplClass instanceof Throwable) {
                 Throwable t = (Throwable) maybeSelectorImplClass;
                 logger.trace("failed to instrument a special java.util.Set into: {}", unwrappedSelector, t);
             }
-
-            /**
-             * 反射失败，打印日志之后还是返回
-             */
+            //反射失败，打印日志之后还是返回
             return new SelectorTuple(unwrappedSelector);
         }
-
         // 如果执行到这里，说明上面反射调用成功，得到了一个 sun.nio.ch.SelectorImpl 的 Class
         final Class<?> selectorImplClass = (Class<?>) maybeSelectorImplClass;
-
         // 该对象可能是一个异常
         Object maybeException = AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
                 try {
                     /**
-                     * public abstract class SelectorImpl extends AbstractSelector {
-                     *
-                     *     protected Set<SelectionKey> selectedKeys = new HashSet();
-                     *
-                     *     protected HashSet<SelectionKey> keys = new HashSet();
-                     *     private Set<SelectionKey> publicKeys;
-                     *
-                     *     private Set<SelectionKey> publicSelectedKeys;
-                     *     .........
-                     * }
+                     * @see sun.nio.ch.SelectorImpl
+                     * @see SelectorImpl#selectedKeys
+                     * @see SelectorImpl#publicSelectedKeys
                      */
-                    Field selectedKeysField = selectorImplClass.getDeclaredField("selectedKeys");
-                    Field publicSelectedKeysField = selectorImplClass.getDeclaredField("publicSelectedKeys");
-
+                    Field selectedKeysField = selectorImplClass.getDeclaredField("selectedKeys");// netty 使用自认为性能更高的
+                    Field publicSelectedKeysField = selectorImplClass.getDeclaredField("publicSelectedKeys");// netty 使用自认为性能更高的
                     Throwable cause = ReflectionUtil.trySetAccessible(selectedKeysField);
                     if (cause != null) {
                         return cause;
@@ -318,7 +290,6 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     if (cause != null) {
                         return cause;
                     }
-
                     //设置成自己的 set
                     selectedKeysField.set(unwrappedSelector, selectedKeySet);
                     publicSelectedKeysField.set(unwrappedSelector, selectedKeySet);
@@ -328,19 +299,17 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 }
             }
         });
-
         if (maybeException instanceof Exception) {
             selectedKeys = null;
             Exception e = (Exception) maybeException;
             logger.trace("failed to instrument a special java.util.Set into: {}", unwrappedSelector, e);
             return new SelectorTuple(unwrappedSelector);
         }
-
         //maybeException 赋值 成功了
         selectedKeys = selectedKeySet;
         logger.trace("instrumented a special java.util.Set into: {}", unwrappedSelector);
-        return new SelectorTuple(unwrappedSelector,
-                new SelectedSelectionKeySetSelector(unwrappedSelector, selectedKeySet));
+        return new SelectorTuple(unwrappedSelector, new SelectedSelectionKeySetSelector(unwrappedSelector, selectedKeySet)
+        );
     }
 
     /**
@@ -517,6 +486,14 @@ public final class NioEventLoop extends SingleThreadEventLoop {
          */
         for (; ; ) {
             try {
+
+                /**
+                 * int strategy = selectStrategy.calculateStrategy(selectNowSupplier, hasTasks());
+                 * 1.有任务，那么调用多路复用器的 selectNow() 方法，返回多路复用器上就绪的 CHANNEL 个数
+                 * 2.没有任务，返回 -1,下面会根据 常量 再进行 相应逻辑
+                 *
+                 *
+                 */
                 switch (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {
                     //继续循环
                     case SelectStrategy.CONTINUE:
@@ -524,7 +501,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                          * 继续
                          */
                         continue;
-                    case SelectStrategy.SELECT:
+                    case SelectStrategy.SELECT: // 2.没有任务，返回 -1,下面会根据 常量 再进行 相应逻辑
                         select(wakenUp.getAndSet(false));
 
                         // 'wakenUp.compareAndSet(false, true)' is always evaluated
@@ -564,8 +541,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
                 cancelledKeys = 0;
                 needsToSelectAgain = false;
+
+                // 线程处理io事件的时间占比默认50%，任务50%
                 final int ioRatio = this.ioRatio;
                 if (ioRatio == 100) {
+                    // 条件
                     try {
                         processSelectedKeys();
                     } finally {
@@ -866,6 +846,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             long currentTimeNanos = System.nanoTime();
             long selectDeadLineNanos = currentTimeNanos + delayNanos(currentTimeNanos);
             for (; ; ) {
+
+                // TODO ？？？？
                 long timeoutMillis = (selectDeadLineNanos - currentTimeNanos + 500000L) / 1000000L;
                 if (timeoutMillis <= 0) {
                     if (selectCnt == 0) {
@@ -902,9 +884,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     //
                     // See https://github.com/netty/netty/issues/2426
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Selector.select() returned prematurely because " +
-                                "Thread.currentThread().interrupt() was called. Use " +
-                                "NioEventLoop.shutdownGracefully() to shutdown the NioEventLoop.");
+                        logger.debug("Selector.select() returned prematurely because " + "Thread.currentThread().interrupt() was called. Use " + "NioEventLoop.shutdownGracefully() to shutdown the NioEventLoop.");
                     }
                     selectCnt = 1;
                     break;
@@ -914,13 +894,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 if (time - TimeUnit.MILLISECONDS.toNanos(timeoutMillis) >= currentTimeNanos) {
                     // timeoutMillis elapsed without anything selected.
                     selectCnt = 1;
-                } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 &&
-                        selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
+                } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 && selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
+                    // select() 空循环bug
+
                     // The selector returned prematurely many times in a row.
                     // Rebuild the selector to work around the problem.
-                    logger.warn(
-                            "Selector.select() returned prematurely {} times in a row; rebuilding Selector {}.",
-                            selectCnt, selector);
+                    logger.warn("Selector.select() returned prematurely {} times in a row; rebuilding Selector {}.", selectCnt, selector);
 
                     rebuildSelector();
                     selector = this.selector;
@@ -936,14 +915,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
             if (selectCnt > MIN_PREMATURE_SELECTOR_RETURNS) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Selector.select() returned prematurely {} times in a row for Selector {}.",
-                            selectCnt - 1, selector);
+                    logger.debug("Selector.select() returned prematurely {} times in a row for Selector {}.", selectCnt - 1, selector);
                 }
             }
         } catch (CancelledKeyException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug(CancelledKeyException.class.getSimpleName() + " raised by a Selector {} - JDK bug?",
-                        selector, e);
+                logger.debug(CancelledKeyException.class.getSimpleName() + " raised by a Selector {} - JDK bug?", selector, e);
             }
             // Harmless exception - log anyway
         }

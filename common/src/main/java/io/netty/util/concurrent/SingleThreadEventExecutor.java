@@ -801,6 +801,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
             // 大概率不是当前线程，会进入该分支
 
+            // 启动新线程
             startThread();
             addTask(task);
             if (isShutdown() && removeTask(task)) {
@@ -909,6 +910,12 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         assert thread == null;
 
         // 该 executor 就是 channel 绑定的 executor
+
+        /**
+         * 执行器，传入一个 Runnable 就可以执行啦
+         *
+         * @see ThreadPerTaskExecutor
+         */
         executor.execute(new Runnable() {
             @Override
             public void run() {
