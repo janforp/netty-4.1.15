@@ -355,8 +355,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             throw new IllegalArgumentException("interestOps must be non-zero.");
         }
         if ((interestOps & ~ch.validOps()) != 0) {
-            throw new IllegalArgumentException(
-                    "invalid interestOps: " + interestOps + "(validOps: " + ch.validOps() + ')');
+            throw new IllegalArgumentException("invalid interestOps: " + interestOps + "(validOps: " + ch.validOps() + ')');
         }
         if (task == null) {
             throw new NullPointerException("task");
@@ -367,6 +366,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
 
         try {
+            // 真正的注册到多路复用器
             ch.register(selector, interestOps, task);
         } catch (Exception e) {
             throw new EventLoopException("failed to register a channel", e);
